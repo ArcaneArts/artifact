@@ -1,3 +1,7 @@
+# 1.0.4
+* Copywith Deltas
+* Removed change functions
+
 # 1.0.3
 * Full Dynamic Support
 * Compression Improvements
