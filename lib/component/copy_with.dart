@@ -84,18 +84,18 @@ class $ArtifactCopyWithComponent implements $ArtifactBuilderOutput {
 
       if (bs == "int") {
         withs.writeln(
-          '  ${clazz.name} increment${name.capitalize()}(${builder.applyDefsF("int")} v) => copyWith(${param.name}:${bsn.endsWith("?") ? "($name??0)+v)" : "$name+v"});',
+          '  ${clazz.name} increment${name.capitalize()}(${builder.applyDefsF("int")} v) => copyWith(${param.name}:${bsn.endsWith("?") ? "($name??0)+v" : "$name+v"});',
         );
         withs.writeln(
-          '  ${clazz.name} decrement${name.capitalize()}(${builder.applyDefsF("int")} v) => copyWith(${param.name}:${bsn.endsWith("?") ? "($name??0)-v)" : "$name-v"});',
+          '  ${clazz.name} decrement${name.capitalize()}(${builder.applyDefsF("int")} v) => copyWith(${param.name}:${bsn.endsWith("?") ? "($name??0)-v" : "$name-v"});',
         );
       }
       if (bs == "double") {
         withs.writeln(
-          '  ${clazz.name} increment${name.capitalize()}(${builder.applyDefsF("double")} v) => copyWith(${param.name}:${bsn.endsWith("?") ? "($name??0)+v)" : "$name+v"});',
+          '  ${clazz.name} increment${name.capitalize()}(${builder.applyDefsF("double")} v) => copyWith(${param.name}:${bsn.endsWith("?") ? "($name??0)+v" : "$name+v"});',
         );
         withs.writeln(
-          '  ${clazz.name} decrement${name.capitalize()}(${builder.applyDefsF("double")} v) => copyWith(${param.name}:${bsn.endsWith("?") ? "($name??0)-v)" : "$name-v"});',
+          '  ${clazz.name} decrement${name.capitalize()}(${builder.applyDefsF("double")} v) => copyWith(${param.name}:${bsn.endsWith("?") ? "($name??0)-v" : "$name-v"});',
         );
       }
     }
