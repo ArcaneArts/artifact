@@ -4,9 +4,42 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:artifact/artifact.dart';
+import 'package:artifact/component/copy_with.dart';
+import 'package:artifact/component/from_map.dart';
+import 'package:artifact/component/to_map.dart';
 import 'package:build/build.dart';
 import 'package:glob/glob.dart';
 import 'package:source_gen/source_gen.dart';
+
+typedef $BuildOutput = (List<Uri>, StringBuffer);
+
+extension $BuildOutputL on Iterable<$BuildOutput> {
+  $BuildOutput get merged {
+    List<Uri> imports = <Uri>[];
+    StringBuffer buffer = StringBuffer();
+    for ($BuildOutput i in this) {
+      imports.addAll(i.$1);
+      buffer.write(i.$2);
+    }
+
+    return (imports.toSet().toList(), buffer);
+  }
+}
+
+extension X$BuildOutput on $BuildOutput {
+  $BuildOutput mergeWith($BuildOutput other) {
+    return (
+      [...this.$1, ...other.$1].toSet().toList(),
+      StringBuffer()
+        ..write(this.$2)
+        ..write(other.$2),
+    );
+  }
+}
+
+abstract class $ArtifactBuilderOutput {
+  Future<$BuildOutput> onGenerate(ArtifactBuilder builder, ClassElement clazz);
+}
 
 class ArtifactBuilder implements Builder {
   @override
@@ -14,38 +47,59 @@ class ArtifactBuilder implements Builder {
     r'$lib$': <String>['gen/artifacts.gen.dart'],
   };
 
-  static Glob _dartFilesInLib = Glob('lib/**.dart');
-  static final TypeChecker _artifactChecker = TypeChecker.fromRuntime(Artifact);
-
-  static final Map<String, List<String>> _artifactSubclasses =
+  static Glob $dartFilesInLib = Glob('lib/**.dart');
+  static final TypeChecker $artifactChecker = TypeChecker.fromRuntime(Artifact);
+  static final Map<String, List<String>> $artifactSubclasses =
       <String, List<String>>{};
 
-  static void _linkSubclass(ClassElement sub, ClassElement sup) {
-    List<String> list = _artifactSubclasses.putIfAbsent(
+  static void $linkSubclass(ClassElement sub, ClassElement sup) {
+    List<String> list = $artifactSubclasses.putIfAbsent(
       sup.name,
       () => <String>[],
     );
     if (!list.contains(sub.name)) list.add(sub.name);
   }
 
-  bool _isArtifactInterface(InterfaceType type) => ArtifactBuilder
-      ._artifactChecker
+  bool $isArtifactInterface(InterfaceType type) => ArtifactBuilder
+      .$artifactChecker
       .hasAnnotationOf(type.element, throwOnUnresolved: false);
+  bool useDefs = true;
+  Map<String, String> defs = {};
+  int ci = 0;
+
+  void registerDef(String typeName) {
+    if (defs.values.contains(typeName)) {
+      return;
+    }
+
+    defs["_${ci.toRadixString(36)}"] = typeName;
+    ci++;
+  }
 
   @override
   Future<void> build(BuildStep step) async {
     assert(step.inputId.path == r'$lib$');
+    registerDef("ArtifactCodecUtil");
+    registerDef("Map<String, dynamic>");
+    registerDef("String");
+    registerDef("int");
+    registerDef("double");
+    registerDef("bool");
+    registerDef("Duration");
+    registerDef("DateTime");
     List<ClassElement> artifacts = <ClassElement>[];
 
-    await for (AssetId asset in step.findAssets(_dartFilesInLib)) {
+    await for (AssetId asset in step.findAssets($dartFilesInLib)) {
       if (!await step.resolver.isLibrary(asset)) continue;
       LibraryElement lib = await step.resolver.libraryFor(asset);
 
       for (Element e in lib.topLevelElements) {
         if (e is! ClassElement) continue;
-        if (!_artifactChecker.hasAnnotationOf(e, throwOnUnresolved: false)) {
+        if (!$artifactChecker.hasAnnotationOf(e, throwOnUnresolved: false)) {
           continue;
         }
+
+        registerDef(e.name);
 
         artifacts.add(e);
 
@@ -53,8 +107,8 @@ class ArtifactBuilder implements Builder {
         InterfaceType? supType = e.supertype;
         while (supType != null) {
           ClassElement sup = supType.element as ClassElement;
-          if (_artifactChecker.hasAnnotationOf(sup, throwOnUnresolved: false)) {
-            _linkSubclass(e, sup);
+          if ($artifactChecker.hasAnnotationOf(sup, throwOnUnresolved: false)) {
+            $linkSubclass(e, sup);
           }
           supType = supType.element.supertype;
         }
@@ -83,268 +137,74 @@ class ArtifactBuilder implements Builder {
           ..writeln(
             imports.map((i) => 'import "$i";').toSet().toList().join('\n'),
           )
-          ..writeln();
+          ..writeln(
+            useDefs
+                ? defs.entries
+                    .map((i) => "typedef ${i.key} = ${i.value};")
+                    .join("\n")
+                : "",
+          );
 
+    StringBuffer mainBuf = StringBuffer();
     for (StringBuffer cb in classBuffers) {
-      outBuf.writeln(cb);
+      mainBuf.writeln(cb);
     }
+
+    String r = mainBuf.toString();
+    outBuf.writeln(r);
 
     AssetId out = AssetId(step.inputId.package, 'lib/gen/artifacts.gen.dart');
     await step.writeAsString(out, outBuf.toString());
   }
 
-  Uri getImport(InterfaceType type, LibraryElement targetLib) {
+  Uri $getImport(InterfaceType type, LibraryElement targetLib) {
     LibraryElement definingLib = type.element.library!;
     Uri importUri = definingLib.source.uri; // eg. package:resilient_models/…
     if (definingLib == targetLib) return Uri(); // empty = skip
     return importUri;
   }
 
-  Future<(List<Uri>, StringBuffer)> generate(ClassElement clazz) async {
-    StringBuffer buffer = StringBuffer();
-    List<(List<Uri>, StringBuffer)> jobs = await Future.wait([
-      generateToMap(clazz),
-      generateFromMap(clazz),
-      generateCopyWith(clazz),
-    ]);
-    StringBuffer nl = StringBuffer()..writeln("\n");
-    buffer.writeln("extension \$${clazz.name} on ${clazz.name} {");
+  Future<$BuildOutput> generate(ClassElement clazz) async => (
+        <Uri>[],
+        StringBuffer()
+          ..writeln("extension \$${clazz.name} on ${applyDefsF(clazz.name)} {")
+          ..writeln("  ${applyDefsF(clazz.name)} get _t => this;"),
+      )
+      .mergeWith(
+        await Future.wait([
+          const $ArtifactToMapComponent().onGenerate(this, clazz),
+          const $ArtifactFromMapComponent().onGenerate(this, clazz),
+          const $ArtifactCopyWithComponent().onGenerate(this, clazz),
+        ]).then((i) => i.merged),
+      )
+      .mergeWith((<Uri>[], StringBuffer()..write("}")));
 
-    for (StringBuffer i in jobs.expand((i) => [nl, i.$2]).skip(1)) {
-      buffer.writeln(i);
-    }
-
-    buffer.writeln("}");
-
-    return (<Uri>[...jobs.expand((i) => i.$1)], buffer);
-  }
-
-  Future<(List<Uri>, StringBuffer)> generateToMap(ClassElement clazz) async {
-    ConstructorElement? ctor;
-    for (ConstructorElement c in clazz.constructors) {
-      if (c.name.isEmpty) {
-        ctor = c;
-        break;
-      }
-    }
-    if (ctor == null) return (<Uri>[], StringBuffer());
-
-    List<ParameterElement> params = <ParameterElement>[];
-    for (ParameterElement p in ctor.parameters) {
-      bool matchesField = clazz.getField(p.name) != null;
-      if (p.isInitializingFormal || p.isSuperFormal || matchesField) {
-        params.add(p);
-      }
-    }
-
-    // always generate the map – even if only the subclass keys go in it
-    StringBuffer buf = StringBuffer();
-    List<Uri> importUris = <Uri>[];
-    LibraryElement targetLib = clazz.library;
-
-    buf.writeln('  Map<String, dynamic> toMap() => <String, dynamic>{');
-
-    // 1️⃣  polymorphism tag(s)
-    InterfaceType? supType = clazz.supertype;
-    while (supType != null) {
-      ClassElement sup = supType.element as ClassElement;
-      if (_artifactChecker.hasAnnotationOf(sup, throwOnUnresolved: false)) {
-        buf.writeln(
-          "    '_subclass_${sup.name}': '${clazz.name}',",
-        ); // e.g. _subclass_Animal
-      }
-      supType = supType.element.supertype;
-    }
-
-    // 2️⃣  regular fields
-    for (ParameterElement param in params) {
-      String name = param.name;
-      InterfaceType type = param.type as InterfaceType;
-
-      ({String code, List<Uri> imports}) conv = _convert(
-        name,
-        type,
-        targetLib,
-        _ConvMode.toMap,
-      );
-
-      buf.writeln("    '$name': ${conv.code},");
-      importUris.addAll(conv.imports);
-    }
-
-    buf.writeln('  };');
-    return (importUris, buf);
-  }
-
-  Future<(List<Uri>, StringBuffer)> generateFromMap(ClassElement clazz) async {
-    ConstructorElement? ctor;
-    for (ConstructorElement c in clazz.constructors) {
-      if (c.name.isEmpty) {
-        ctor = c;
-        break;
-      }
-    }
-    if (ctor == null) return (<Uri>[], StringBuffer());
-
-    List<ParameterElement> params = <ParameterElement>[];
-    for (ParameterElement p in ctor.parameters) {
-      bool matchesField = clazz.getField(p.name) != null;
-      if (p.isInitializingFormal || p.isSuperFormal || matchesField) {
-        params.add(p);
-      }
-    }
-
-    StringBuffer buf = StringBuffer();
-    List<Uri> importUris = <Uri>[];
-    LibraryElement targetLib = clazz.library;
-
-    buf.writeln('  static ${clazz.name} fromMap(Map<String, dynamic> map) {');
-
-    // ── 1️⃣  check polymorphism tag ───────────────────────────────────────────
-    List<String>? subs = _artifactSubclasses[clazz.name];
-    if (subs != null && subs.isNotEmpty) {
-      buf.writeln("    if (map.containsKey('_subclass_${clazz.name}')) {");
-      buf.writeln(
-        "      String sub = map['_subclass_${clazz.name}'] as String;",
-      );
-      buf.writeln('      switch (sub) {');
-      for (String s in subs) {
-        buf.writeln("        case '$s':");
-        buf.writeln('          return \$$s.fromMap(map);');
-      }
-      buf.writeln('      }');
-      buf.writeln('    }');
-    }
-
-    buf.writeln('    return ${clazz.name}(');
-
-    List<String> positionalArgs = <String>[];
-    List<String> namedArgs = <String>[];
-
-    for (ParameterElement param in params) {
-      String name = param.name;
-      InterfaceType type = param.type as InterfaceType;
-      bool isNullable = type.nullabilitySuffix == NullabilitySuffix.question;
-      bool isRequired =
-          param.isRequiredNamed ||
-          param.isRequiredPositional ||
-          (!isNullable && param.defaultValueCode == null);
-      String rawExpr = "map['$name']";
-
-      ({String code, List<Uri> imports}) conv = _convert(
-        rawExpr,
-        type,
-        targetLib,
-        _ConvMode.fromMap,
-      );
-      importUris.addAll(conv.imports);
-
-      String valueExpr;
-      if (isRequired) {
-        valueExpr =
-            "map.containsKey('$name') ? ${conv.code} : (throw ArgumentError('Missing required ${clazz.name}.\"$name\" in map \$map.'))";
-      } else {
-        String defaultCode = param.defaultValueCode ?? 'null';
-        valueExpr = "map.containsKey('$name') ? ${conv.code} : $defaultCode";
-      }
-
-      if (param.isNamed) {
-        namedArgs.add('$name: $valueExpr');
-      } else {
-        positionalArgs.add(valueExpr);
-      }
-    }
-
-    for (String a in positionalArgs) {
-      buf.writeln('      $a,');
-    }
-    for (String a in namedArgs) {
-      buf.writeln('      $a,');
-    }
-
-    buf.writeln('    );');
-    buf.writeln('  }'); // end factory
-
-    return (importUris, buf);
-  }
-
-  Future<(List<Uri>, StringBuffer)> generateCopyWith(ClassElement clazz) async {
-    ConstructorElement? ctor;
-    for (ConstructorElement c in clazz.constructors) {
-      if (c.name.isEmpty) {
-        ctor = c;
-        break;
-      }
-    }
-    if (ctor == null) return (<Uri>[], StringBuffer());
-
-    // inside generateCopyWith, replace the parameter‑gathering loop
-    List<ParameterElement> params = <ParameterElement>[];
-    for (ParameterElement p in ctor.parameters) {
-      bool matchesField = clazz.getField(p.name) != null;
-      if (p.isInitializingFormal || p.isSuperFormal || matchesField) {
-        params.add(p);
-      }
-    }
-    if (params.isEmpty) return (<Uri>[], StringBuffer());
-
-    StringBuffer buf = StringBuffer();
-    List<Uri> importUris = <Uri>[];
-    LibraryElement targetLib = clazz.library;
-
-    buf.writeln('  ${clazz.name} copyWith({');
-
-    for (ParameterElement param in params) {
-      String name = param.name;
-      InterfaceType type = param.type as InterfaceType;
-
-      String typeCode;
-      {
-        String base = type.getDisplayString(withNullability: true);
-        typeCode = base.endsWith('?') ? base : '$base?';
-      }
-
-      buf.writeln('    $typeCode $name,');
-      Uri uri = getImport(type, targetLib);
-      if (uri.toString().isNotEmpty) importUris.add(uri);
-    }
-    buf.writeln('  }) '); // end of parameter list, start body
-
-    buf.writeln('    => ${clazz.name}(');
-    for (ParameterElement param in params) {
-      String name = param.name;
-      buf.writeln('      $name: $name ?? this.$name,');
-    }
-    buf.writeln('    );');
-
-    return (importUris, buf);
-  }
-
-  ({String code, List<Uri> imports}) _convert(
+  ({String code, List<Uri> imports}) $convert(
     String expr,
     InterfaceType type,
     LibraryElement targetLib,
-    _ConvMode mode,
+    $ArtifactConvertMode mode,
   ) {
     List<Uri> imports = <Uri>[];
 
     void _addImport(InterfaceType t) {
-      Uri uri = ArtifactBuilder().getImport(t, targetLib);
+      Uri uri = ArtifactBuilder().$getImport(t, targetLib);
       if (uri.toString().isNotEmpty) imports.add(uri);
     }
 
     bool nullable = type.nullabilitySuffix == NullabilitySuffix.question;
     String nullOp = nullable ? '?' : '';
 
-    if (_isArtifactInterface(type)) {
+    if ($isArtifactInterface(type)) {
       _addImport(type);
-      if (mode == _ConvMode.toMap) {
-        return (code: '$expr$nullOp.toMap()', imports: imports);
+      if (mode == $ArtifactConvertMode.toMap) {
+        return (code: applyDefs(' $expr$nullOp.toMap()'), imports: imports);
       } else {
         String name = type.element.name;
         return (
-          code:
-              '\$${name}.fromMap(($expr) as Map<String, dynamic>)${nullable ? '' : ''}',
+          code: applyDefs(
+            ' \$${name}.fromMap(($expr) as ${applyDefsF("Map<String, dynamic>")})${nullable ? '' : ''}',
+          ),
           imports: imports,
         );
       }
@@ -354,25 +214,27 @@ class ArtifactBuilder implements Builder {
     if ((elementName == 'List' || elementName == 'Set') &&
         type.typeArguments.length == 1) {
       InterfaceType inner = type.typeArguments.first as InterfaceType;
-      if (_isArtifactInterface(inner)) {
+      if ($isArtifactInterface(inner)) {
         _addImport(inner);
-        ({String code, List<Uri> imports}) conv = _convert(
+        ({String code, List<Uri> imports}) conv = $convert(
           'e',
           inner,
           targetLib,
           mode,
         ); // recurse
         String fn = elementName == 'List' ? 'toList()' : 'toSet()';
-        if (mode == _ConvMode.toMap) {
+        if (mode == $ArtifactConvertMode.toMap) {
           return (
-            code:
-                '$expr$nullOp.map((e) => ${conv.code}).$fn${nullable ? '' : ''}',
+            code: applyDefs(
+              ' $expr$nullOp.map((e) => ${conv.code}).$fn${nullable ? '' : ''}',
+            ),
             imports: [...imports, ...conv.imports],
           );
         } else {
           return (
-            code:
-                '($expr as ${elementName}).map((e) => ${conv.code}).$fn${nullable ? '' : ''}',
+            code: applyDefs(
+              ' ($expr as ${applyDefsF(elementName)}).map((e) => ${conv.code}).$fn${nullable ? '' : ''}',
+            ),
             imports: [...imports, ...conv.imports],
           );
         }
@@ -381,32 +243,64 @@ class ArtifactBuilder implements Builder {
 
     if (elementName == 'Map' && type.typeArguments.length == 2) {
       InterfaceType valueT = type.typeArguments[1] as InterfaceType;
-      if (_isArtifactInterface(valueT)) {
+      if ($isArtifactInterface(valueT)) {
         _addImport(valueT);
-        ({String code, List<Uri> imports}) conv = _convert(
-          mode == _ConvMode.fromMap ? 'e.value' : 'v',
+        ({String code, List<Uri> imports}) conv = $convert(
+          mode == $ArtifactConvertMode.fromMap ? 'e.value' : 'v',
           valueT,
           targetLib,
           mode,
         );
-        if (mode == _ConvMode.toMap) {
+        if (mode == $ArtifactConvertMode.toMap) {
           return (
-            code:
-                '$expr$nullOp.map((k, v) => MapEntry(k, ${conv.code}))${nullable ? '' : ''}',
+            code: applyDefs(
+              ' $expr$nullOp.map((k, v) => ${applyDefsF("MapEntry")}(k, ${conv.code}))${nullable ? '' : ''}',
+            ),
             imports: [...imports, ...conv.imports],
           );
         } else {
           return (
-            code:
-                'Map.fromEntries(($expr as Map).entries.map((e) => MapEntry(e.key, ${conv.code})))${nullable ? '' : ''}',
+            code: applyDefs(
+              ' Map.fromEntries(($expr as ${applyDefsF("Map")}).\$e.\$m((e) => ${applyDefsF("MapEntry")}(e.key, ${conv.code})))${nullable ? '' : ''}',
+            ),
             imports: [...imports, ...conv.imports],
           );
         }
       }
     }
 
-    return (code: expr, imports: imports);
+    if (mode == $ArtifactConvertMode.toMap) {
+      return (
+        code: applyDefs(' ArtifactCodecUtil.ea($expr)'),
+        imports: [...imports, Uri.parse('package:artifact/artifact.dart')],
+      );
+    } else {
+      return (
+        code: applyDefs(
+          ' ArtifactCodecUtil.da($expr, ${type.element.name}) as ${applyDefsF(type.element.name)}${nullable ? '' : ''}',
+        ),
+        imports: [...imports, Uri.parse('package:artifact/artifact.dart')],
+      );
+    }
+  }
+
+  String applyDefsF(String sr) {
+    sr = applyDefs(" ${sr} ").substring(1);
+    sr = sr.substring(0, sr.length - 1);
+    return sr;
+  }
+
+  String applyDefs(String sr) {
+    if (!useDefs) return sr;
+
+    for (String i in defs.keys) {
+      String def = defs[i]!;
+      sr = sr.replaceAll(" $def ", " $i ");
+      sr = sr.replaceAll(" $def.", " $i.");
+    }
+
+    return sr;
   }
 }
 
-enum _ConvMode { toMap, fromMap }
+enum $ArtifactConvertMode { toMap, fromMap }
