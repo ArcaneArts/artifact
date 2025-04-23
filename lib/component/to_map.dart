@@ -27,11 +27,27 @@ class $ArtifactToMapComponent implements $ArtifactBuilderOutput {
       }
     }
 
-    // always generate the map – even if only the subclass keys go in it
     StringBuffer buf = StringBuffer();
     List<Uri> importUris = <Uri>[];
     LibraryElement targetLib = clazz.library;
-    buf.writeln(builder.applyDefs('  Map<String, dynamic> toMap() => {'));
+    buf.writeln(
+      "  ${builder.applyDefsF("String")} toJson({bool pretty = false}) => ${builder.applyDefsF("ArtifactCodecUtil")}.j(pretty, toMap);",
+    );
+    buf.writeln("  ${builder.applyDefsF("Map<String, dynamic>")} toMap() {");
+    buf.writeln("    _;");
+
+    List<String>? subs = ArtifactBuilder.$artifactSubclasses[clazz.name];
+    if (subs != null && subs.isNotEmpty) {
+      for (String sub in subs) {
+        buf.writeln('    if (_t is ${builder.applyDefsF(sub)}) {');
+        buf.writeln('      return (_t as ${builder.applyDefsF(sub)}).toMap();');
+        buf.writeln('    }');
+      }
+    }
+
+    buf.writeln(
+      '    return <${builder.applyDefsF("String")}, ${builder.applyDefsF("dynamic")}>{',
+    );
 
     InterfaceType? supType = clazz.supertype;
     while (supType != null) {
@@ -41,8 +57,8 @@ class $ArtifactToMapComponent implements $ArtifactBuilderOutput {
         throwOnUnresolved: false,
       )) {
         buf.writeln(
-          "    '_subclass_${sup.name}': '${clazz.name}',",
-        ); // e.g. _subclass_Animal
+          "      ${builder.stringD('_subclass_${sup.name}')}: '${clazz.name}',",
+        );
       }
       supType = supType.element.supertype;
     }
@@ -58,11 +74,13 @@ class $ArtifactToMapComponent implements $ArtifactBuilderOutput {
         $ArtifactConvertMode.toMap,
       );
 
-      buf.writeln("    '$name': ${conv.code},");
+      buf.writeln("      ${builder.stringD(name)}: ${conv.code},");
       importUris.addAll(conv.imports);
     }
 
-    buf.writeln('  };');
+    buf.writeln('    };');
+    buf.writeln('  }');
+
     return (importUris, buf);
   }
 }

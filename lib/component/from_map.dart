@@ -32,17 +32,24 @@ class $ArtifactFromMapComponent implements $ArtifactBuilderOutput {
     List<Uri> importUris = <Uri>[];
     LibraryElement targetLib = clazz.library;
 
-    buf.writeln('  static ${clazz.name} fromMap(Map<String, dynamic> map) {');
-
+    buf.writeln(
+      "  static ${builder.applyDefsF(clazz.name)} fromJson(String j) => fromMap(${builder.applyDefsF("ArtifactCodecUtil")}.o(j));",
+    );
+    buf.writeln(
+      '  static ${builder.applyDefsF(clazz.name)} fromMap(${builder.applyDefsF("Map<String, dynamic>")} map) {',
+    );
+    buf.writeln("    _;");
     List<String>? subs = ArtifactBuilder.$artifactSubclasses[clazz.name];
     if (subs != null && subs.isNotEmpty) {
-      buf.writeln("    if (map.\$c('_subclass_${clazz.name}')) {");
       buf.writeln(
-        "      String sub = map['_subclass_${clazz.name}'] as String;",
+        "    if (map.\$c(${builder.stringD('_subclass_${clazz.name}')})) {",
+      );
+      buf.writeln(
+        "      String sub = map[${builder.stringD('_subclass_${clazz.name}')}] as ${builder.applyDefsF("String")};",
       );
       buf.writeln('      switch (sub) {');
       for (String s in subs) {
-        buf.writeln("        case '$s':");
+        buf.writeln("        case ${builder.stringD('$s')}:");
         buf.writeln('          return \$$s.fromMap(map);');
       }
       buf.writeln('      }');
@@ -62,7 +69,7 @@ class $ArtifactFromMapComponent implements $ArtifactBuilderOutput {
           param.isRequiredNamed ||
           param.isRequiredPositional ||
           (!isNullable && param.defaultValueCode == null);
-      String rawExpr = "map['$name']";
+      String rawExpr = "map[${builder.stringD('$name')}]";
 
       ({String code, List<Uri> imports}) conv = builder.$convert(
         rawExpr,
@@ -74,11 +81,13 @@ class $ArtifactFromMapComponent implements $ArtifactBuilderOutput {
 
       String valueExpr;
       if (isRequired) {
+        builder.registerDef("ArgumentError");
         valueExpr =
-            "map.\$c('$name') ? ${conv.code} : (throw ArgumentError('Missing required ${clazz.name}.\"$name\" in map \$map.'))";
+            "map.\$c(${builder.stringD('$name')}) ? ${conv.code} : (throw ${builder.applyDefsF("ArgumentError")}('\${${builder.stringD("Missing required ${clazz.name}.\"$name\" in map ")}}\$map.'))";
       } else {
         String defaultCode = param.defaultValueCode ?? 'null';
-        valueExpr = "map.\$c('$name') ? ${conv.code} : $defaultCode";
+        valueExpr =
+            "map.\$c(${builder.stringD('$name')}) ? ${conv.code} : $defaultCode";
       }
 
       if (param.isNamed) {

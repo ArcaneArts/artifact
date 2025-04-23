@@ -1,7 +1,9 @@
-import 'package:artifact/artifact.dart';
+import 'package:dart_mappable/dart_mappable.dart';
 
-@artifact
-class AllFields {
+part 'all_fields.mapper.dart';
+
+@MappableClass()
+class AllFields2 with AllFields2Mappable {
   final String aString;
   final String? anString;
   final String? anrString;
@@ -11,7 +13,7 @@ class AllFields {
   final DateTime aDateTime;
   final Duration aDuration;
 
-  const AllFields({
+  const AllFields2({
     this.aString = "",
     this.anString,
     this.anrString = "",
