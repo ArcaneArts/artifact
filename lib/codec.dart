@@ -24,6 +24,31 @@ class ArtifactCodecUtil {
 
   static Map<String, dynamic> o(String j) => jsonDecode(j);
 
+  static dynamic e(List<dynamic> e, dynamic i) {
+    if (i == null) {
+      return null;
+    }
+    if (i is int) {
+      return i >= e.length || i < 0 ? null : e[i];
+    }
+    if (i is String) {
+      for (dynamic j in e) {
+        if (j is Enum) {
+          if (j.name == i) {
+            return j;
+          }
+        }
+
+        if (j.toString() == i) {
+          return j;
+        }
+      }
+    }
+
+    i = int.tryParse(i.toString());
+    return i >= e.length || i < 0 ? null : e[i];
+  }
+
   static void r(List<ArtifactCodec> c) {
     for (ArtifactCodec i in c) {
       i.$register();

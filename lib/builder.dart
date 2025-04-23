@@ -2,12 +2,12 @@ import 'dart:async';
 
 import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
-import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:artifact/artifact.dart';
 import 'package:artifact/component/copy_with.dart';
 import 'package:artifact/component/from_map.dart';
 import 'package:artifact/component/to_map.dart';
+import 'package:artifact/converter.dart';
 import 'package:build/build.dart';
 import 'package:glob/glob.dart';
 import 'package:source_gen/source_gen.dart';
@@ -49,6 +49,7 @@ class ArtifactBuilder implements Builder {
     r'$lib$': <String>['gen/artifacts.gen.dart'],
   };
 
+  late final ArtifactTypeConverter converter;
   static Glob $dartFilesInLib = Glob('lib/**.dart');
   static final TypeChecker $artifactChecker = TypeChecker.fromRuntime(Artifact);
   static final TypeChecker $codecChecker = TypeChecker.fromRuntime(codec);
@@ -63,9 +64,17 @@ class ArtifactBuilder implements Builder {
     if (!list.contains(sub.name)) list.add(sub.name);
   }
 
+  ArtifactBuilder() {
+    converter = ArtifactTypeConverter(this);
+  }
+
+  bool $isEnum(InterfaceType type) =>
+      type.element is EnumElement || type.element.kind == ElementKind.ENUM;
+
   bool $isArtifactInterface(InterfaceType type) => ArtifactBuilder
       .$artifactChecker
       .hasAnnotationOf(type.element, throwOnUnresolved: false);
+
   bool useDefs = true;
   Map<String, String> defs = {};
   List<String> strDD = [];
@@ -102,10 +111,6 @@ class ArtifactBuilder implements Builder {
     registerDef("String");
     registerDef("dynamic");
     registerDef("int");
-    registerDef("double");
-    registerDef("bool");
-    registerDef("Duration");
-    registerDef("DateTime");
     List<ClassElement> artifacts = <ClassElement>[];
 
     await for (AssetId asset in step.findAssets($dartFilesInLib)) {
@@ -181,7 +186,7 @@ class ArtifactBuilder implements Builder {
       );
     }
 
-    String codecRegistry = "${applyDefsF("int")} _ = 0;";
+    String codecRegistry = "const ${applyDefsF("int")} _ = 0;";
     if (codecs.isNotEmpty) {
       StringBuffer sb = StringBuffer();
       sb.writeln("${applyDefsF("int")} _ = ((){");
@@ -201,6 +206,7 @@ class ArtifactBuilder implements Builder {
           ..writeln(
             [
               "camel_case_types",
+              "non_constant_identifier_names",
               "library_private_types_in_public_api",
             ].map((i) => "// ignore_for_file: $i").join("\n"),
           )
@@ -224,6 +230,8 @@ class ArtifactBuilder implements Builder {
                 ? "${applyDefsF("List<String>")} _S = [${strDD.map((i) => "'$i'").join(",")}];"
                 : "",
           )
+          ..writeln("const bool _T = true;")
+          ..writeln("const bool _F = false;")
           ..writeln(codecRegistry);
 
     StringBuffer mainBuf = StringBuffer();
@@ -238,18 +246,21 @@ class ArtifactBuilder implements Builder {
     await step.writeAsString(out, outBuf.toString());
   }
 
-  Uri $getImport(InterfaceType type, LibraryElement targetLib) {
-    // Same-library element → nothing to import.
-    if (identical(type.element.library, targetLib)) return Uri();
+  Uri $getImport(DartType type, LibraryElement targetLib) {
+    if (type is InterfaceType) {
+      if (identical(type.element.library, targetLib)) return Uri();
 
-    Uri uri = type.element.source.uri;
+      Uri uri = type.element.source.uri;
 
-    if (uri.scheme == 'dart') {
-      String libName = uri.pathSegments.first; // 'core'
-      return Uri(scheme: 'dart', path: libName); // dart:core
+      if (uri.scheme == 'dart') {
+        String libName = uri.pathSegments.first; // 'core'
+        return Uri(scheme: 'dart', path: libName); // dart:core
+      }
+
+      return uri;
     }
 
-    return uri;
+    return Uri();
   }
 
   Future<$BuildOutput> generate(ClassElement clazz) async => (
@@ -266,114 +277,6 @@ class ArtifactBuilder implements Builder {
         ]).then((i) => i.merged),
       )
       .mergeWith((<Uri>[], StringBuffer()..write("}")));
-
-  ({String code, List<Uri> imports}) $convert(
-    String expr,
-    InterfaceType type,
-    LibraryElement targetLib,
-    $ArtifactConvertMode mode,
-  ) {
-    List<Uri> imports = <Uri>[];
-
-    void _addImport(InterfaceType t) {
-      Uri uri = $getImport(t, targetLib);
-      if (uri.toString().isNotEmpty) imports.add(uri);
-    }
-
-    bool nullable = type.nullabilitySuffix == NullabilitySuffix.question;
-    String nullOp = nullable ? '?' : '';
-
-    if ($isArtifactInterface(type)) {
-      _addImport(type);
-      if (mode == $ArtifactConvertMode.toMap) {
-        return (code: applyDefs(' $expr$nullOp.toMap()'), imports: imports);
-      } else {
-        String name = type.element.name;
-        return (
-          code: applyDefs(
-            ' \$${name}.fromMap(($expr) as ${applyDefsF("Map<String, dynamic>")})${nullable ? '' : ''}',
-          ),
-          imports: imports,
-        );
-      }
-    }
-
-    String elementName = type.element.name;
-    if ((elementName == 'List' || elementName == 'Set') &&
-        type.typeArguments.length == 1) {
-      InterfaceType inner = type.typeArguments.first as InterfaceType;
-      if ($isArtifactInterface(inner)) {}
-
-      _addImport(inner);
-      ({String code, List<Uri> imports}) conv = $convert(
-        'e',
-        inner,
-        targetLib,
-        mode,
-      ); // recurse
-      String fn = elementName == 'List' ? 'toList()' : 'toSet()';
-      if (mode == $ArtifactConvertMode.toMap) {
-        return (
-          code: applyDefs(
-            ' $expr$nullOp.map((e) => ${conv.code}).$fn${nullable ? '' : ''}',
-          ),
-          imports: [...imports, ...conv.imports],
-        );
-      } else {
-        registerDef(elementName);
-        return (
-          code: applyDefs(
-            ' ($expr as ${applyDefsF(elementName)}).map((e) => ${conv.code}).$fn${nullable ? '' : ''}',
-          ),
-          imports: [...imports, ...conv.imports],
-        );
-      }
-    }
-
-    if (elementName == 'Map' && type.typeArguments.length == 2) {
-      InterfaceType valueT = type.typeArguments[1] as InterfaceType;
-      if ($isArtifactInterface(valueT)) {}
-
-      _addImport(valueT);
-      ({String code, List<Uri> imports}) conv = $convert(
-        mode == $ArtifactConvertMode.fromMap ? 'e.value' : 'v',
-        valueT,
-        targetLib,
-        mode,
-      );
-      if (mode == $ArtifactConvertMode.toMap) {
-        return (
-          code: applyDefs(
-            ' $expr$nullOp.map((k, v) => ${applyDefsF("MapEntry")}(k, ${conv.code}))${nullable ? '' : ''}',
-          ),
-          imports: [...imports, ...conv.imports],
-        );
-      } else {
-        registerDef("MapEntry");
-        return (
-          code: applyDefs(
-            ' Map.fromEntries(($expr as ${applyDefsF("Map")}).\$e.\$m((e) => ${applyDefsF("MapEntry")}(e.key, ${conv.code})))${nullable ? '' : ''}',
-          ),
-          imports: [...imports, ...conv.imports],
-        );
-      }
-    }
-
-    if (mode == $ArtifactConvertMode.toMap) {
-      return (
-        code: applyDefs(' ArtifactCodecUtil.ea($expr)'),
-        imports: [...imports, Uri.parse('package:artifact/artifact.dart')],
-      );
-    } else {
-      registerDef(type.element.name);
-      return (
-        code: applyDefs(
-          ' ArtifactCodecUtil.da($expr, ${applyDefsF(type.element.name)}) as ${applyDefsF(type.element.name)}${nullable ? '?' : ''}',
-        ),
-        imports: [...imports, Uri.parse('package:artifact/artifact.dart')],
-      );
-    }
-  }
 
   String applyDefsF(String sr) {
     sr = applyDefs(" ${sr} ").substring(1);

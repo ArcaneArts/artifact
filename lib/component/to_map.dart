@@ -65,11 +65,10 @@ class $ArtifactToMapComponent implements $ArtifactBuilderOutput {
 
     for (ParameterElement param in params) {
       String name = param.name;
-      InterfaceType type = param.type as InterfaceType;
 
-      ({String code, List<Uri> imports}) conv = builder.$convert(
+      ({String code, List<Uri> imports}) conv = builder.converter.$convert(
         name,
-        type,
+        param.type,
         targetLib,
         $ArtifactConvertMode.toMap,
       );

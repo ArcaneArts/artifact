@@ -1,3 +1,13 @@
+# 1.0.3
+* Full Dynamic Support
+* Compression Improvements
+
+# 1.0.2
+* Improved Compression on Types
+* String Deduplication Compression
+* Support for Enums
+* Support for codecs
+
 # 1.0.1
 * Fixes and additions
 

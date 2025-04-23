@@ -20,7 +20,6 @@ class $ArtifactCopyWithComponent implements $ArtifactBuilderOutput {
     }
     if (ctor == null) return (<Uri>[], StringBuffer());
 
-    // inside generateCopyWith, replace the parameter‑gathering loop
     List<ParameterElement> params = <ParameterElement>[];
     for (ParameterElement p in ctor.parameters) {
       bool matchesField = clazz.getField(p.name) != null;
@@ -36,11 +35,11 @@ class $ArtifactCopyWithComponent implements $ArtifactBuilderOutput {
 
     StringBuffer withs = StringBuffer();
 
-    buf.writeln('  ${clazz.name} copyWith({');
+    buf.writeln('  ${builder.applyDefsF(clazz.name)} copyWith({');
 
     for (ParameterElement param in params) {
       String name = param.name;
-      InterfaceType type = param.type as InterfaceType;
+      DartType type = param.type;
 
       String typeCode;
       String bs;
@@ -57,11 +56,11 @@ class $ArtifactCopyWithComponent implements $ArtifactBuilderOutput {
       buf.writeln('    $typeCode $name,');
 
       if (param.isOptionalNamed && bsn.endsWith("?")) {
-        buf.writeln('    bool delete${name.capitalize()} = false,');
+        buf.writeln('    bool delete${name.capitalize()} = _F,');
       }
 
       if (param.hasDefaultValue) {
-        buf.writeln('    bool reset${name.capitalize()} = false,');
+        buf.writeln('    bool reset${name.capitalize()} = _F,');
       }
 
       Uri uri = builder.$getImport(type, targetLib);
@@ -73,13 +72,13 @@ class $ArtifactCopyWithComponent implements $ArtifactBuilderOutput {
 
       if (param.isOptionalNamed && bsn.endsWith("?")) {
         withs.writeln(
-          '  ${clazz.name} delete${name.capitalize()}() => copyWith(delete${name.capitalize()}: true);',
+          '  ${clazz.name} delete${name.capitalize()}() => copyWith(delete${name.capitalize()}: _T);',
         );
       }
 
       if (param.hasDefaultValue) {
         withs.writeln(
-          '  ${clazz.name} reset${name.capitalize()}() => copyWith(reset${name.capitalize()}: true);',
+          '  ${clazz.name} reset${name.capitalize()}() => copyWith(reset${name.capitalize()}: _T);',
         );
       }
 

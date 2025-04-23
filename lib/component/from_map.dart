@@ -63,7 +63,7 @@ class $ArtifactFromMapComponent implements $ArtifactBuilderOutput {
 
     for (ParameterElement param in params) {
       String name = param.name;
-      InterfaceType type = param.type as InterfaceType;
+      DartType type = param.type;
       bool isNullable = type.nullabilitySuffix == NullabilitySuffix.question;
       bool isRequired =
           param.isRequiredNamed ||
@@ -71,7 +71,7 @@ class $ArtifactFromMapComponent implements $ArtifactBuilderOutput {
           (!isNullable && param.defaultValueCode == null);
       String rawExpr = "map[${builder.stringD('$name')}]";
 
-      ({String code, List<Uri> imports}) conv = builder.$convert(
+      ({String code, List<Uri> imports}) conv = builder.converter.$convert(
         rawExpr,
         type,
         targetLib,
