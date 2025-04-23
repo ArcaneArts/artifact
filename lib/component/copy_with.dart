@@ -33,69 +33,44 @@ class $ArtifactCopyWithComponent implements $ArtifactBuilderOutput {
     List<Uri> importUris = <Uri>[];
     LibraryElement targetLib = clazz.library;
 
-    StringBuffer withs = StringBuffer();
-
     buf.writeln('  ${builder.applyDefsF(clazz.name)} copyWith({');
 
     for (ParameterElement param in params) {
       String name = param.name;
       DartType type = param.type;
+      String baseType = type.getDisplayString(withNullability: false);
+      builder.registerDef(baseType);
+      String fullType =
+          type.getDisplayString(withNullability: true).endsWith("?")
+              ? "${builder.applyDefsF(baseType)}?"
+              : builder.applyDefsF(baseType);
+      String forceNullType = "${builder.applyDefsF(baseType)}?";
 
-      String typeCode;
-      String bs;
-      String bsn;
-      {
-        String base = builder.applyDefsF(
-          type.getDisplayString(withNullability: true),
+      buf.writeln('    $forceNullType $name,');
+      builder.registerDef("bool");
+      if (param.isOptionalNamed && fullType.endsWith("?")) {
+        buf.writeln(
+          '    ${builder.applyDefsF("bool")} delete${name.capitalize()} = _F,',
         );
-        bs = type.getDisplayString(withNullability: false);
-        bsn = type.getDisplayString(withNullability: true);
-        typeCode = base.endsWith('?') ? base : '$base?';
-      }
-
-      buf.writeln('    $typeCode $name,');
-
-      if (param.isOptionalNamed && bsn.endsWith("?")) {
-        buf.writeln('    bool delete${name.capitalize()} = _F,');
       }
 
       if (param.hasDefaultValue) {
-        buf.writeln('    bool reset${name.capitalize()} = _F,');
+        buf.writeln(
+          '    ${builder.applyDefsF("bool")} reset${name.capitalize()} = _F,',
+        );
       }
 
       Uri uri = builder.$getImport(type, targetLib);
       if (uri.toString().isNotEmpty) importUris.add(uri);
 
-      withs.writeln(
-        '  ${clazz.name} with${name.capitalize()}(${builder.applyDefsF(bs)} v) => copyWith(${param.name}:v);',
-      );
-
-      if (param.isOptionalNamed && bsn.endsWith("?")) {
-        withs.writeln(
-          '  ${clazz.name} delete${name.capitalize()}() => copyWith(delete${name.capitalize()}: _T);',
+      if (baseType == "int") {
+        buf.writeln(
+          '    ${builder.applyDefsF("int")}? delta${name.capitalize()},',
         );
       }
-
-      if (param.hasDefaultValue) {
-        withs.writeln(
-          '  ${clazz.name} reset${name.capitalize()}() => copyWith(reset${name.capitalize()}: _T);',
-        );
-      }
-
-      if (bs == "int") {
-        withs.writeln(
-          '  ${clazz.name} increment${name.capitalize()}(${builder.applyDefsF("int")} v) => copyWith(${param.name}:${bsn.endsWith("?") ? "($name??0)+v" : "$name+v"});',
-        );
-        withs.writeln(
-          '  ${clazz.name} decrement${name.capitalize()}(${builder.applyDefsF("int")} v) => copyWith(${param.name}:${bsn.endsWith("?") ? "($name??0)-v" : "$name-v"});',
-        );
-      }
-      if (bs == "double") {
-        withs.writeln(
-          '  ${clazz.name} increment${name.capitalize()}(${builder.applyDefsF("double")} v) => copyWith(${param.name}:${bsn.endsWith("?") ? "($name??0)+v" : "$name+v"});',
-        );
-        withs.writeln(
-          '  ${clazz.name} decrement${name.capitalize()}(${builder.applyDefsF("double")} v) => copyWith(${param.name}:${bsn.endsWith("?") ? "($name??0)-v" : "$name-v"});',
+      if (baseType == "double") {
+        buf.writeln(
+          '    ${builder.applyDefsF("double")}? delta${name.capitalize()},',
         );
       }
     }
@@ -104,28 +79,38 @@ class $ArtifactCopyWithComponent implements $ArtifactBuilderOutput {
     buf.writeln('    => ${clazz.name}(');
     for (ParameterElement param in params) {
       String name = param.name;
-      String j = "";
       String bsn = param.type.getDisplayString(withNullability: true);
-      ;
+
+      String pref = "";
+      String nd = bsn.endsWith("?") ? " ?? 0" : "";
+      String bs = param.type.getDisplayString(withNullability: false);
+      if (bs == "int") {
+        pref =
+            "delta${name.capitalize()} != null ? ($name ?? _t.$name$nd) + delta${name.capitalize()} : ";
+      }
+
+      if (bs == "double") {
+        pref =
+            "delta${name.capitalize()} != null ? ($name ?? _t.$name$nd) + delta${name.capitalize()} : ";
+      }
 
       if (param.isOptionalNamed && bsn.endsWith("?") && param.hasDefaultValue) {
         buf.writeln(
-          '      $name: delete${name.capitalize()} ? null : reset${name.capitalize()} ? ${param.defaultValueCode} : ($name ?? _t.$name),',
+          '      $name: $pref delete${name.capitalize()} ? null : reset${name.capitalize()} ? ${param.defaultValueCode} : ($name ?? _t.$name),',
         );
       } else if (param.isOptionalNamed && bsn.endsWith("?")) {
         buf.writeln(
-          '      $name: delete${name.capitalize()} ? null : ($name ?? _t.$name),',
+          '      $name: $pref delete${name.capitalize()} ? null : ($name ?? _t.$name),',
         );
       } else if (param.hasDefaultValue) {
         buf.writeln(
-          '      $name: reset${name.capitalize()} ? ${param.defaultValueCode} : ($name ?? _t.$name),',
+          '      $name: $pref reset${name.capitalize()} ? ${param.defaultValueCode} : ($name ?? _t.$name),',
         );
       } else {
-        buf.writeln('      $name: $name ?? _t.$name,');
+        buf.writeln('      $name: $pref$name ?? _t.$name,');
       }
     }
     buf.writeln('    );');
-    buf.writeln(withs);
 
     return (importUris, buf);
   }

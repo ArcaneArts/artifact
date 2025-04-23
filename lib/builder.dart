@@ -49,6 +49,7 @@ class ArtifactBuilder implements Builder {
     r'$lib$': <String>['gen/artifacts.gen.dart'],
   };
 
+  bool compression = true;
   late final ArtifactTypeConverter converter;
   static Glob $dartFilesInLib = Glob('lib/**.dart');
   static final TypeChecker $artifactChecker = TypeChecker.fromRuntime(Artifact);
@@ -75,12 +76,15 @@ class ArtifactBuilder implements Builder {
       .$artifactChecker
       .hasAnnotationOf(type.element, throwOnUnresolved: false);
 
-  bool useDefs = true;
   Map<String, String> defs = {};
   List<String> strDD = [];
   int ci = 0;
 
   void registerDef(String typeName) {
+    if (typeName.startsWith("_")) {
+      return;
+    }
+
     if (defs.values.contains(typeName)) {
       return;
     }
@@ -90,7 +94,7 @@ class ArtifactBuilder implements Builder {
   }
 
   String stringD(String at) {
-    if (useDefs && at.length > 3) {
+    if (compression && at.length > 3) {
       int? index = strDD.indexOf(at);
       if (index == -1) {
         strDD.add(at);
@@ -219,14 +223,14 @@ class ArtifactBuilder implements Builder {
                 .join('\n'),
           )
           ..writeln(
-            useDefs
+            compression
                 ? defs.entries
                     .map((i) => "typedef ${i.key} = ${i.value};")
                     .join("\n")
                 : "",
           )
           ..writeln(
-            useDefs
+            compression
                 ? "${applyDefsF("List<String>")} _S = [${strDD.map((i) => "'$i'").join(",")}];"
                 : "",
           )
@@ -285,7 +289,7 @@ class ArtifactBuilder implements Builder {
   }
 
   String applyDefs(String sr) {
-    if (!useDefs) return sr;
+    if (!compression) return sr;
 
     for (String i in defs.keys) {
       String def = defs[i]!;
