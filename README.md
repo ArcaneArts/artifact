@@ -12,6 +12,7 @@ import 'package:artifact/artifact.dart';
 ```dart
 @artifact // Artifact is all you need!
 class Animal {
+  @rename("hp")
   final int health;
   String? someNonSerializableField;
   
@@ -28,7 +29,7 @@ Let's add two subclasses for animals
 class Dog extends Animal {
   final bool goodBoy;
 
-  const Dog({super.health = 125, this.goodBoy = true});
+  const Dog({@rename("hp") super.health = 125, this.goodBoy = true});
 }
 ```
 
@@ -37,7 +38,7 @@ class Dog extends Animal {
 class Cat extends Animal {
   final int lives;
   
-  const Cat({super.health = 70, this.lives = 9});
+  const Cat({@rename("hp") super.health = 70, this.lives = 9});
 }
 ```
 
@@ -70,12 +71,12 @@ print(jsonEncode(world.toMap()));
   "animals": [
     {
       "_subclass_Animal": "Dog",
-      "health": 125,
+      "hp": 125,
       "goodBoy": true
     },
     {
       "_subclass_Animal": "Cat",
-      "health": 50,
+      "hp": 50,
       "lives": 8
     }
   ]

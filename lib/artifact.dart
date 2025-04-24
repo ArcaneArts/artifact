@@ -16,3 +16,9 @@ class codec {
 
   const codec(this.c);
 }
+
+class rename {
+  final String newName;
+
+  const rename(this.newName);
+}

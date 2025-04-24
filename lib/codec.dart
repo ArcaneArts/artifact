@@ -89,6 +89,9 @@ class ArtifactCodecUtil {
     return o;
   }
 
+  static Map<K, V> fe<K, V>(Iterable<MapEntry<K, V>> entries) =>
+      Map.fromEntries(entries);
+
   static Object? da(Object? o, Type into) {
     _;
     for ((Type, Type) i in $artifactCodecs.keys) {

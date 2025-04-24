@@ -54,6 +54,7 @@ class ArtifactBuilder implements Builder {
   static Glob $dartFilesInLib = Glob('lib/**.dart');
   static final TypeChecker $artifactChecker = TypeChecker.fromRuntime(Artifact);
   static final TypeChecker $codecChecker = TypeChecker.fromRuntime(codec);
+  static final TypeChecker $renameChecker = TypeChecker.fromRuntime(rename);
   static final Map<String, List<String>> $artifactSubclasses =
       <String, List<String>>{};
 
@@ -78,6 +79,7 @@ class ArtifactBuilder implements Builder {
 
   Map<String, String> defs = {};
   List<String> strDD = [];
+  List<String> valDD = [];
   int ci = 0;
 
   void registerDef(String typeName) {
@@ -104,6 +106,47 @@ class ArtifactBuilder implements Builder {
     }
 
     return "'$at'";
+  }
+
+  String valD(String at, DartType th) {
+    at = at.trim();
+    if (compression && at.length > 3) {
+      String ds = th.getDisplayString();
+      if ((ds.startsWith("Set<") ||
+              ds.startsWith("Map<") ||
+              ds.startsWith("List<")) &&
+          (at.endsWith("}") || at.endsWith("]"))) {
+        at = " $at ".replaceAll(" const ", "").trim();
+        String fa = (th as InterfaceType).typeArguments[0].getDisplayString(
+          withNullability: false,
+        );
+        registerDef(fa);
+        String fa1 =
+            "${applyDefsF(fa)}${th.typeArguments[0].getDisplayString(withNullability: true).endsWith("?") ? "?" : ""}";
+        if (ds.startsWith("Set<")) {
+          at = "<$fa1>$at";
+        } else if (ds.startsWith("List<")) {
+          at = "<$fa1>$at";
+        } else if (ds.startsWith("Map<")) {
+          String sa = th.typeArguments[1].getDisplayString(
+            withNullability: false,
+          );
+          registerDef(sa);
+          String sa1 =
+              "${applyDefsF(sa)}${th.typeArguments[1].getDisplayString(withNullability: true).endsWith("?") ? "?" : ""}";
+          at = "<$fa1,$sa1>$at";
+        }
+      }
+
+      int? index = valDD.indexOf(at);
+      if (index == -1) {
+        valDD.add(at);
+        index = valDD.length - 1;
+      }
+      return "_V[$index]";
+    }
+
+    return "$at";
   }
 
   @override
@@ -193,17 +236,18 @@ class ArtifactBuilder implements Builder {
     String codecRegistry = "const ${applyDefsF("int")} _ = 0;";
     if (codecs.isNotEmpty) {
       StringBuffer sb = StringBuffer();
-      sb.writeln("${applyDefsF("int")} _ = ((){");
-      sb.writeln(
-        "  ${applyDefsF("ArtifactCodecUtil")}.r(const [${codecs.join(",")}]);",
+      sb.write("${applyDefsF("int")} _ = ((){");
+      sb.write(
+        "${applyDefsF("ArtifactCodecUtil")}.r(const [${codecs.join(",")}]);",
       );
-      sb.writeln("  return 0;");
-      sb.writeln("})();");
+      sb.write("return 0;");
+      sb.write("})();");
       codecRegistry = sb.toString();
     }
 
     await Future.wait(work);
-
+    registerDef("List<dynamic>");
+    imports.add(Uri.parse("package:artifact/artifact.dart"));
     StringBuffer outBuf =
         StringBuffer()
           ..writeln('// GENERATED – do not modify by hand\n')
@@ -211,7 +255,9 @@ class ArtifactBuilder implements Builder {
             [
               "camel_case_types",
               "non_constant_identifier_names",
+              "constant_identifier_names",
               "library_private_types_in_public_api",
+              "unused_element",
             ].map((i) => "// ignore_for_file: $i").join("\n"),
           )
           ..writeln(
@@ -220,22 +266,25 @@ class ArtifactBuilder implements Builder {
                 .map((i) => 'import "$i";')
                 .toSet()
                 .toList()
-                .join('\n'),
+                .join(),
           )
           ..writeln(
             compression
-                ? defs.entries
-                    .map((i) => "typedef ${i.key} = ${i.value};")
-                    .join("\n")
+                ? defs.entries.map((i) => "typedef ${i.key}=${i.value};").join()
                 : "",
           )
-          ..writeln(
+          ..write(
             compression
-                ? "${applyDefsF("List<String>")} _S = [${strDD.map((i) => "'$i'").join(",")}];"
+                ? "const ${applyDefsF("List<String>")} _S=[${strDD.map((i) => "'$i'").join(",")}];"
                 : "",
           )
-          ..writeln("const bool _T = true;")
-          ..writeln("const bool _F = false;")
+          ..write(
+            compression
+                ? "const ${applyDefsF("List<dynamic>")} _V=[${valDD.map((i) => " $i ".replaceAll(" const ", "").trim()).join(",")}];"
+                : "",
+          )
+          ..write("const ${applyDefsF("bool")} _T=true;")
+          ..write("const ${applyDefsF("bool")} _F=false;")
           ..writeln(codecRegistry);
 
     StringBuffer mainBuf = StringBuffer();
@@ -270,8 +319,8 @@ class ArtifactBuilder implements Builder {
   Future<$BuildOutput> generate(ClassElement clazz) async => (
         <Uri>[],
         StringBuffer()
-          ..writeln("extension \$${clazz.name} on ${applyDefsF(clazz.name)} {")
-          ..writeln("  ${applyDefsF(clazz.name)} get _t => this;"),
+          ..writeln("extension \$${clazz.name} on ${applyDefsF(clazz.name)}{")
+          ..writeln("  ${applyDefsF(clazz.name)} get _t=>this;"),
       )
       .mergeWith(
         await Future.wait([

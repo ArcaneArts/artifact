@@ -1,3 +1,8 @@
+# 1.0.7
+* Support for renaming fields
+* Default Value deduplication
+* Even more compression
+
 # 1.0.6
 * Fixes
 

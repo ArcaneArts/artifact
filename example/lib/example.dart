@@ -1,25 +1,17 @@
-import 'dart:convert';
-
 import 'package:artifact/artifact.dart';
-import 'package:example/gen/artifacts.gen.dart';
 
 @artifact
-class AllFields {
-  final int finalX;
-  final int finalDefX;
-  final int? nullX;
-  final int? defX;
+class Animal {
+  final int health;
 
-  const AllFields({
-    required this.finalX,
-    this.nullX,
-    this.defX = 4,
-    this.finalDefX = 99,
-  });
+  const Animal({@rename("hp") required this.health});
 }
 
-void main() {
-  print(jsonEncode(jsonDecode(AllFields(finalX: 19).toJson())));
+@artifact
+class Dog extends Animal {
+  final bool goodBoy;
 
-  AllFields f = AllFields(finalX: 10);
+  const Dog({required this.goodBoy, required super.health});
 }
+
+void main() {}

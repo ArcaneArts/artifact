@@ -81,11 +81,11 @@ class ArtifactTypeConverter {
         targetLib,
         mode,
       ); // recurse
-      String fn = elementName == 'List' ? 'toList()' : 'toSet()';
+      String fn = elementName == 'List' ? '\$l' : '\$s';
       if (mode == $ArtifactConvertMode.toMap) {
         return (
           code: builder.applyDefs(
-            ' $expr$nullOp.map((e) => ${conv.code}).$fn${nullable ? '' : ''}',
+            ' $expr$nullOp.\$m((e)=>${conv.code}).$fn${nullable ? '' : ''}',
           ),
           imports: [...imports, ...conv.imports],
         );
@@ -93,7 +93,7 @@ class ArtifactTypeConverter {
         builder.registerDef(elementName);
         return (
           code: builder.applyDefs(
-            ' ($expr as ${builder.applyDefsF(elementName)}).map((e) => ${conv.code}).$fn${nullable ? '' : ''}',
+            ' ($expr as ${builder.applyDefsF(elementName)}).\$m((e)=>${conv.code}).$fn${nullable ? '' : ''}',
           ),
           imports: [...imports, ...conv.imports],
         );
@@ -110,6 +110,7 @@ class ArtifactTypeConverter {
         mode,
       );
 
+      builder.registerDef("MapEntry");
       String ft =
           "MapEntry<${type.typeArguments[0].getDisplayString(withNullability: true)}, ${type.typeArguments[1].getDisplayString(withNullability: true)}>";
       builder.registerDef(ft);
@@ -118,7 +119,7 @@ class ArtifactTypeConverter {
       if (mode == $ArtifactConvertMode.toMap) {
         return (
           code: builder.applyDefs(
-            ' $expr$nullOp.map((k, v) => ${builder.applyDefsF("MapEntry")}(k, ${conv.code}))${nullable ? '' : ''}',
+            ' $expr$nullOp.\$m((k,v)=>${builder.applyDefsF("MapEntry")}(k,${conv.code}))${nullable ? '' : ''}',
           ),
           imports: [...imports, ...conv.imports],
         );
@@ -126,7 +127,7 @@ class ArtifactTypeConverter {
         builder.registerDef("MapEntry");
         return (
           code: builder.applyDefs(
-            ' Map.fromEntries(($expr as ${builder.applyDefsF("Map")}).\$e.\$m((e) => $ft(e.key, ${conv.code})))${nullable ? '' : ''}',
+            ' ${builder.applyDefsF("ArtifactCodecUtil")}.fe(($expr as ${builder.applyDefsF("Map")}).\$e.\$m((e)=>$ft(e.key,${conv.code})))${nullable ? '' : ''}',
           ),
           imports: [...imports, ...conv.imports],
         );

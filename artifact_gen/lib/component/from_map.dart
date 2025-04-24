@@ -2,6 +2,7 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:artifact_gen/builder.dart';
+import 'package:toxic/extensions/iterable.dart';
 
 class $ArtifactFromMapComponent implements $ArtifactBuilderOutput {
   const $ArtifactFromMapComponent();
@@ -33,30 +34,28 @@ class $ArtifactFromMapComponent implements $ArtifactBuilderOutput {
     LibraryElement targetLib = clazz.library;
 
     buf.writeln(
-      "  static ${builder.applyDefsF(clazz.name)} fromJson(String j) => fromMap(${builder.applyDefsF("ArtifactCodecUtil")}.o(j));",
+      "  static ${builder.applyDefsF(clazz.name)} fromJson(String j)=>fromMap(${builder.applyDefsF("ArtifactCodecUtil")}.o(j));",
     );
-    buf.writeln(
-      '  static ${builder.applyDefsF(clazz.name)} fromMap(${builder.applyDefsF("Map<String, dynamic>")} map) {',
+    buf.write(
+      '  static ${builder.applyDefsF(clazz.name)} fromMap(${builder.applyDefsF("Map<String, dynamic>")} m){',
     );
-    buf.writeln("    _;");
+    buf.write("_;");
     List<String>? subs = ArtifactBuilder.$artifactSubclasses[clazz.name];
     if (subs != null && subs.isNotEmpty) {
-      buf.writeln(
-        "    if (map.\$c(${builder.stringD('_subclass_${clazz.name}')})) {",
+      buf.write("if(m.\$c(${builder.stringD('_subclass_${clazz.name}')})){");
+      buf.write(
+        "String sub=m[${builder.stringD('_subclass_${clazz.name}')}] as ${builder.applyDefsF("String")};",
       );
-      buf.writeln(
-        "      String sub = map[${builder.stringD('_subclass_${clazz.name}')}] as ${builder.applyDefsF("String")};",
-      );
-      buf.writeln('      switch (sub) {');
+      buf.write('switch(sub){');
       for (String s in subs) {
-        buf.writeln("        case ${builder.stringD('$s')}:");
-        buf.writeln('          return \$$s.fromMap(map);');
+        buf.write("case ${builder.stringD('$s')}:");
+        buf.write('return \$$s.fromMap(m);');
       }
-      buf.writeln('      }');
-      buf.writeln('    }');
+      buf.write('}');
+      buf.write('}');
     }
 
-    buf.writeln('    return ${clazz.name}(');
+    buf.write('return ${builder.applyDefsF(clazz.name)}(');
 
     List<String> positionalArgs = <String>[];
     List<String> namedArgs = <String>[];
@@ -69,7 +68,32 @@ class $ArtifactFromMapComponent implements $ArtifactBuilderOutput {
           param.isRequiredNamed ||
           param.isRequiredPositional ||
           (!isNullable && param.defaultValueCode == null);
-      String rawExpr = "map[${builder.stringD('$name')}]";
+
+      String? rn;
+      FieldElement? field = clazz.fields.select((i) => i.name == param.name);
+
+      if (field != null &&
+          ArtifactBuilder.$renameChecker.hasAnnotationOf(
+            field,
+            throwOnUnresolved: false,
+          )) {
+        rn =
+            ArtifactBuilder.$renameChecker
+                .firstAnnotationOf(field, throwOnUnresolved: false)!
+                .getField("newName")!
+                .toStringValue();
+      } else if (ArtifactBuilder.$renameChecker.hasAnnotationOf(
+        param,
+        throwOnUnresolved: false,
+      )) {
+        rn =
+            ArtifactBuilder.$renameChecker
+                .firstAnnotationOf(param, throwOnUnresolved: false)!
+                .getField("newName")!
+                .toStringValue();
+      }
+
+      String rawExpr = "m[${builder.stringD(rn ?? name)}]";
 
       ({String code, List<Uri> imports}) conv = builder.converter.$convert(
         rawExpr,
@@ -83,11 +107,14 @@ class $ArtifactFromMapComponent implements $ArtifactBuilderOutput {
       if (isRequired) {
         builder.registerDef("ArgumentError");
         valueExpr =
-            "map.\$c(${builder.stringD('$name')}) ? ${conv.code} : (throw ${builder.applyDefsF("ArgumentError")}('\${${builder.stringD("Missing required ${clazz.name}.\"$name\" in map ")}}\$map.'))";
+            "m.\$c(${builder.stringD('$name')})?${conv.code}:(throw ${builder.applyDefsF("ArgumentError")}('\${${builder.stringD("Missing required ${clazz.name}.\"$name\" in map ")}}\$m.'))";
       } else {
-        String defaultCode = param.defaultValueCode ?? 'null';
+        String defaultCode =
+            param.defaultValueCode == null
+                ? 'null'
+                : builder.valD(param.defaultValueCode.toString(), param.type);
         valueExpr =
-            "map.\$c(${builder.stringD('$name')}) ? ${conv.code} : $defaultCode";
+            "m.\$c(${builder.stringD('$name')}) ? ${conv.code} : $defaultCode";
       }
 
       if (param.isNamed) {
@@ -98,14 +125,14 @@ class $ArtifactFromMapComponent implements $ArtifactBuilderOutput {
     }
 
     for (String a in positionalArgs) {
-      buf.writeln('      $a,');
+      buf.write('$a,');
     }
     for (String a in namedArgs) {
-      buf.writeln('      $a,');
+      buf.write('$a,');
     }
 
-    buf.writeln('    );');
-    buf.writeln('  }');
+    buf.write(');');
+    buf.writeln('}');
     return (importUris, buf);
   }
 }
