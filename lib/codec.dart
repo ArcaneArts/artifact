@@ -24,6 +24,28 @@ class ArtifactCodecUtil {
 
   static Map<String, dynamic> o(String j) => jsonDecode(j);
 
+  static T p<T>(dynamic l) {
+    if (T == String) {
+      return l.toString() as T;
+    }
+
+    if (T == int) {
+      return int.parse(l.toString()) as T;
+    }
+
+    if (T == double) {
+      return double.parse(l.toString()) as T;
+    }
+
+    if (T == bool) {
+      return (l.toString().toLowerCase() == "true") as T;
+    }
+
+    throw ArgumentError(
+      "Cannot parse $l (${l.runtimeType}) to ${T.toString()}",
+    );
+  }
+
   static dynamic e(List<dynamic> e, dynamic i) {
     if (i == null) {
       return null;

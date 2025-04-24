@@ -105,6 +105,7 @@ class ArtifactTypeConverter {
 
     if (elementName == 'Map' && type.typeArguments.length == 2) {
       DartType valueT = type.typeArguments[1];
+      DartType k = type.typeArguments[0];
       _addImport(valueT);
       ({String code, List<Uri> imports}) conv = $convert(
         mode == $ArtifactConvertMode.fromMap ? 'e.value' : 'v',
@@ -120,17 +121,30 @@ class ArtifactTypeConverter {
       ft = builder.applyDefsF(ft);
 
       if (mode == $ArtifactConvertMode.toMap) {
+        String xk = "k";
+
+        if (k.getDisplayString(withNullability: false) != "String") {
+          xk = "'$k'";
+        }
+
         return (
           code: builder.applyDefs(
-            ' $expr$nullOp.\$m((k,v)=>${builder.applyDefsF("MapEntry")}(k,${conv.code}))${nullable ? '' : ''}',
+            ' $expr$nullOp.\$m((k,v)=>${builder.applyDefsF("MapEntry")}($xk,${conv.code}))${nullable ? '' : ''}',
           ),
           imports: [...imports, ...conv.imports],
         );
       } else {
         builder.registerDef("MapEntry");
+        String ik = "e.key";
+
+        if (k.getDisplayString(withNullability: false) != "String") {
+          ik =
+              "${builder.applyDefsF("ArtifactCodecUtil")}.p<${builder.applyDefsF(k.getDisplayString(withNullability: false))}>($ik)";
+        }
+
         return (
           code: builder.applyDefs(
-            ' ${builder.applyDefsF("ArtifactCodecUtil")}.fe(($expr as ${builder.applyDefsF("Map")}).\$e.\$m((e)=>$ft(e.key,${conv.code})))${nullable ? '' : ''}',
+            ' ${builder.applyDefsF("ArtifactCodecUtil")}.fe(($expr as ${builder.applyDefsF("Map")}).\$e.\$m((e)=>$ft($ik,${conv.code})))${nullable ? '' : ''}',
           ),
           imports: [...imports, ...conv.imports],
         );
