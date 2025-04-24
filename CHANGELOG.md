@@ -1,3 +1,9 @@
+# 1.0.6
+* Fixes
+
+# 1.0.5
+* Fix from map artifact self recurse bug
+
 # 1.0.4
 * Copywith Deltas
 * Removed change functions

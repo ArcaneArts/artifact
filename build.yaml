@@ -1,6 +1,6 @@
 builders:
-  artifact_builder:
-    import: "package:artifact/artifact.dart"
+  artifact:
+    import: "package:artifact_gen/artifact_gen.dart"
     builder_factories: ["artifactBuilderBuildRunner"]
     build_extensions: { r"$lib$": ["gen/artifacts.gen.dart"] }
     auto_apply: dependents

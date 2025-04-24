@@ -1,6 +1,6 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
-import 'package:artifact/builder.dart';
+import 'package:artifact_gen/builder.dart';
 
 class $ArtifactToMapComponent implements $ArtifactBuilderOutput {
   const $ArtifactToMapComponent();

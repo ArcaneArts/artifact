@@ -8,12 +8,15 @@ environment:
 
 # Add regular dependencies here.
 dependencies:
-  artifact:
-    path: ../
+  artifact: ^1.0.6
   dart_mappable: ^4.5.0
   fast_log: ^1.0.7
-
+dependency_overrides: 
+  artifact:
+    path: ../
 dev_dependencies:
+  artifact_gen:
+    path: ../artifact_gen
   build_runner: ^2.4.15
   dart_mappable_builder: ^4.5.0
   lints: ^5.0.0

@@ -1,7 +1,7 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
-import 'package:artifact/builder.dart';
+import 'package:artifact_gen/builder.dart';
 
 class ArtifactTypeConverter {
   final ArtifactBuilder builder;
@@ -47,7 +47,7 @@ class ArtifactTypeConverter {
         String name = type.element.name;
         return (
           code:
-              '\$${name}.fromMap(($expr) as ${builder.applyDefsF("Map<String, dynamic>")})${nullable ? '?' : ''}',
+              '\$${name}.fromMap(($expr) as ${builder.applyDefsF("Map<String, dynamic>")})',
           imports: imports,
         );
       }

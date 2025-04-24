@@ -1,5 +1,10 @@
 Map objects to maps or json without part files or any nonsense! Just an annotation!
 
+```
+flutter pub add artifact
+flutter pub add artifact_gen --dev
+```
+
 ```dart
 import 'package:artifact/artifact.dart';
 ```

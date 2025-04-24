@@ -1,0 +1,1 @@
+This is the generator for [artifact](https://pub.dev/packages/artifact) package.
