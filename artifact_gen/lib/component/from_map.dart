@@ -37,21 +37,20 @@ class $ArtifactFromMapComponent implements $ArtifactBuilderOutput {
       "  static ${builder.applyDefsF(clazz.name)} fromJson(String j)=>fromMap(${builder.applyDefsF("ArtifactCodecUtil")}.o(j));",
     );
     buf.write(
-      '  static ${builder.applyDefsF(clazz.name)} fromMap(${builder.applyDefsF("Map<String, dynamic>")} m){',
+      '  static ${builder.applyDefsF(clazz.name)} fromMap(${builder.applyDefsF("Map<String, dynamic>")} r){',
     );
     buf.write("_;");
+    buf.write("${builder.applyDefsF("Map<String, dynamic>")} m=r.\$nn;");
     List<String>? subs = ArtifactBuilder.$artifactSubclasses[clazz.name];
     if (subs != null && subs.isNotEmpty) {
       buf.write("if(m.\$c(${builder.stringD('_subclass_${clazz.name}')})){");
       buf.write(
-        "String sub=m[${builder.stringD('_subclass_${clazz.name}')}] as ${builder.applyDefsF("String")};",
+        "String _I=m[${builder.stringD('_subclass_${clazz.name}')}] as ${builder.applyDefsF("String")};",
       );
-      buf.write('switch(sub){');
       for (String s in subs) {
-        buf.write("case ${builder.stringD('$s')}:");
-        buf.write('return \$$s.fromMap(m);');
+        buf.write("if(_I==${builder.stringD('$s')}){");
+        buf.write('return \$$s.fromMap(m);}');
       }
-      buf.write('}');
       buf.write('}');
     }
 

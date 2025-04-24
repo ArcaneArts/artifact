@@ -40,8 +40,8 @@ class $ArtifactToMapComponent implements $ArtifactBuilderOutput {
     List<String>? subs = ArtifactBuilder.$artifactSubclasses[clazz.name];
     if (subs != null && subs.isNotEmpty) {
       for (String sub in subs) {
-        buf.write('if (_t is ${builder.applyDefsF(sub)}){');
-        buf.write('return (_t as ${builder.applyDefsF(sub)}).toMap();');
+        buf.write('if (_H is ${builder.applyDefsF(sub)}){');
+        buf.write('return (_H as ${builder.applyDefsF(sub)}).toMap();');
         buf.write('}');
       }
     }
@@ -102,7 +102,7 @@ class $ArtifactToMapComponent implements $ArtifactBuilderOutput {
       importUris.addAll(conv.imports);
     }
 
-    buf.write('};');
+    buf.write('}.\$nn;');
     buf.writeln('}');
 
     return (importUris, buf);

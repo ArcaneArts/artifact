@@ -5,6 +5,18 @@ extension XMap<K, V> on Map<K, V> {
 
   Map<K2, V2> $m<K2, V2>(MapEntry<K2, V2> convert(K key, V value)) =>
       map(convert);
+
+  Map<K, V> get $nn {
+    try {
+      removeWhere((k, v) => v == null);
+      return this;
+    } catch (e) {}
+
+    return {
+      for (K k in keys)
+        if (this[k] != null) k: this[k]!,
+    };
+  }
 }
 
 extension XIterable<V> on Iterable<V> {

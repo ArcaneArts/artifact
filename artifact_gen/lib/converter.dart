@@ -91,9 +91,12 @@ class ArtifactTypeConverter {
         );
       } else {
         builder.registerDef(elementName);
+        String jName = elementName == "Set" ? "List" : elementName;
+        builder.registerDef(jName);
+
         return (
           code: builder.applyDefs(
-            ' ($expr as ${builder.applyDefsF(elementName)}).\$m((e)=>${conv.code}).$fn${nullable ? '' : ''}',
+            ' ($expr as ${builder.applyDefsF(jName)}).\$m((e)=>${conv.code}).$fn${nullable ? '' : ''}',
           ),
           imports: [...imports, ...conv.imports],
         );

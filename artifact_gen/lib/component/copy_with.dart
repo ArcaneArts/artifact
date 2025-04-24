@@ -93,28 +93,34 @@ class $ArtifactCopyWithComponent implements $ArtifactBuilderOutput {
       String bs = param.type.getDisplayString(withNullability: false);
       if (bs == "int") {
         pref =
-            "delta${name.capitalize()}!=null?($name??_t.$name$nd)+delta${name.capitalize()}:";
+            "delta${name.capitalize()}!=null?($name??_H.$name$nd)+delta${name.capitalize()}:";
       }
 
       if (bs == "double") {
         pref =
-            "delta${name.capitalize()}!=null?($name??_t.$name$nd)+delta${name.capitalize()}:";
+            "delta${name.capitalize()}!=null?($name??_H.$name$nd)+delta${name.capitalize()}:";
       }
 
       String o = "";
 
       if (param.isOptionalNamed && bsn.endsWith("?") && param.hasDefaultValue) {
-        o = '${pref}delete${name.capitalize()}?null:reset${name.capitalize()} ? ${builder.valD(param.defaultValueCode.toString(), param.type)}:($name??_t.$name),';
+        o = '${pref}delete${name.capitalize()}?null:reset${name.capitalize()} ? ${builder.valD(param.defaultValueCode.toString(), param.type)}:($name??_H.$name),';
       } else if (param.isOptionalNamed && bsn.endsWith("?")) {
-        o = '${pref}delete${name.capitalize()}?null:($name??_t.$name),';
+        o = '${pref}delete${name.capitalize()}?null:($name??_H.$name),';
       } else if (param.hasDefaultValue) {
-        o = '${pref}reset${name.capitalize()}?${builder.valD(param.defaultValueCode.toString(), param.type)}:($name??_t.$name),';
+        o = '${pref}reset${name.capitalize()}?${builder.valD(param.defaultValueCode.toString(), param.type)}:($name??_H.$name),';
       } else {
-        o = '$pref$name??_t.$name,';
+        o = '$pref$name??_H.$name,';
       }
 
       if (bs.startsWith("List<") || bs.startsWith("Set<")) {
-        o = "(${o.substring(0, o.length - 1)})?.\$u(append${name.capitalize()},remove${name.capitalize()}),";
+        String gn = "";
+
+        if (param.type.getDisplayString(withNullability: true).endsWith("?")) {
+          gn = "?";
+        }
+
+        o = "(${o.substring(0, o.length - 1)})$gn.\$u(append${name.capitalize()},remove${name.capitalize()}),";
       }
 
       buf.write('$name: $o');

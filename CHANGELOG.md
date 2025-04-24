@@ -1,3 +1,9 @@
+# 1.0.9
+* Fixes
+
+# 1.0.8
+* Fixes
+
 # 1.0.7
 * Support for renaming fields
 * Default Value deduplication

@@ -320,7 +320,7 @@ class ArtifactBuilder implements Builder {
         <Uri>[],
         StringBuffer()
           ..writeln("extension \$${clazz.name} on ${applyDefsF(clazz.name)}{")
-          ..writeln("  ${applyDefsF(clazz.name)} get _t=>this;"),
+          ..writeln("  ${applyDefsF(clazz.name)} get _H=>this;"),
       )
       .mergeWith(
         await Future.wait([
