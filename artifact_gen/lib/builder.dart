@@ -4,6 +4,7 @@ import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:artifact/artifact.dart';
+import 'package:artifact_gen/component/attach.dart';
 import 'package:artifact_gen/component/copy_with.dart';
 import 'package:artifact_gen/component/from_map.dart';
 import 'package:artifact_gen/component/to_map.dart';
@@ -327,6 +328,7 @@ class ArtifactBuilder implements Builder {
           const $ArtifactToMapComponent().onGenerate(this, clazz),
           const $ArtifactFromMapComponent().onGenerate(this, clazz),
           const $ArtifactCopyWithComponent().onGenerate(this, clazz),
+          const $ArtifactAttachComponent().onGenerate(this, clazz),
         ]).then((i) => i.merged),
       )
       .mergeWith((<Uri>[], StringBuffer()..write("}")));

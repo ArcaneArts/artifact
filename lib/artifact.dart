@@ -22,3 +22,9 @@ class rename {
 
   const rename(this.newName);
 }
+
+class attach<T> {
+  final T data;
+
+  const attach(this.data);
+}

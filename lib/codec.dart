@@ -8,6 +8,13 @@ int _ =
       return 0;
     })();
 
+class $At<T, R> {
+  final T data;
+  final R value;
+
+  const $At(this.data, this.value);
+}
+
 Map<(Type, Type), ArtifactCodec> $artifactCodecs = {
   (String, String): const ANOOPCodec(),
   (int, int): const ANOOPCodec(),
@@ -19,6 +26,9 @@ bool $isPrimitive(Object? o) =>
     o == null || o is String || o is int || o is double || o is bool;
 
 class ArtifactCodecUtil {
+  static Iterable<R> a<T, R>(T t, List<$At> a) =>
+      a.where((i) => i.data == t).map((i) => i.value);
+
   static String j(bool p, Map<String, dynamic> Function() map) =>
       p ? const JsonEncoder.withIndent("  ").convert(map()) : jsonEncode(map());
 

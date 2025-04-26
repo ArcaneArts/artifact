@@ -46,7 +46,7 @@ class $ArtifactCopyWithComponent implements $ArtifactBuilderOutput {
               : builder.applyDefsF(baseType);
       String forceNullType = "${builder.applyDefsF(baseType)}?";
 
-      buf.write('    $forceNullType $name,');
+      buf.write('$forceNullType $name,');
       builder.registerDef("bool");
       if (param.isOptionalNamed && fullType.endsWith("?")) {
         buf.write(

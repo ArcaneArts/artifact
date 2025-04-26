@@ -1,14 +1,10 @@
 Map objects to maps or json without part files or any nonsense! Just an annotation!
-
 ```
 flutter pub add artifact
 flutter pub add artifact_gen --dev
 ```
 
-```dart
-import 'package:artifact/artifact.dart';
-```
-
+Make the model class
 ```dart
 @artifact // Artifact is all you need!
 class Animal {
@@ -87,6 +83,94 @@ CopyWith also exists since artifacts are immutable
 
 You deserialize with the generated extension
 ```dart
-$Animal.fromMap(...);
+Animal animal = $Animal.fromMap(...)
+    // Add 10 hp
+    .copyWith(deltaHp: 10);
+
+if(animal is Cat) {
+  // Add a life
+  (animal as Cat).copyWith(deltaLives: 1);
+}
 ```
 
+## Attachments
+
+```class
+@attach("Any const object")
+@artifact
+class SomeModel {
+    @attach(42)
+    final String name;
+    
+    @attach(const SomeClassData())
+    final int age;
+    
+    const SomeModel({
+        this.name = "John Doe",
+        this.age = 0,
+    });
+}
+```
+
+Then you can get via attachments
+```dart
+List<dynamic> all = $SomeModel.rootAttachments;
+
+// Or get field by attachment
+SomeModel m = SomeModel(name: "Dan", age: 2);
+
+String n = m.getAttachment<int, String>(42);
+// n = "Dan
+```
+
+## Custom Attachments
+You can simply extend the attachment class to make it simpler to work with and utilize
+
+```dart
+// First we define a data class or enum to signal information
+enum UiComponentType {
+  title,
+  subtitle,
+}
+
+// Then we extend annotations on attachment
+class UITitle extends attachment{
+  const UITitle(super.data = UiComponentType.title);
+}
+
+class UISubtitle extends attachment{
+  const UIComponent(super.data = UiComponentType.subtitle);
+}
+
+// These are optional if you want to skip the ()
+const uititle = UITitle();
+const uisubtitle = UISubtitle();
+```
+
+Then we can use it in our models as annotations
+
+```dart
+@artifact
+class Person {
+  @uititle
+  final String name;
+  
+  @uisubtitle
+  final String email;
+  
+  const Person({required this.name, required this.email});
+}
+```
+
+Now, we can use it!
+
+```dart
+List<User> users = ...
+
+Widget build(BuildContext context) => ListView(children: [
+  ...users.map((i) => ListTile(
+    title: Text(i.getAttachment(UiComponentType.title)),
+    subtitle: Text(i.getAttachment(UiComponentType.subtitle)),
+  ))
+]);
+```

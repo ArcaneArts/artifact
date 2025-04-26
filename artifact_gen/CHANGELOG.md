@@ -1,3 +1,6 @@
+# 1.0.5
+* Fixes & Support for Artifact 1.0.11
+
 # 1.0.4
 * Fixes & Support for Artifact 1.0.10
 

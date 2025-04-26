@@ -25,6 +25,8 @@ extension XIterable<V> on Iterable<V> {
   List<V> get $l => toList();
 
   Set<V> get $s => toSet();
+
+  V? get $f => firstOrNull;
 }
 
 extension XList<V> on List<V> {

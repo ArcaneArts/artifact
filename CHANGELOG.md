@@ -1,3 +1,6 @@
+# 1.0.11
+* Attachment api
+
 # 1.0.10
 * Fixes
 

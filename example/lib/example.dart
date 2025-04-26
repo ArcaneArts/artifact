@@ -1,17 +1,8 @@
 import 'package:artifact/artifact.dart';
 
 @artifact
-class Animal {
-  final int health;
+class User {
+  final int x;
 
-  const Animal({@rename("hp") required this.health});
+  const User({required this.x});
 }
-
-@artifact
-class Dog extends Animal {
-  final bool goodBoy;
-
-  const Dog({required this.goodBoy, required super.health});
-}
-
-void main() {}
