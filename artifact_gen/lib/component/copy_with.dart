@@ -120,7 +120,12 @@ class $ArtifactCopyWithComponent implements $ArtifactBuilderOutput {
           gn = "?";
         }
 
-        o = "(${o.substring(0, o.length - 1)})$gn.\$u(append${name.capitalize()},remove${name.capitalize()}),";
+        if (param.hasDefaultValue) {
+          builder.registerDef(bs);
+          o = "((${o.substring(0, o.length - 1)}) as ${builder.applyDefsF(bs)}$gn)$gn.\$u(append${name.capitalize()},remove${name.capitalize()}),";
+        } else {
+          o = "(${o.substring(0, o.length - 1)})$gn.\$u(append${name.capitalize()},remove${name.capitalize()}),";
+        }
       }
 
       buf.write('$name: $o');
