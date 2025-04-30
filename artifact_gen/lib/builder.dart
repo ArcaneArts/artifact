@@ -56,8 +56,8 @@ class ArtifactBuilder implements Builder {
   static final TypeChecker $artifactChecker = TypeChecker.fromRuntime(Artifact);
   static final TypeChecker $codecChecker = TypeChecker.fromRuntime(codec);
   static final TypeChecker $renameChecker = TypeChecker.fromRuntime(rename);
-  static final Map<String, List<String>> $artifactSubclasses =
-      <String, List<String>>{};
+  static final Map<String, ClassElement> $iClassMap = {};
+  static final Map<String, List<String>> $artifactSubclasses = {};
 
   static void $linkSubclass(ClassElement sub, ClassElement sup) {
     List<String> list = $artifactSubclasses.putIfAbsent(
@@ -167,6 +167,7 @@ class ArtifactBuilder implements Builder {
 
       for (Element e in lib.topLevelElements) {
         if (e is! ClassElement) continue;
+        $iClassMap[e.name] = e;
         if (!$artifactChecker.hasAnnotationOf(e, throwOnUnresolved: false)) {
           continue;
         }

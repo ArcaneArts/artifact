@@ -1,8 +1,9 @@
-// This is the crud model that holds the data really
-class CrudModel {
-  final String collection;
-  final String? exclusive;
-  final Type model;
+import 'package:example/example.dart';
+import 'package:example/gen/artifacts.gen.dart';
 
-  const CrudModel(this.collection, this.model, {this.exclusive});
+void main() {
+  Base v = Ext();
+  v = v.copyWith(baseValue: 5);
+
+  print(v.runtimeType);
 }
