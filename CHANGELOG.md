@@ -1,3 +1,6 @@
+# 1.0.12
+* Fix int to double decode issue
+
 # 1.0.11
 * Attachment api
 

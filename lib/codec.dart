@@ -20,6 +20,7 @@ Map<(Type, Type), ArtifactCodec> $artifactCodecs = {
   (int, int): const ANOOPCodec(),
   (double, double): const ANOOPCodec(),
   (bool, bool): const ANOOPCodec(),
+  (int, double): const IntToDoubleCodec(),
 };
 
 bool $isPrimitive(Object? o) =>
@@ -149,6 +150,21 @@ abstract class ArtifactCodec<E, D> {
 
   void $register() {
     $artifactCodecs[(E, D)] = this;
+  }
+}
+
+class IntToDoubleCodec extends ArtifactCodec<int, double> {
+  const IntToDoubleCodec();
+
+  @override
+  double? decode(int? value) => value?.toDouble();
+
+  @override
+  int? encode(double? value) {
+    warn(
+      "Encode called on IntToDoubleCodec causing loss of precision! Notify Artifact team.",
+    );
+    return value?.toInt();
   }
 }
 

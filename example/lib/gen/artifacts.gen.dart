@@ -17,10 +17,10 @@ typedef _3 = String;
 typedef _4 = dynamic;
 typedef _5 = int;
 typedef _6 = Base;
-typedef _7 = Ext;
+typedef _7 = double;
 typedef _8 = bool;
 typedef _9 = List<dynamic>;
-const _2 _S = ['baseValue', '_subclass_Base', 'otherValue'];
+const _2 _S = ['baseValue'];
 const _9 _V = [];
 const _8 _T = true;
 const _8 _F = false;
@@ -31,9 +31,6 @@ extension $Base on _6 {
   _3 toJson({bool pretty = _F}) => _0.j(pretty, toMap);
   _1 toMap() {
     _;
-    if (_H is _7) {
-      return (_H as _7).toMap();
-    }
     return <_3, _4>{_S[0]: _0.ea(baseValue)}.$nn;
   }
 
@@ -41,75 +38,16 @@ extension $Base on _6 {
   static _6 fromMap(_1 r) {
     _;
     _1 m = r.$nn;
-    if (m.$c(_S[1])) {
-      String _I = m[_S[1]] as _3;
-      if (_I == 'Ext') {
-        return $Ext.fromMap(m);
-      }
-    }
-    return _6(baseValue: m.$c(_S[0]) ? _0.da(m[_S[0]], _5) as _5 : 0);
+    return _6(baseValue: m.$c(_S[0]) ? _0.da(m[_S[0]], _7) as _7 : 0);
   }
 
-  _6 copyWith({_5? baseValue, _8 resetBaseValue = _F, _5? deltaBaseValue}) {
-    if (_H is _7) {
-      return (_H as _7).copyWith(
-        baseValue: baseValue,
-        resetBaseValue: resetBaseValue,
-        deltaBaseValue: deltaBaseValue,
+  _6 copyWith({_7? baseValue, _8 resetBaseValue = _F, _7? deltaBaseValue}) =>
+      _6(
+        baseValue:
+            deltaBaseValue != null
+                ? (baseValue ?? _H.baseValue) + deltaBaseValue
+                : resetBaseValue
+                ? 0
+                : (baseValue ?? _H.baseValue),
       );
-    }
-    return _6(
-      baseValue:
-          deltaBaseValue != null
-              ? (baseValue ?? _H.baseValue) + deltaBaseValue
-              : resetBaseValue
-              ? 0
-              : (baseValue ?? _H.baseValue),
-    );
-  }
-}
-
-extension $Ext on _7 {
-  _7 get _H => this;
-  _3 toJson({bool pretty = _F}) => _0.j(pretty, toMap);
-  _1 toMap() {
-    _;
-    return <_3, _4>{
-      _S[1]: 'Ext',
-      _S[0]: _0.ea(baseValue),
-      _S[2]: _0.ea(otherValue),
-    }.$nn;
-  }
-
-  static _7 fromJson(String j) => fromMap(_0.o(j));
-  static _7 fromMap(_1 r) {
-    _;
-    _1 m = r.$nn;
-    return _7(
-      baseValue: m.$c(_S[0]) ? _0.da(m[_S[0]], _5) as _5 : 0,
-      otherValue: m.$c(_S[2]) ? _0.da(m[_S[2]], _5) as _5 : 1,
-    );
-  }
-
-  _7 copyWith({
-    _5? baseValue,
-    _8 resetBaseValue = _F,
-    _5? deltaBaseValue,
-    _5? otherValue,
-    _8 resetOtherValue = _F,
-    _5? deltaOtherValue,
-  }) => _7(
-    baseValue:
-        deltaBaseValue != null
-            ? (baseValue ?? _H.baseValue) + deltaBaseValue
-            : resetBaseValue
-            ? 0
-            : (baseValue ?? _H.baseValue),
-    otherValue:
-        deltaOtherValue != null
-            ? (otherValue ?? _H.otherValue) + deltaOtherValue
-            : resetOtherValue
-            ? 1
-            : (otherValue ?? _H.otherValue),
-  );
 }
