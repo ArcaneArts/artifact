@@ -1,3 +1,9 @@
+# 1.0.10
+* Schema generation additionalProperties
+
+# 1.0.9
+* Schema generation
+
 # 1.0.8
 * Formatting Fixes
 

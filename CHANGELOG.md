@@ -1,3 +1,9 @@
+# 1.0.14
+* Describe Checker
+
+# 1.0.13
+* Schema gen support
+
 # 1.0.12
 * Fix int to double decode issue
 

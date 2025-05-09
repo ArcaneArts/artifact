@@ -7,6 +7,7 @@ import 'package:artifact/artifact.dart';
 import 'package:artifact_gen/component/attach.dart';
 import 'package:artifact_gen/component/copy_with.dart';
 import 'package:artifact_gen/component/from_map.dart';
+import 'package:artifact_gen/component/schema.dart';
 import 'package:artifact_gen/component/to_map.dart';
 import 'package:artifact_gen/converter.dart';
 import 'package:build/build.dart';
@@ -55,6 +56,7 @@ class ArtifactBuilder implements Builder {
   static Glob $dartFilesInLib = Glob('lib/**.dart');
   static final TypeChecker $artifactChecker = TypeChecker.fromRuntime(Artifact);
   static final TypeChecker $codecChecker = TypeChecker.fromRuntime(codec);
+  static final TypeChecker $describeChecker = TypeChecker.fromRuntime(describe);
   static final TypeChecker $renameChecker = TypeChecker.fromRuntime(rename);
   static final Map<String, ClassElement> $iClassMap = {};
   static final Map<String, List<String>> $artifactSubclasses = {};
@@ -330,6 +332,12 @@ class ArtifactBuilder implements Builder {
           const $ArtifactFromMapComponent().onGenerate(this, clazz),
           const $ArtifactCopyWithComponent().onGenerate(this, clazz),
           const $ArtifactAttachComponent().onGenerate(this, clazz),
+          if ($artifactChecker
+                  .firstAnnotationOf(clazz, throwOnUnresolved: false)
+                  ?.getField("generateSchema")
+                  ?.toBoolValue() ??
+              false)
+            const $ArtifactSchemaComponent().onGenerate(this, clazz),
         ]).then((i) => i.merged),
       )
       .mergeWith((<Uri>[], StringBuffer()..write("}")));

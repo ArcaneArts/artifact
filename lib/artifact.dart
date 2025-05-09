@@ -8,13 +8,21 @@ export 'package:artifact/shrink.dart';
 const Artifact artifact = Artifact();
 
 class Artifact {
-  const Artifact();
+  final bool generateSchema;
+
+  const Artifact({this.generateSchema = false});
 }
 
 class codec {
   final ArtifactCodec c;
 
   const codec(this.c);
+}
+
+class describe {
+  final String description;
+
+  const describe(this.description);
 }
 
 class rename {
