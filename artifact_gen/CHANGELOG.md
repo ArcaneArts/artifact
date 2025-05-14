@@ -1,3 +1,9 @@
+# 1.0.12
+* Enable compression
+
+# 1.0.11
+* Fix list set conversion on toMap
+
 # 1.0.10
 * Schema generation additionalProperties
 

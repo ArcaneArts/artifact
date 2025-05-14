@@ -85,7 +85,7 @@ class ArtifactTypeConverter {
       if (mode == $ArtifactConvertMode.toMap) {
         return (
           code: builder.applyDefs(
-            ' $expr$nullOp.\$m((e)=>${conv.code}).$fn${nullable ? '' : ''}',
+            ' $expr$nullOp.\$m((e)=>${conv.code}).\$l${nullable ? '' : ''}',
           ),
           imports: [...imports, ...conv.imports],
         );
