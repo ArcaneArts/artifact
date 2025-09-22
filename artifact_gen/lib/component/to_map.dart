@@ -34,6 +34,18 @@ class $ArtifactToMapComponent implements $ArtifactBuilderOutput {
     buf.writeln(
       "  ${builder.applyDefsF("String")} toJson({bool pretty=_F})=>${builder.applyDefsF("ArtifactCodecUtil")}.j(pretty, toMap);",
     );
+    buf.writeln(
+      "  ${builder.applyDefsF("String")} toYaml()=>${builder.applyDefsF("ArtifactCodecUtil")}.y(toMap);",
+    );
+    buf.writeln(
+      "  ${builder.applyDefsF("String")} toToml()=>${builder.applyDefsF("ArtifactCodecUtil")}.u(toMap);",
+    );
+    buf.writeln(
+      "  ${builder.applyDefsF("String")} toXml({bool pretty=_F})=>${builder.applyDefsF("ArtifactCodecUtil")}.z(pretty,toMap);",
+    );
+    buf.writeln(
+      "  ${builder.applyDefsF("String")} toProperties()=>${builder.applyDefsF("ArtifactCodecUtil")}.h(toMap);",
+    );
     buf.write("  ${builder.applyDefsF("Map<String, dynamic>")} toMap(){");
     buf.write("_;");
 

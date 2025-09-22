@@ -36,6 +36,15 @@ class $ArtifactFromMapComponent implements $ArtifactBuilderOutput {
     buf.writeln(
       "  static ${builder.applyDefsF(clazz.name)} fromJson(String j)=>fromMap(${builder.applyDefsF("ArtifactCodecUtil")}.o(j));",
     );
+    buf.writeln(
+      "  static ${builder.applyDefsF(clazz.name)} fromYaml(String j)=>fromMap(${builder.applyDefsF("ArtifactCodecUtil")}.v(j));",
+    );
+    buf.writeln(
+      "  static ${builder.applyDefsF(clazz.name)} fromToml(String j)=>fromMap(${builder.applyDefsF("ArtifactCodecUtil")}.t(j));",
+    );
+    buf.writeln(
+      "  static ${builder.applyDefsF(clazz.name)} fromProperties(String j)=>fromMap(${builder.applyDefsF("ArtifactCodecUtil")}.g(j));",
+    );
     buf.write(
       '  static ${builder.applyDefsF(clazz.name)} fromMap(${builder.applyDefsF("Map<String, dynamic>")} r){',
     );

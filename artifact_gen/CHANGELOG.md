@@ -1,3 +1,6 @@
+# 1.0.13
+* Fix non-string map-key serialization
+
 # 1.0.12
 * Enable compression
 

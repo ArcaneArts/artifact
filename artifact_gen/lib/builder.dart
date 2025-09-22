@@ -7,6 +7,7 @@ import 'package:artifact/artifact.dart';
 import 'package:artifact_gen/component/attach.dart';
 import 'package:artifact_gen/component/copy_with.dart';
 import 'package:artifact_gen/component/from_map.dart';
+import 'package:artifact_gen/component/reflector.dart';
 import 'package:artifact_gen/component/schema.dart';
 import 'package:artifact_gen/component/to_map.dart';
 import 'package:artifact_gen/converter.dart';
@@ -51,7 +52,6 @@ class ArtifactBuilder implements Builder {
     r'$lib$': <String>['gen/artifacts.gen.dart'],
   };
 
-  bool compression = true;
   late final ArtifactTypeConverter converter;
   static Glob $dartFilesInLib = Glob('lib/**.dart');
   static final TypeChecker $artifactChecker = TypeChecker.fromRuntime(Artifact);
@@ -320,27 +320,44 @@ class ArtifactBuilder implements Builder {
     return Uri();
   }
 
-  Future<$BuildOutput> generate(ClassElement clazz) async => (
-        <Uri>[],
-        StringBuffer()
-          ..writeln("extension \$${clazz.name} on ${applyDefsF(clazz.name)}{")
-          ..writeln("  ${applyDefsF(clazz.name)} get _H=>this;"),
-      )
-      .mergeWith(
-        await Future.wait([
-          const $ArtifactToMapComponent().onGenerate(this, clazz),
-          const $ArtifactFromMapComponent().onGenerate(this, clazz),
-          const $ArtifactCopyWithComponent().onGenerate(this, clazz),
-          const $ArtifactAttachComponent().onGenerate(this, clazz),
-          if ($artifactChecker
-                  .firstAnnotationOf(clazz, throwOnUnresolved: false)
-                  ?.getField("generateSchema")
-                  ?.toBoolValue() ??
-              false)
-            const $ArtifactSchemaComponent().onGenerate(this, clazz),
-        ]).then((i) => i.merged),
-      )
-      .mergeWith((<Uri>[], StringBuffer()..write("}")));
+  bool compression = true;
+
+  Future<$BuildOutput> generate(ClassElement clazz) async {
+    compression =
+        $artifactChecker
+            .firstAnnotationOf(clazz, throwOnUnresolved: false)
+            ?.getField("compression")
+            ?.toBoolValue() ??
+        false;
+
+    return (
+          <Uri>[],
+          StringBuffer()
+            ..writeln("extension \$${clazz.name} on ${applyDefsF(clazz.name)}{")
+            ..writeln("  ${applyDefsF(clazz.name)} get _H=>this;"),
+        )
+        .mergeWith(
+          await Future.wait([
+            const $ArtifactToMapComponent().onGenerate(this, clazz),
+            const $ArtifactFromMapComponent().onGenerate(this, clazz),
+            const $ArtifactCopyWithComponent().onGenerate(this, clazz),
+            const $ArtifactAttachComponent().onGenerate(this, clazz),
+            if ($artifactChecker
+                    .firstAnnotationOf(clazz, throwOnUnresolved: false)
+                    ?.getField("reflection")
+                    ?.toBoolValue() ??
+                false)
+              const $ArtifactReflectorComponent().onGenerate(this, clazz),
+            if ($artifactChecker
+                    .firstAnnotationOf(clazz, throwOnUnresolved: false)
+                    ?.getField("generateSchema")
+                    ?.toBoolValue() ??
+                false)
+              const $ArtifactSchemaComponent().onGenerate(this, clazz),
+          ]).then((i) => i.merged),
+        )
+        .mergeWith((<Uri>[], StringBuffer()..write("}")));
+  }
 
   String applyDefsF(String sr) {
     sr = applyDefs(" ${sr} ").substring(1);

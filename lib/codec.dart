@@ -1,6 +1,10 @@
 import 'dart:convert';
 
 import 'package:fast_log/fast_log.dart';
+import 'package:toml/toml.dart';
+import 'package:xml/xml.dart';
+import 'package:yaml/yaml.dart';
+import 'package:yaml_edit/yaml_edit.dart';
 
 int _ =
     (() {
@@ -21,6 +25,9 @@ Map<(Type, Type), ArtifactCodec> $artifactCodecs = {
   (double, double): const ANOOPCodec(),
   (bool, bool): const ANOOPCodec(),
   (int, double): const IntToDoubleCodec(),
+  (String, int): const StringToInt(),
+  (String, double): const StringToDouble(),
+  (String, bool): const StringToBool(),
 };
 
 bool $isPrimitive(Object? o) =>
@@ -33,7 +40,26 @@ class ArtifactCodecUtil {
   static String j(bool p, Map<String, dynamic> Function() map) =>
       p ? const JsonEncoder.withIndent("  ").convert(map()) : jsonEncode(map());
 
+  static String y(Map<String, dynamic> Function() map) =>
+      (YamlEditor('')..update([], map())).toString();
+
+  static String u(Map<String, dynamic> Function() map) =>
+      TomlDocument.fromMap(map()).toString();
+
+  static String z(bool pretty, Map<String, dynamic> Function() map) =>
+      mapToXml("xml", map()).toXmlString(pretty: pretty);
+
+  static String h(Map<String, dynamic> Function() map) =>
+      PropertiesConverter.toProperties(map());
+
   static Map<String, dynamic> o(String j) => jsonDecode(j);
+
+  static Map<String, dynamic> v(String y) => loadYaml(y);
+
+  static Map<String, dynamic> t(String t) => TomlDocument.parse(t).toMap();
+
+  static Map<String, dynamic> g(String properties) =>
+      PropertiesConverter.fromProperties(properties);
 
   static T p<T>(dynamic l) {
     if (T == String) {
@@ -55,6 +81,43 @@ class ArtifactCodecUtil {
     throw ArgumentError(
       "Cannot parse $l (${l.runtimeType}) to ${T.toString()}",
     );
+  }
+
+  static XmlElement mapToXml(String tag, dynamic data) {
+    final element = XmlElement(XmlName(tag));
+    if (data is! Map<String, dynamic>) {
+      element.innerText = data.toString();
+      return element;
+    }
+
+    Map<String, String> attributes = {};
+    List<XmlNode> children = [];
+
+    for (final entry in data.entries) {
+      final String key = entry.key;
+      final dynamic value = entry.value;
+      if (key.startsWith('@')) {
+        final attrName = key.substring(1);
+        attributes[attrName] = value.toString();
+      } else if (value is Map<String, dynamic>) {
+        children.add(mapToXml(key, value));
+      } else if (value is List) {
+        for (final item in value) {
+          children.add(mapToXml(key, item));
+        }
+      } else {
+        final child = XmlElement(XmlName(key));
+        child.innerText = value.toString();
+        children.add(child);
+      }
+    }
+
+    element.attributes.addAll(
+      attributes.entries.map((e) => XmlAttribute(XmlName(e.key), e.value)),
+    );
+    element.children.addAll(children);
+
+    return element;
   }
 
   static dynamic e(List<dynamic> e, dynamic i) {
@@ -168,6 +231,45 @@ class IntToDoubleCodec extends ArtifactCodec<int, double> {
   }
 }
 
+class StringToInt extends ArtifactCodec<String, int> {
+  const StringToInt();
+
+  @override
+  int? decode(String? value) =>
+      value == null ? null : int.tryParse(value ?? "") ?? 0;
+
+  @override
+  String? encode(int? value) {
+    return value.toString();
+  }
+}
+
+class StringToDouble extends ArtifactCodec<String, double> {
+  const StringToDouble();
+
+  @override
+  double? decode(String? value) =>
+      value == null ? null : double.tryParse(value ?? "") ?? 0;
+
+  @override
+  String? encode(double? value) {
+    return value.toString();
+  }
+}
+
+class StringToBool extends ArtifactCodec<String, bool> {
+  const StringToBool();
+
+  @override
+  bool? decode(String? value) =>
+      value == null ? null : value.toLowerCase() == "true";
+
+  @override
+  String? encode(bool? value) {
+    return value.toString();
+  }
+}
+
 class ANOOPCodec extends ArtifactCodec<Object?, Object?> {
   const ANOOPCodec();
 
@@ -198,4 +300,133 @@ class ADurationCodec extends ArtifactCodec<int, Duration> {
   @override
   Duration? decode(int? value) =>
       value == null ? null : Duration(milliseconds: value);
+}
+
+class PropertiesConverter {
+  static String toProperties(Map<String, dynamic> map) {
+    final lines = <String>[];
+    _serialize(map, '', lines);
+    return lines.join('\n');
+  }
+
+  static void _serialize(dynamic obj, String prefix, List<String> lines) {
+    if (obj is Map<String, dynamic>) {
+      obj.forEach((key, value) {
+        final newPrefix = prefix.isEmpty ? key : '$prefix.$key';
+        _serialize(value, newPrefix, lines);
+      });
+    } else if (obj is List<dynamic>) {
+      for (var i = 0; i < obj.length; i++) {
+        final newPrefix = prefix.isEmpty ? '$i' : '$prefix.$i';
+        _serialize(obj[i], newPrefix, lines);
+      }
+    } else {
+      String valStr;
+      if (obj is String) {
+        valStr = '"${obj.replaceAll('"', '\\"')}"';
+      } else if (obj is num) {
+        valStr = obj.toString();
+      } else if (obj is bool) {
+        valStr = obj.toString().toLowerCase();
+      } else {
+        valStr = obj.toString();
+      }
+      lines.add('$prefix=$valStr');
+    }
+  }
+
+  static Map<String, dynamic> fromProperties(String input) {
+    final root = <String, dynamic>{};
+    final lines =
+        input
+            .split('\n')
+            .map((l) => l.trim())
+            .where((l) => l.isNotEmpty)
+            .toList();
+    for (final line in lines) {
+      final eqIdx = line.indexOf('=');
+      if (eqIdx == -1) continue;
+      final path = line.substring(0, eqIdx).trim();
+      final valStr = line.substring(eqIdx + 1);
+      final value = _parseValue(valStr);
+      final segments = path.split('.');
+      _setByPath(root, segments, value);
+    }
+    return root;
+  }
+
+  static dynamic _parseValue(String valStr) {
+    valStr = valStr.trim();
+    if (valStr.startsWith('"') && valStr.endsWith('"')) {
+      return valStr.substring(1, valStr.length - 1).replaceAll('\\"', '"');
+    }
+    final i = int.tryParse(valStr);
+    if (i != null) return i;
+    final d = double.tryParse(valStr);
+    if (d != null) return d;
+    if (valStr.toLowerCase() == 'true') return true;
+    if (valStr.toLowerCase() == 'false') return false;
+    return valStr;
+  }
+
+  static void _setByPath(
+    Map<String, dynamic> root,
+    List<String> segments,
+    dynamic value,
+  ) {
+    if (segments.isEmpty) return;
+    dynamic current = root;
+    for (var i = 0; i < segments.length; i++) {
+      final isLast = i == segments.length - 1;
+      final seg = segments[i];
+      final idx = int.tryParse(seg);
+      final isIndex = idx != null;
+      if (isLast) {
+        if (current is Map<String, dynamic> && !isIndex) {
+          current[seg] = value;
+        } else if (current is List<dynamic> && isIndex) {
+          while (current.length <= idx!) {
+            current.add(null);
+          }
+          current[idx] = value;
+        } else {
+          throw Exception(
+            'Type mismatch at path ${segments.sublist(0, i + 1).join('.')}',
+          );
+        }
+      } else {
+        final nextSeg = segments[i + 1];
+        final nextIdx = int.tryParse(nextSeg);
+        final nextIsIndex = nextIdx != null;
+        if (current is Map<String, dynamic>) {
+          if (isIndex) {
+            throw Exception(
+              'Index on map at ${segments.sublist(0, i).join('.')}',
+            );
+          }
+          current = current.putIfAbsent(
+            seg,
+            () => nextIsIndex ? <dynamic>[] : <String, dynamic>{},
+          );
+        } else if (current is List<dynamic>) {
+          if (!isIndex) {
+            throw Exception(
+              'String key on list at ${segments.sublist(0, i).join('.')}',
+            );
+          }
+          while (current.length <= idx!) {
+            current.add(null);
+          }
+          if (current[idx] == null) {
+            current[idx] = nextIsIndex ? <dynamic>[] : <String, dynamic>{};
+          }
+          current = current[idx];
+        } else {
+          throw Exception(
+            'Invalid container at ${segments.sublist(0, i).join('.')}',
+          );
+        }
+      }
+    }
+  }
 }

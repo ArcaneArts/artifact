@@ -124,7 +124,7 @@ class ArtifactTypeConverter {
         String xk = "k";
 
         if (k.getDisplayString(withNullability: false) != "String") {
-          xk = "'$k'";
+          xk = "'\$k'";
         }
 
         return (
