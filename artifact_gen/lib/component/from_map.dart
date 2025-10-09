@@ -115,14 +115,14 @@ class $ArtifactFromMapComponent implements $ArtifactBuilderOutput {
       if (isRequired) {
         builder.registerDef("ArgumentError");
         valueExpr =
-            "m.\$c(${builder.stringD('$name')})?${conv.code}:(throw ${builder.applyDefsF("ArgumentError")}('\${${builder.stringD("Missing required ${clazz.name}.\"$name\" in map ")}}\$m.'))";
+            "m.\$c(${builder.stringD(rn ?? name)})?${conv.code}:(throw ${builder.applyDefsF("ArgumentError")}('\${${builder.stringD("Missing required ${clazz.name}.\"$name\" in map ")}}\$m.'))";
       } else {
         String defaultCode =
             param.defaultValueCode == null
                 ? 'null'
                 : builder.valD(param.defaultValueCode.toString(), param.type);
         valueExpr =
-            "m.\$c(${builder.stringD('$name')}) ? ${conv.code} : $defaultCode";
+            "m.\$c(${builder.stringD(rn ?? name)}) ? ${conv.code} : $defaultCode";
       }
 
       if (param.isNamed) {

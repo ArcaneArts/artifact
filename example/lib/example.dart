@@ -1,41 +1,22 @@
 import 'package:artifact/artifact.dart';
 import 'package:example/gen/artifacts.gen.dart';
 
-@Artifact(compression: false, reflection: true)
-class HelloReflection {
-  final String name;
-  final int age;
-  final List<SubObject> subs;
+@Artifact(compression: false, reflection: false, generateSchema: false)
+class Test {
+  String name;
+  @rename("agex")
+  int? age;
 
-  const HelloReflection({
-    this.name = "John Doe",
-    this.age = 30,
-    this.subs = const [SubObject()],
-  });
-}
-
-@artifact
-class SubObject {
-  final String desc;
-  final List<String> options;
-
-  const SubObject({
-    this.desc = "A sub object",
-    this.options = const ["a", "b", "c"],
-  });
+  Test({this.name = "John Doe"});
 }
 
 void main() {
-  HelloReflection inst = HelloReflection(age: 25);
-  print("--- JSON ---");
+  Test inst = Test();
   print(inst.toJson(pretty: true));
-  print("--- TOML ---");
-  print(inst.toToml());
-  print("--- YAML ---");
-  print(inst.toYaml());
-  print("--- XML ---");
-  print(inst.toXml(pretty: true));
-  print("--- PROPERTIES ---");
-  print(inst.toProperties());
-  print("------------");
+  inst.name = "NewName";
+  inst.age = 3;
+  print(inst.toJson(pretty: true));
+
+  inst = $Test.fromJson(inst.toJson());
+  print(inst.toJson(pretty: true));
 }

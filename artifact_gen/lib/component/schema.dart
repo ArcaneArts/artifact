@@ -34,7 +34,25 @@ class $ArtifactSchemaComponent implements $ArtifactBuilderOutput {
     buf.write("${builder.stringD("type")}:${builder.stringD("object")},");
     buf.write("${builder.stringD("properties")}:{");
     for (ParameterElement i in params) {
-      buf.write("${builder.stringD(i.name)}:{");
+      String? rn;
+
+      FieldElement? field = clazz.fields.select((p) => i.name == p.name);
+
+      if (field != null &&
+          ArtifactBuilder.$renameChecker.hasAnnotationOf(
+            field,
+            throwOnUnresolved: false,
+          )) {
+        rn =
+            ArtifactBuilder.$renameChecker
+                .firstAnnotationOf(field, throwOnUnresolved: false)!
+                .getField("newName")!
+                .toStringValue();
+      }
+
+      rn ??= i.name;
+
+      buf.write("${builder.stringD(rn)}:{");
 
       if (i.type.getDisplayString(withNullability: true) == "String") {
         buf.write("${builder.stringD("type")}:");
@@ -98,8 +116,19 @@ class $ArtifactSchemaComponent implements $ArtifactBuilderOutput {
       buf.write("},");
     }
     buf.write("},");
+
     buf.write(
-      "${builder.stringD("required")}:[${params.map((i) => builder.stringD(i.name)).join(",")}],",
+      "${builder.stringD("required")}:[${params.map((i) {
+        String? rn;
+        FieldElement? field = clazz.fields.select((p) => i.name == p.name);
+
+        if (field != null && ArtifactBuilder.$renameChecker.hasAnnotationOf(field, throwOnUnresolved: false)) {
+          rn = ArtifactBuilder.$renameChecker.firstAnnotationOf(field, throwOnUnresolved: false)!.getField("newName")!.toStringValue();
+        }
+
+        rn ??= i.name;
+        return builder.stringD(rn);
+      }).join(",")}],",
     );
     buf.write("${builder.stringD("additionalProperties")}:_F");
 

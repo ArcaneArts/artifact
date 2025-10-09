@@ -1,3 +1,8 @@
+# 1.0.16
+* Support for reflection
+* Support for the ability to disable compression
+* Fixed a bug causing `@rename` to not work with `fromMap` or `schema` calls
+
 # 1.0.13
 * Fix non-string map-key serialization
 
