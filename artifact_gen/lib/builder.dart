@@ -298,6 +298,51 @@ class ArtifactBuilder implements Builder {
 
     String r = mainBuf.toString();
     outBuf.writeln(r);
+    outBuf.write(
+      "bool \$isArtifact(dynamic v)=>v==null?false : v is! Type ?\$isArtifact(v.runtimeType):",
+    );
+
+    for (ClassElement i in artifacts) {
+      outBuf.write(
+        "v == ${applyDefsF(i.name)} ${i == artifacts.last ? "" : "||"}",
+      );
+    }
+
+    outBuf.writeln(";");
+
+    outBuf.write("T \$constructArtifact<T>() => ");
+
+    for (ClassElement i in artifacts) {
+      outBuf.write(
+        "T==${applyDefsF(i.name)} ?\$${(i.name)}.newInstance as T ${i == artifacts.last ? "" : ":"}",
+      );
+    }
+
+    outBuf.writeln(": throw Exception();");
+
+    outBuf.write(
+      "${applyDefsF("Map<String, dynamic>")} \$artifactToMap(Object o)=>",
+    );
+
+    for (ClassElement i in artifacts) {
+      outBuf.write(
+        "o is ${applyDefsF(i.name)} ?o.toMap()${i == artifacts.last ? "" : ":"}",
+      );
+    }
+
+    outBuf.writeln(":throw Exception();");
+
+    outBuf.write(
+      "T \$artifactFromMap<T>(${applyDefsF("Map<String, dynamic>")} m)=>",
+    );
+
+    for (ClassElement i in artifacts) {
+      outBuf.write(
+        "T==${applyDefsF(i.name)} ?\$${i.name}.fromMap(m) as T${i == artifacts.last ? "" : ":"}",
+      );
+    }
+
+    outBuf.writeln(": throw Exception();");
 
     AssetId out = AssetId(step.inputId.package, 'lib/gen/artifacts.gen.dart');
     await step.writeAsString(out, outBuf.toString());

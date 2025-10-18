@@ -1,3 +1,18 @@
+# 1.0.21
+* Fixes
+
+# 1.0.20
+* Support datetime in required params for newInstance
+
+# 1.0.19
+* Fixes
+
+# 1.0.18
+* Support for $isArtifact, $artifactToMap and $artifactFromMap<T>(data)
+
+# 1.0.17
+* Support for $[model].newInstance which handles all parameter modes
+
 # 1.0.16
 * Support for reflection
 * Support for the ability to disable compression
