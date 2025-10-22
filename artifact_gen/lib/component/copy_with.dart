@@ -1,6 +1,7 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:artifact_gen/builder.dart';
+import 'package:artifact_gen/util.dart';
 import 'package:toxic/extensions/string.dart';
 
 class $ArtifactCopyWithComponent implements $ArtifactBuilderOutput {
@@ -11,18 +12,12 @@ class $ArtifactCopyWithComponent implements $ArtifactBuilderOutput {
     ArtifactBuilder builder,
     ClassElement clazz,
   ) async {
-    ConstructorElement? ctor;
-    for (ConstructorElement c in clazz.constructors) {
-      if (c.name.isEmpty) {
-        ctor = c;
-        break;
-      }
-    }
+    ConstructorElement? ctor = clazz.defaultConstructor;
     if (ctor == null) return (<Uri>[], StringBuffer());
 
-    List<ParameterElement> params = <ParameterElement>[];
-    for (ParameterElement p in ctor.parameters) {
-      bool matchesField = clazz.getField(p.name) != null;
+    List<FormalParameterElement> params = <FormalParameterElement>[];
+    for (FormalParameterElement p in ctor.formalParameters) {
+      bool matchesField = clazz.getField(p.name ?? "") != null;
       if (p.isInitializingFormal || p.isSuperFormal || matchesField) {
         params.add(p);
       }
@@ -33,10 +28,10 @@ class $ArtifactCopyWithComponent implements $ArtifactBuilderOutput {
     List<Uri> importUris = <Uri>[];
     LibraryElement targetLib = clazz.library;
 
-    buf.write('  ${builder.applyDefsF(clazz.name)} copyWith({');
+    buf.write('  ${builder.applyDefsF(clazz.name ?? "")} copyWith({');
 
-    for (ParameterElement param in params) {
-      String name = param.name;
+    for (FormalParameterElement param in params) {
+      String name = param.name ?? "";
       DartType type = param.type;
       String baseType = type.getDisplayString(withNullability: false);
       builder.registerDef(baseType);
@@ -95,24 +90,24 @@ class $ArtifactCopyWithComponent implements $ArtifactBuilderOutput {
         if (iClazz != null) {
           ConstructorElement? iCtor;
           for (ConstructorElement c in clazz.constructors) {
-            if (c.name.isEmpty) {
+            if ((c.name ?? "").isEmpty) {
               iCtor = c;
               break;
             }
           }
 
           if (iCtor != null) {
-            List<ParameterElement> iParams = <ParameterElement>[];
-            for (ParameterElement p in iCtor.parameters) {
-              bool matchesField = clazz.getField(p.name) != null;
+            List<FormalParameterElement> iParams = <FormalParameterElement>[];
+            for (FormalParameterElement p in iCtor.formalParameters) {
+              bool matchesField = clazz.getField(p.name ?? "") != null;
               if (p.isInitializingFormal || p.isSuperFormal || matchesField) {
                 iParams.add(p);
               }
             }
 
             //////////////////////////////////////////////////////////////////////
-            for (ParameterElement param in iParams) {
-              String name = param.name;
+            for (FormalParameterElement param in iParams) {
+              String name = param.name ?? "";
               DartType type = param.type;
               String baseType = type.getDisplayString(withNullability: false);
               builder.registerDef(baseType);
@@ -166,10 +161,10 @@ class $ArtifactCopyWithComponent implements $ArtifactBuilderOutput {
     }
 
     buf.write(
-      '${!hasSubs ? "=>" : "return "}${builder.applyDefsF(clazz.name)}(',
+      '${!hasSubs ? "=>" : "return "}${builder.applyDefsF(clazz.name ?? "")}(',
     );
-    for (ParameterElement param in params) {
-      String name = param.name;
+    for (FormalParameterElement param in params) {
+      String name = param.name ?? "";
       String bsn = param.type.getDisplayString(withNullability: true);
 
       String pref = "";

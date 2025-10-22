@@ -3,6 +3,7 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:artifact/artifact.dart';
 import 'package:artifact_gen/builder.dart';
+import 'package:artifact_gen/util.dart';
 import 'package:code_builder/code_builder.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:toxic/extensions/iterable.dart';
@@ -11,7 +12,7 @@ final DartEmitter _emitter = DartEmitter(useNullSafetySyntax: true);
 
 class $ArtifactAttachComponent implements $ArtifactBuilderOutput {
   const $ArtifactAttachComponent();
-  static final TypeChecker $attachChecker = TypeChecker.fromRuntime(attach);
+  static final TypeChecker $attachChecker = TypeChecker.typeNamed(attach);
 
   @override
   Future<$BuildOutput> onGenerate(
@@ -21,18 +22,12 @@ class $ArtifactAttachComponent implements $ArtifactBuilderOutput {
     StringBuffer buf = StringBuffer();
     List<Uri> importUris = <Uri>[];
     LibraryElement targetLib = clazz.library;
-    ConstructorElement? ctor;
-    for (ConstructorElement c in clazz.constructors) {
-      if (c.name.isEmpty) {
-        ctor = c;
-        break;
-      }
-    }
+    ConstructorElement? ctor = clazz.defaultConstructor;
     if (ctor == null) return (<Uri>[], StringBuffer());
 
-    List<ParameterElement> params = <ParameterElement>[];
-    for (ParameterElement p in ctor.parameters) {
-      bool matchesField = clazz.getField(p.name) != null;
+    List<FormalParameterElement> params = <FormalParameterElement>[];
+    for (FormalParameterElement p in ctor.formalParameters) {
+      bool matchesField = clazz.getField(p.name ?? "") != null;
       if (p.isInitializingFormal || p.isSuperFormal || matchesField) {
         params.add(p);
       }
@@ -42,7 +37,7 @@ class $ArtifactAttachComponent implements $ArtifactBuilderOutput {
     // if (uri.toString().isNotEmpty) importUris.add(uri);
 
     List<String> codes = [];
-    for (ParameterElement p in params) {
+    for (FormalParameterElement p in params) {
       List<DartObject> a = [
         ...$attachChecker.annotationsOf(p, throwOnUnresolved: false),
       ];

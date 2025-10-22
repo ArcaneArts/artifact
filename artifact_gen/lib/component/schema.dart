@@ -1,6 +1,7 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:artifact_gen/builder.dart';
+import 'package:artifact_gen/util.dart';
 import 'package:toxic/extensions/iterable.dart';
 
 class $ArtifactSchemaComponent implements $ArtifactBuilderOutput {
@@ -11,18 +12,12 @@ class $ArtifactSchemaComponent implements $ArtifactBuilderOutput {
     ArtifactBuilder builder,
     ClassElement clazz,
   ) async {
-    ConstructorElement? ctor;
-    for (ConstructorElement c in clazz.constructors) {
-      if (c.name.isEmpty) {
-        ctor = c;
-        break;
-      }
-    }
+    ConstructorElement? ctor = clazz.defaultConstructor;
     if (ctor == null) return (<Uri>[], StringBuffer());
 
-    List<ParameterElement> params = <ParameterElement>[];
-    for (ParameterElement p in ctor.parameters) {
-      bool matchesField = clazz.getField(p.name) != null;
+    List<FormalParameterElement> params = <FormalParameterElement>[];
+    for (FormalParameterElement p in ctor.formalParameters) {
+      bool matchesField = clazz.getField(p.name ?? "") != null;
       if (p.isInitializingFormal || p.isSuperFormal || matchesField) {
         params.add(p);
       }
@@ -33,7 +28,7 @@ class $ArtifactSchemaComponent implements $ArtifactBuilderOutput {
     buf.write("  static Map<String, dynamic> get schema=>{");
     buf.write("${builder.stringD("type")}:${builder.stringD("object")},");
     buf.write("${builder.stringD("properties")}:{");
-    for (ParameterElement i in params) {
+    for (FormalParameterElement i in params) {
       String? rn;
 
       FieldElement? field = clazz.fields.select((p) => i.name == p.name);
@@ -52,7 +47,7 @@ class $ArtifactSchemaComponent implements $ArtifactBuilderOutput {
 
       rn ??= i.name;
 
-      buf.write("${builder.stringD(rn)}:{");
+      buf.write("${builder.stringD(rn ?? "")}:{");
 
       if (i.type.getDisplayString(withNullability: true) == "String") {
         buf.write("${builder.stringD("type")}:");
@@ -127,7 +122,7 @@ class $ArtifactSchemaComponent implements $ArtifactBuilderOutput {
         }
 
         rn ??= i.name;
-        return builder.stringD(rn);
+        return builder.stringD(rn ?? "");
       }).join(",")}],",
     );
     buf.write("${builder.stringD("additionalProperties")}:_F");

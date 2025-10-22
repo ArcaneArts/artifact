@@ -2,6 +2,7 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:artifact_gen/builder.dart';
+import 'package:artifact_gen/util.dart';
 import 'package:toxic/extensions/iterable.dart';
 
 class $ArtifactFromMapComponent implements $ArtifactBuilderOutput {
@@ -12,18 +13,12 @@ class $ArtifactFromMapComponent implements $ArtifactBuilderOutput {
     ArtifactBuilder builder,
     ClassElement clazz,
   ) async {
-    ConstructorElement? ctor;
-    for (ConstructorElement c in clazz.constructors) {
-      if (c.name.isEmpty) {
-        ctor = c;
-        break;
-      }
-    }
+    ConstructorElement? ctor = clazz.defaultConstructor;
     if (ctor == null) return (<Uri>[], StringBuffer());
 
-    List<ParameterElement> params = <ParameterElement>[];
-    for (ParameterElement p in ctor.parameters) {
-      bool matchesField = clazz.getField(p.name) != null;
+    List<FormalParameterElement> params = <FormalParameterElement>[];
+    for (FormalParameterElement p in ctor.formalParameters) {
+      bool matchesField = clazz.getField(p.name ?? "") != null;
       if (p.isInitializingFormal || p.isSuperFormal || matchesField) {
         params.add(p);
       }
@@ -34,61 +29,20 @@ class $ArtifactFromMapComponent implements $ArtifactBuilderOutput {
     LibraryElement targetLib = clazz.library;
 
     buf.writeln(
-      "  static ${builder.applyDefsF(clazz.name)} fromJson(String j)=>fromMap(${builder.applyDefsF("ArtifactCodecUtil")}.o(j));",
+      "  static ${builder.applyDefsF(clazz.name ?? "")} fromJson(String j)=>fromMap(${builder.applyDefsF("ArtifactCodecUtil")}.o(j));",
     );
     buf.writeln(
-      "  static ${builder.applyDefsF(clazz.name)} fromYaml(String j)=>fromMap(${builder.applyDefsF("ArtifactCodecUtil")}.v(j));",
+      "  static ${builder.applyDefsF(clazz.name ?? "")} fromYaml(String j)=>fromMap(${builder.applyDefsF("ArtifactCodecUtil")}.v(j));",
     );
     buf.writeln(
-      "  static ${builder.applyDefsF(clazz.name)} fromToml(String j)=>fromMap(${builder.applyDefsF("ArtifactCodecUtil")}.t(j));",
+      "  static ${builder.applyDefsF(clazz.name ?? "")} fromToml(String j)=>fromMap(${builder.applyDefsF("ArtifactCodecUtil")}.t(j));",
     );
     buf.writeln(
-      "  static ${builder.applyDefsF(clazz.name)} fromProperties(String j)=>fromMap(${builder.applyDefsF("ArtifactCodecUtil")}.g(j));",
+      "  static ${builder.applyDefsF(clazz.name ?? "")} fromProperties(String j)=>fromMap(${builder.applyDefsF("ArtifactCodecUtil")}.g(j));",
     );
 
     buf.write(
-      "  static ${builder.applyDefsF(clazz.name)} get newInstance=>${builder.applyDefsF(clazz.name)}(",
-    );
-
-    for (ParameterElement i in params) {
-      if (i.isRequired) {
-        if (i.type.nullabilitySuffix == NullabilitySuffix.question) {
-          buf.write("${i.name}: null,");
-        } else if (i.hasDefaultValue) {
-          String defaultCode =
-              i.defaultValueCode == null
-                  ? 'null'
-                  : builder.valD(i.defaultValueCode.toString(), i.type);
-          buf.write("${i.name}: $defaultCode,");
-        } else if (i.type.isDartCoreBool) {
-          buf.write("${i.name}: _F,");
-        } else if (i.type.isDartCoreInt || i.type.isDartCoreDouble) {
-          buf.write("${i.name}: 0,");
-        } else if (i.type.isDartCoreString) {
-          buf.write("${i.name}: '',");
-        } else if (i.type.isDartCoreIterable || i.type.isDartCoreList) {
-          buf.write("${i.name}: [],");
-        } else if (i.type.name == "DateTime") {
-          buf.write("${i.name}: DateTime.now(),");
-        } else if (i.type.isDartCoreEnum ||
-            (i.type is InterfaceType && $isEnum(i.type as InterfaceType))) {
-          buf.write(
-            "${i.name}: ${builder.applyDefsF(i.type.getDisplayString(withNullability: false))}.values.first,",
-          );
-        } else if (i.type.isDartCoreSet || i.type.isDartCoreMap) {
-          buf.write("${i.name}: {},");
-        } else {
-          buf.write(
-            "${i.name}: \$${(i.type.getDisplayString(withNullability: false))}.newInstance,",
-          );
-        }
-      }
-    }
-
-    buf.writeln(');');
-
-    buf.write(
-      '  static ${builder.applyDefsF(clazz.name)} fromMap(${builder.applyDefsF("Map<String, dynamic>")} r){',
+      '  static ${builder.applyDefsF(clazz.name ?? "")} fromMap(${builder.applyDefsF("Map<String, dynamic>")} r){',
     );
     buf.write("_;");
     buf.write("${builder.applyDefsF("Map<String, dynamic>")} m=r.\$nn;");
@@ -105,13 +59,13 @@ class $ArtifactFromMapComponent implements $ArtifactBuilderOutput {
       buf.write('}');
     }
 
-    buf.write('return ${builder.applyDefsF(clazz.name)}(');
+    buf.write('return ${builder.applyDefsF(clazz.name ?? "")}(');
 
     List<String> positionalArgs = <String>[];
     List<String> namedArgs = <String>[];
 
-    for (ParameterElement param in params) {
-      String name = param.name;
+    for (FormalParameterElement param in params) {
+      String name = param.name ?? "";
       DartType type = param.type;
       bool isNullable = type.nullabilitySuffix == NullabilitySuffix.question;
       bool isRequired =

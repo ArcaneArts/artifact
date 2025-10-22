@@ -1,3 +1,9 @@
+# 1.1.0
+* Direct support for build_runner: ^2.5.4
+
+# 1.0.22
+* Fixes
+
 # 1.0.21
 * Fixes
 

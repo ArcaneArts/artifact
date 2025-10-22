@@ -7,6 +7,7 @@ import 'package:artifact/artifact.dart';
 import 'package:artifact_gen/component/attach.dart';
 import 'package:artifact_gen/component/copy_with.dart';
 import 'package:artifact_gen/component/from_map.dart';
+import 'package:artifact_gen/component/inatance.dart';
 import 'package:artifact_gen/component/reflector.dart';
 import 'package:artifact_gen/component/schema.dart';
 import 'package:artifact_gen/component/to_map.dart';
@@ -54,19 +55,19 @@ class ArtifactBuilder implements Builder {
 
   late final ArtifactTypeConverter converter;
   static Glob $dartFilesInLib = Glob('lib/**.dart');
-  static final TypeChecker $artifactChecker = TypeChecker.fromRuntime(Artifact);
-  static final TypeChecker $codecChecker = TypeChecker.fromRuntime(codec);
-  static final TypeChecker $describeChecker = TypeChecker.fromRuntime(describe);
-  static final TypeChecker $renameChecker = TypeChecker.fromRuntime(rename);
+  static final TypeChecker $artifactChecker = TypeChecker.typeNamed(Artifact);
+  static final TypeChecker $codecChecker = TypeChecker.typeNamed(codec);
+  static final TypeChecker $describeChecker = TypeChecker.typeNamed(describe);
+  static final TypeChecker $renameChecker = TypeChecker.typeNamed(rename);
   static final Map<String, ClassElement> $iClassMap = {};
   static final Map<String, List<String>> $artifactSubclasses = {};
 
   static void $linkSubclass(ClassElement sub, ClassElement sup) {
     List<String> list = $artifactSubclasses.putIfAbsent(
-      sup.name,
+      sup.name ?? "",
       () => <String>[],
     );
-    if (!list.contains(sub.name)) list.add(sub.name);
+    if (!list.contains(sub.name)) list.add(sub.name ?? "");
   }
 
   ArtifactBuilder() {
@@ -167,14 +168,14 @@ class ArtifactBuilder implements Builder {
       if (!await step.resolver.isLibrary(asset)) continue;
       LibraryElement lib = await step.resolver.libraryFor(asset);
 
-      for (Element e in lib.topLevelElements) {
+      for (Element e in lib.classes) {
         if (e is! ClassElement) continue;
-        $iClassMap[e.name] = e;
+        $iClassMap[e.name ?? ""] = e;
         if (!$artifactChecker.hasAnnotationOf(e, throwOnUnresolved: false)) {
           continue;
         }
 
-        registerDef(e.name);
+        registerDef(e.name ?? "");
 
         artifacts.add(e);
 
@@ -195,7 +196,7 @@ class ArtifactBuilder implements Builder {
     List<String> codecs = [];
 
     for (ClassElement art in artifacts) {
-      imports.add(art.source.uri);
+      imports.add(art.library.uri);
       work.add(
         generate(art).then((v) {
           imports.addAll(v.$1);
@@ -304,7 +305,7 @@ class ArtifactBuilder implements Builder {
 
     for (ClassElement i in artifacts) {
       outBuf.write(
-        "v == ${applyDefsF(i.name)} ${i == artifacts.last ? "" : "||"}",
+        "v == ${applyDefsF(i.name ?? "")} ${i == artifacts.last ? "" : "||"}",
       );
     }
 
@@ -314,7 +315,7 @@ class ArtifactBuilder implements Builder {
 
     for (ClassElement i in artifacts) {
       outBuf.write(
-        "T==${applyDefsF(i.name)} ?\$${(i.name)}.newInstance as T ${i == artifacts.last ? "" : ":"}",
+        "T==${applyDefsF(i.name ?? "")} ?\$${(i.name)}.newInstance as T ${i == artifacts.last ? "" : ":"}",
       );
     }
 
@@ -326,7 +327,7 @@ class ArtifactBuilder implements Builder {
 
     for (ClassElement i in artifacts) {
       outBuf.write(
-        "o is ${applyDefsF(i.name)} ?o.toMap()${i == artifacts.last ? "" : ":"}",
+        "o is ${applyDefsF(i.name ?? "")} ?o.toMap()${i == artifacts.last ? "" : ":"}",
       );
     }
 
@@ -338,7 +339,7 @@ class ArtifactBuilder implements Builder {
 
     for (ClassElement i in artifacts) {
       outBuf.write(
-        "T==${applyDefsF(i.name)} ?\$${i.name}.fromMap(m) as T${i == artifacts.last ? "" : ":"}",
+        "T==${applyDefsF(i.name ?? "")} ?\$${i.name}.fromMap(m) as T${i == artifacts.last ? "" : ":"}",
       );
     }
 
@@ -352,7 +353,7 @@ class ArtifactBuilder implements Builder {
     if (type is InterfaceType) {
       if (identical(type.element.library, targetLib)) return Uri();
 
-      Uri uri = type.element.source.uri;
+      Uri uri = type.element.library.uri;
 
       if (uri.scheme == 'dart') {
         String libName = uri.pathSegments.first; // 'core'
@@ -378,14 +379,17 @@ class ArtifactBuilder implements Builder {
     return (
           <Uri>[],
           StringBuffer()
-            ..writeln("extension \$${clazz.name} on ${applyDefsF(clazz.name)}{")
-            ..writeln("  ${applyDefsF(clazz.name)} get _H=>this;"),
+            ..writeln(
+              "extension \$${clazz.name} on ${applyDefsF(clazz.name ?? "")}{",
+            )
+            ..writeln("  ${applyDefsF(clazz.name ?? "")} get _H=>this;"),
         )
         .mergeWith(
           await Future.wait([
             const $ArtifactToMapComponent().onGenerate(this, clazz),
             const $ArtifactFromMapComponent().onGenerate(this, clazz),
             const $ArtifactCopyWithComponent().onGenerate(this, clazz),
+            const $ArtifactInstanceComponent().onGenerate(this, clazz),
             const $ArtifactAttachComponent().onGenerate(this, clazz),
             if ($artifactChecker
                     .firstAnnotationOf(clazz, throwOnUnresolved: false)

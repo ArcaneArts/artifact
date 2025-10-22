@@ -44,7 +44,7 @@ class ArtifactTypeConverter {
           imports: imports,
         );
       } else {
-        String name = type.element.name;
+        String name = type.element.name ?? "?ERR?";
         return (
           code:
               '\$${name}.fromMap(($expr) as ${builder.applyDefsF("Map<String, dynamic>")})',
@@ -61,7 +61,7 @@ class ArtifactTypeConverter {
           imports: imports,
         );
       } else {
-        String name = type.element.name;
+        String name = type.element.name ?? "?ERR?";
         return (
           code:
               '${builder.applyDefsF("ArtifactCodecUtil")}.e(${builder.applyDefsF(name)}.values, $expr) as ${builder.applyDefsF(name)}${nullable ? '?' : ''}',
@@ -70,7 +70,7 @@ class ArtifactTypeConverter {
       }
     }
 
-    String elementName = type.element.name;
+    String elementName = type.element.name ?? "?ERR?";
     if ((elementName == 'List' || elementName == 'Set') &&
         type.typeArguments.length == 1) {
       DartType inner = type.typeArguments.first;
@@ -157,10 +157,10 @@ class ArtifactTypeConverter {
         imports: [...imports, Uri.parse('package:artifact/artifact.dart')],
       );
     } else {
-      builder.registerDef(type.element.name);
+      builder.registerDef(type.element.name ?? "?ERR?");
       return (
         code: builder.applyDefs(
-          ' ArtifactCodecUtil.da($expr, ${builder.applyDefsF(type.element.name)}) as ${builder.applyDefsF(type.element.name)}${nullable ? '?' : ''}',
+          ' ArtifactCodecUtil.da($expr, ${builder.applyDefsF(type.element.name ?? "?ERR?")}) as ${builder.applyDefsF(type.element.name ?? "?ERR?")}${nullable ? '?' : ''}',
         ),
         imports: [...imports, Uri.parse('package:artifact/artifact.dart')],
       );

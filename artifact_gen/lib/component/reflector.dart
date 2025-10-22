@@ -1,5 +1,6 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:artifact_gen/builder.dart';
+import 'package:artifact_gen/util.dart';
 
 class $ArtifactReflectorComponent implements $ArtifactBuilderOutput {
   const $ArtifactReflectorComponent();
@@ -9,18 +10,12 @@ class $ArtifactReflectorComponent implements $ArtifactBuilderOutput {
     ArtifactBuilder builder,
     ClassElement clazz,
   ) async {
-    ConstructorElement? ctor;
-    for (ConstructorElement c in clazz.constructors) {
-      if (c.name.isEmpty) {
-        ctor = c;
-        break;
-      }
-    }
+    ConstructorElement? ctor = clazz.defaultConstructor;
     if (ctor == null) return (<Uri>[], StringBuffer());
 
-    List<ParameterElement> params = <ParameterElement>[];
-    for (ParameterElement p in ctor.parameters) {
-      bool matchesField = clazz.getField(p.name) != null;
+    List<FormalParameterElement> params = <FormalParameterElement>[];
+    for (FormalParameterElement p in ctor.formalParameters) {
+      bool matchesField = clazz.getField(p.name ?? "") != null;
       if (p.isInitializingFormal || p.isSuperFormal || matchesField) {
         params.add(p);
       }
@@ -32,8 +27,8 @@ class $ArtifactReflectorComponent implements $ArtifactBuilderOutput {
     buf.write('  static ${builder.applyDefsF("List<\$AFld>")} get \$fields {');
     buf.write("_;");
     buf.write("return [");
-    for (ParameterElement param in params) {
-      String name = param.name;
+    for (FormalParameterElement param in params) {
+      String name = param.name ?? "";
       String type = param.type.getDisplayString(withNullability: true);
       String baseType = param.type.getDisplayString(withNullability: false);
       builder.registerDef(baseType);
@@ -41,7 +36,7 @@ class $ArtifactReflectorComponent implements $ArtifactBuilderOutput {
           type.endsWith("?")
               ? "${builder.applyDefsF(baseType)}?"
               : builder.applyDefsF(baseType);
-      buf.write("\$AFld<${builder.applyDefsF(clazz.name)}, $fullType>(");
+      buf.write("\$AFld<${builder.applyDefsF(clazz.name ?? "")}, $fullType>(");
       buf.write("${builder.stringD(name)},");
       buf.write("(i)=>i.$name,");
       buf.write("(i,v)=>i.copyWith($name:v),");

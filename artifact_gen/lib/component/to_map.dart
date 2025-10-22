@@ -1,6 +1,7 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:artifact_gen/builder.dart';
+import 'package:artifact_gen/util.dart';
 import 'package:toxic/extensions/iterable.dart';
 
 class $ArtifactToMapComponent implements $ArtifactBuilderOutput {
@@ -11,18 +12,12 @@ class $ArtifactToMapComponent implements $ArtifactBuilderOutput {
     ArtifactBuilder builder,
     ClassElement clazz,
   ) async {
-    ConstructorElement? ctor;
-    for (ConstructorElement c in clazz.constructors) {
-      if (c.name.isEmpty) {
-        ctor = c;
-        break;
-      }
-    }
+    ConstructorElement? ctor = clazz.defaultConstructor;
     if (ctor == null) return (<Uri>[], StringBuffer());
 
-    List<ParameterElement> params = <ParameterElement>[];
-    for (ParameterElement p in ctor.parameters) {
-      bool matchesField = clazz.getField(p.name) != null;
+    List<FormalParameterElement> params = <FormalParameterElement>[];
+    for (FormalParameterElement p in ctor.formalParameters) {
+      bool matchesField = clazz.getField(p.name ?? "") != null;
       if (p.isInitializingFormal || p.isSuperFormal || matchesField) {
         params.add(p);
       }
@@ -76,8 +71,8 @@ class $ArtifactToMapComponent implements $ArtifactBuilderOutput {
       supType = supType.element.supertype;
     }
 
-    for (ParameterElement param in params) {
-      String name = param.name;
+    for (FormalParameterElement param in params) {
+      String name = param.name ?? "";
 
       ({String code, List<Uri> imports}) conv = builder.converter.$convert(
         name,

@@ -1,7 +1,7 @@
 import 'package:artifact/artifact.dart';
-import 'package:example/gen/artifacts.gen.dart';
 
-@artifact
+// default is just `@artifact`
+@Artifact(compression: false, reflection: true)
 class Test {
   final String aString;
   final int aInt;
@@ -9,6 +9,8 @@ class Test {
   final Sub aSub;
   final List<Sub>? subList;
   final Set<int> aSet;
+
+  @rename("m")
   final Map<int, String> aMap;
 
   const Test({
@@ -22,7 +24,7 @@ class Test {
   });
 }
 
-@artifact
+@Artifact(compression: false, reflection: true)
 class Sub {
   final int value;
 
@@ -31,12 +33,4 @@ class Sub {
 
 enum AEnum { first, second, third }
 
-void main() {
-  Map<String, dynamic> data = {"value": 41};
-
-  Object object = $constructArtifact<Sub>();
-
-  print(object.runtimeType);
-  print($isArtifact(object));
-  print((object as Sub).toYaml());
-}
+void main() {}
