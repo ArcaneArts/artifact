@@ -12,6 +12,7 @@ import 'package:artifact_gen/component/reflector.dart';
 import 'package:artifact_gen/component/schema.dart';
 import 'package:artifact_gen/component/to_map.dart';
 import 'package:artifact_gen/converter.dart';
+import 'package:artifact_gen/util.dart';
 import 'package:build/build.dart';
 import 'package:glob/glob.dart';
 import 'package:source_gen/source_gen.dart';
@@ -44,7 +45,12 @@ extension X$BuildOutput on $BuildOutput {
 }
 
 abstract class $ArtifactBuilderOutput {
-  Future<$BuildOutput> onGenerate(ArtifactBuilder builder, ClassElement clazz);
+  Future<$BuildOutput> onGenerate(
+    ArtifactBuilder builder,
+    ClassElement clazz,
+    ConstructorElement constructor,
+    List<FormalParameterElement> params,
+  );
 }
 
 class ArtifactBuilder implements Builder {
@@ -376,6 +382,10 @@ class ArtifactBuilder implements Builder {
             ?.toBoolValue() ??
         false;
 
+    ConstructorElement? ctor = clazz.defaultConstructor;
+    if (ctor == null) return (<Uri>[], StringBuffer());
+    List<FormalParameterElement> params = ctor.aParams;
+
     return (
           <Uri>[],
           StringBuffer()
@@ -386,23 +396,58 @@ class ArtifactBuilder implements Builder {
         )
         .mergeWith(
           await Future.wait([
-            const $ArtifactToMapComponent().onGenerate(this, clazz),
-            const $ArtifactFromMapComponent().onGenerate(this, clazz),
-            const $ArtifactCopyWithComponent().onGenerate(this, clazz),
-            const $ArtifactInstanceComponent().onGenerate(this, clazz),
-            const $ArtifactAttachComponent().onGenerate(this, clazz),
+            const $ArtifactToMapComponent().onGenerate(
+              this,
+              clazz,
+              ctor,
+              params,
+            ),
+            const $ArtifactFromMapComponent().onGenerate(
+              this,
+              clazz,
+              ctor,
+              params,
+            ),
+            const $ArtifactCopyWithComponent().onGenerate(
+              this,
+              clazz,
+              ctor,
+              params,
+            ),
+            const $ArtifactInstanceComponent().onGenerate(
+              this,
+              clazz,
+              ctor,
+              params,
+            ),
+            const $ArtifactAttachComponent().onGenerate(
+              this,
+              clazz,
+              ctor,
+              params,
+            ),
             if ($artifactChecker
                     .firstAnnotationOf(clazz, throwOnUnresolved: false)
                     ?.getField("reflection")
                     ?.toBoolValue() ??
                 false)
-              const $ArtifactReflectorComponent().onGenerate(this, clazz),
+              const $ArtifactReflectorComponent().onGenerate(
+                this,
+                clazz,
+                ctor,
+                params,
+              ),
             if ($artifactChecker
                     .firstAnnotationOf(clazz, throwOnUnresolved: false)
                     ?.getField("generateSchema")
                     ?.toBoolValue() ??
                 false)
-              const $ArtifactSchemaComponent().onGenerate(this, clazz),
+              const $ArtifactSchemaComponent().onGenerate(
+                this,
+                clazz,
+                ctor,
+                params,
+              ),
           ]).then((i) => i.merged),
         )
         .mergeWith((<Uri>[], StringBuffer()..write("}")));

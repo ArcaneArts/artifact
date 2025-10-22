@@ -2,7 +2,6 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:artifact_gen/builder.dart';
-import 'package:artifact_gen/util.dart';
 import 'package:toxic/extensions/iterable.dart';
 
 class $ArtifactFromMapComponent implements $ArtifactBuilderOutput {
@@ -12,18 +11,9 @@ class $ArtifactFromMapComponent implements $ArtifactBuilderOutput {
   Future<$BuildOutput> onGenerate(
     ArtifactBuilder builder,
     ClassElement clazz,
+    ConstructorElement ctor,
+    List<FormalParameterElement> params,
   ) async {
-    ConstructorElement? ctor = clazz.defaultConstructor;
-    if (ctor == null) return (<Uri>[], StringBuffer());
-
-    List<FormalParameterElement> params = <FormalParameterElement>[];
-    for (FormalParameterElement p in ctor.formalParameters) {
-      bool matchesField = clazz.getField(p.name ?? "") != null;
-      if (p.isInitializingFormal || p.isSuperFormal || matchesField) {
-        params.add(p);
-      }
-    }
-
     StringBuffer buf = StringBuffer();
     List<Uri> importUris = <Uri>[];
     LibraryElement targetLib = clazz.library;
@@ -60,7 +50,6 @@ class $ArtifactFromMapComponent implements $ArtifactBuilderOutput {
     }
 
     buf.write('return ${builder.applyDefsF(clazz.name ?? "")}(');
-
     List<String> positionalArgs = <String>[];
     List<String> namedArgs = <String>[];
 

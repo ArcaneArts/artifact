@@ -3,7 +3,6 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:artifact/artifact.dart';
 import 'package:artifact_gen/builder.dart';
-import 'package:artifact_gen/util.dart';
 import 'package:code_builder/code_builder.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:toxic/extensions/iterable.dart';
@@ -18,24 +17,11 @@ class $ArtifactAttachComponent implements $ArtifactBuilderOutput {
   Future<$BuildOutput> onGenerate(
     ArtifactBuilder builder,
     ClassElement clazz,
+    ConstructorElement ctor,
+    List<FormalParameterElement> params,
   ) async {
     StringBuffer buf = StringBuffer();
     List<Uri> importUris = <Uri>[];
-    LibraryElement targetLib = clazz.library;
-    ConstructorElement? ctor = clazz.defaultConstructor;
-    if (ctor == null) return (<Uri>[], StringBuffer());
-
-    List<FormalParameterElement> params = <FormalParameterElement>[];
-    for (FormalParameterElement p in ctor.formalParameters) {
-      bool matchesField = clazz.getField(p.name ?? "") != null;
-      if (p.isInitializingFormal || p.isSuperFormal || matchesField) {
-        params.add(p);
-      }
-    }
-
-    // Uri uri = builder.$getImport(type, targetLib);
-    // if (uri.toString().isNotEmpty) importUris.add(uri);
-
     List<String> codes = [];
     for (FormalParameterElement p in params) {
       List<DartObject> a = [

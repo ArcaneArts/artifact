@@ -1,7 +1,6 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:artifact_gen/builder.dart';
-import 'package:artifact_gen/util.dart';
 import 'package:toxic/extensions/iterable.dart';
 
 class $ArtifactToMapComponent implements $ArtifactBuilderOutput {
@@ -11,18 +10,9 @@ class $ArtifactToMapComponent implements $ArtifactBuilderOutput {
   Future<$BuildOutput> onGenerate(
     ArtifactBuilder builder,
     ClassElement clazz,
+    ConstructorElement ctor,
+    List<FormalParameterElement> params,
   ) async {
-    ConstructorElement? ctor = clazz.defaultConstructor;
-    if (ctor == null) return (<Uri>[], StringBuffer());
-
-    List<FormalParameterElement> params = <FormalParameterElement>[];
-    for (FormalParameterElement p in ctor.formalParameters) {
-      bool matchesField = clazz.getField(p.name ?? "") != null;
-      if (p.isInitializingFormal || p.isSuperFormal || matchesField) {
-        params.add(p);
-      }
-    }
-
     StringBuffer buf = StringBuffer();
     List<Uri> importUris = <Uri>[];
     LibraryElement targetLib = clazz.library;
