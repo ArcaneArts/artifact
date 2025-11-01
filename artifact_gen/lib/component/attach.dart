@@ -3,6 +3,7 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:artifact/artifact.dart';
 import 'package:artifact_gen/builder.dart';
+import 'package:build/build.dart';
 import 'package:code_builder/code_builder.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:toxic/extensions/iterable.dart';
@@ -19,6 +20,7 @@ class $ArtifactAttachComponent implements $ArtifactBuilderOutput {
     ClassElement clazz,
     ConstructorElement ctor,
     List<FormalParameterElement> params,
+    BuildStep step,
   ) async {
     StringBuffer buf = StringBuffer();
     List<Uri> importUris = <Uri>[];

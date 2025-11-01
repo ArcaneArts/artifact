@@ -1,6 +1,7 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:artifact_gen/builder.dart';
+import 'package:build/build.dart';
 import 'package:toxic/extensions/string.dart';
 
 class $ArtifactCopyWithComponent implements $ArtifactBuilderOutput {
@@ -12,6 +13,7 @@ class $ArtifactCopyWithComponent implements $ArtifactBuilderOutput {
     ClassElement clazz,
     ConstructorElement ctor,
     List<FormalParameterElement> params,
+    BuildStep step,
   ) async {
     if (params.isEmpty) return (<Uri>[], StringBuffer());
     StringBuffer buf = StringBuffer();

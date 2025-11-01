@@ -2,6 +2,7 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:artifact_gen/builder.dart';
+import 'package:build/build.dart';
 import 'package:toxic/extensions/iterable.dart';
 
 class $ArtifactFromMapComponent implements $ArtifactBuilderOutput {
@@ -13,6 +14,7 @@ class $ArtifactFromMapComponent implements $ArtifactBuilderOutput {
     ClassElement clazz,
     ConstructorElement ctor,
     List<FormalParameterElement> params,
+    BuildStep step,
   ) async {
     StringBuffer buf = StringBuffer();
     List<Uri> importUris = <Uri>[];

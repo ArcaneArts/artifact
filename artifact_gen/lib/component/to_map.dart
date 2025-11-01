@@ -1,6 +1,7 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:artifact_gen/builder.dart';
+import 'package:build/build.dart';
 import 'package:toxic/extensions/iterable.dart';
 
 class $ArtifactToMapComponent implements $ArtifactBuilderOutput {
@@ -12,6 +13,7 @@ class $ArtifactToMapComponent implements $ArtifactBuilderOutput {
     ClassElement clazz,
     ConstructorElement ctor,
     List<FormalParameterElement> params,
+    BuildStep step,
   ) async {
     StringBuffer buf = StringBuffer();
     List<Uri> importUris = <Uri>[];

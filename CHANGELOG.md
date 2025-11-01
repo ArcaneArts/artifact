@@ -1,3 +1,11 @@
+# 1.0.18
+* Re add reflect flag
+
+# 1.0.17
+* Add .getValue and .setValue for dynamic field access on reflection
+* Relfective access to methods, fields, constructors, annotations, class extends, mixins & interfaces
+* Auto enable reflection
+
 # 1.0.16
 * Docs
 

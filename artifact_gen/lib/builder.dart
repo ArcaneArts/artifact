@@ -50,6 +50,7 @@ abstract class $ArtifactBuilderOutput {
     ClassElement clazz,
     ConstructorElement constructor,
     List<FormalParameterElement> params,
+    BuildStep step,
   );
 }
 
@@ -204,7 +205,7 @@ class ArtifactBuilder implements Builder {
     for (ClassElement art in artifacts) {
       imports.add(art.library.uri);
       work.add(
-        generate(art).then((v) {
+        generate(art, step).then((v) {
           imports.addAll(v.$1);
           classBuffers.add(v.$2);
         }),
@@ -245,6 +246,7 @@ class ArtifactBuilder implements Builder {
     }
 
     String codecRegistry = "const ${applyDefsF("int")} _ = 0;";
+
     if (codecs.isNotEmpty) {
       StringBuffer sb = StringBuffer();
       sb.write("${applyDefsF("int")} _ = ((){");
@@ -254,6 +256,57 @@ class ArtifactBuilder implements Builder {
       sb.write("return 0;");
       sb.write("})();");
       codecRegistry = sb.toString();
+    }
+    StringBuffer rbuf = StringBuffer();
+    if (artifacts.any(
+      (c) =>
+          $artifactChecker
+              .firstAnnotationOf(c, throwOnUnresolved: false)
+              ?.getField("reflection")
+              ?.toBoolValue() ??
+          false,
+    )) {
+      registerDef("\$AClass");
+      rbuf.write(
+        "Map<Type,${applyDefsF("\$AClass")}> get \$artifactMirror => {",
+      );
+
+      for (ClassElement i in artifacts) {
+        if ($artifactChecker
+                .firstAnnotationOf(i, throwOnUnresolved: false)
+                ?.getField("reflection")
+                ?.toBoolValue() ??
+            false) {
+          registerDef(applyDefsF(i.supertype!.element.name ?? ""));
+
+          for (String i in i.interfaces.map((i) => i.element.name ?? "")) {
+            registerDef(i);
+          }
+
+          for (String i in i.mixins.map((i) => i.element.name ?? "")) {
+            registerDef(i);
+          }
+
+          registerDef("\$AClass<${i.name ?? ""}>");
+          rbuf.write(applyDefsF(i.name ?? ""));
+          rbuf.write(":");
+          rbuf.write(applyDefsF("\$AClass<${i.name ?? ""}>("));
+          rbuf.write("\$${i.name}.\$annotations,");
+          rbuf.write("\$${i.name}.\$fields,");
+          rbuf.write("\$${i.name}.\$methods,");
+          rbuf.write("()=>\$${i.name}.newInstance,");
+          rbuf.write("${applyDefsF(i.supertype!.element.name ?? "")},");
+          rbuf.write(
+            "[${i.interfaces.map((i) => applyDefsF(i.element.name ?? "")).join(",")}],",
+          );
+          rbuf.write(
+            "[${i.mixins.map((i) => applyDefsF(i.element.name ?? "")).join(",")}],",
+          );
+          rbuf.write("),");
+        }
+      }
+
+      rbuf.writeln("};");
     }
 
     await Future.wait(work);
@@ -317,6 +370,8 @@ class ArtifactBuilder implements Builder {
 
     outBuf.writeln(";");
 
+    outBuf.write(rbuf);
+
     outBuf.write("T \$constructArtifact<T>() => ");
 
     for (ClassElement i in artifacts) {
@@ -350,7 +405,6 @@ class ArtifactBuilder implements Builder {
     }
 
     outBuf.writeln(": throw Exception();");
-
     AssetId out = AssetId(step.inputId.package, 'lib/gen/artifacts.gen.dart');
     await step.writeAsString(out, outBuf.toString());
   }
@@ -374,7 +428,7 @@ class ArtifactBuilder implements Builder {
 
   bool compression = true;
 
-  Future<$BuildOutput> generate(ClassElement clazz) async {
+  Future<$BuildOutput> generate(ClassElement clazz, BuildStep step) async {
     compression =
         $artifactChecker
             .firstAnnotationOf(clazz, throwOnUnresolved: false)
@@ -401,30 +455,35 @@ class ArtifactBuilder implements Builder {
               clazz,
               ctor,
               params,
+              step,
             ),
             const $ArtifactFromMapComponent().onGenerate(
               this,
               clazz,
               ctor,
               params,
+              step,
             ),
             const $ArtifactCopyWithComponent().onGenerate(
               this,
               clazz,
               ctor,
               params,
+              step,
             ),
             const $ArtifactInstanceComponent().onGenerate(
               this,
               clazz,
               ctor,
               params,
+              step,
             ),
             const $ArtifactAttachComponent().onGenerate(
               this,
               clazz,
               ctor,
               params,
+              step,
             ),
             if ($artifactChecker
                     .firstAnnotationOf(clazz, throwOnUnresolved: false)
@@ -436,6 +495,7 @@ class ArtifactBuilder implements Builder {
                 clazz,
                 ctor,
                 params,
+                step,
               ),
             if ($artifactChecker
                     .firstAnnotationOf(clazz, throwOnUnresolved: false)
@@ -447,6 +507,7 @@ class ArtifactBuilder implements Builder {
                 clazz,
                 ctor,
                 params,
+                step,
               ),
           ]).then((i) => i.merged),
         )

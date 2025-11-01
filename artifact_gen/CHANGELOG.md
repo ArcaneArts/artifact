@@ -1,3 +1,9 @@
+# 1.1.2
+* Requires artifact 1.0.18
+
+# 1.1.1
+* Reflection capabilities requires artifact 1.0.17
+
 # 1.1.0
 * Performance improvements, sources generate 50% faster now (sometimes 300% faster)
 * Upgrade to the new analyzer, sourcegen system: 
