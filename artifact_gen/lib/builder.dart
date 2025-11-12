@@ -247,16 +247,21 @@ class ArtifactBuilder implements Builder {
 
     String codecRegistry = "const ${applyDefsF("int")} _ = 0;";
 
+    registerDef("ArtifactAccessor");
+    StringBuffer sb = StringBuffer();
+    sb.write("${applyDefsF("int")} _ = ((){");
     if (codecs.isNotEmpty) {
-      StringBuffer sb = StringBuffer();
-      sb.write("${applyDefsF("int")} _ = ((){");
       sb.write(
         "${applyDefsF("ArtifactCodecUtil")}.r(const [${codecs.join(",")}]);",
       );
-      sb.write("return 0;");
-      sb.write("})();");
-      codecRegistry = sb.toString();
     }
+
+    sb.writeln(
+      "if(!${applyDefsF("ArtifactAccessor")}.\$i(${stringD(step.inputId.package)})){${applyDefsF("ArtifactAccessor")}.\$r(${stringD(step.inputId.package)},${applyDefsF("ArtifactAccessor")}(isArtifact: \$isArtifact,artifactMirror:${artifacts.any((c) => $artifactChecker.firstAnnotationOf(c, throwOnUnresolved: false)?.getField("reflection")?.toBoolValue() ?? false) ? "\$artifactMirror" : "{}"},constructArtifact:\$constructArtifact,artifactToMap:\$artifactToMap,artifactFromMap:\$artifactFromMap));}",
+    );
+    sb.write("return 0;");
+    sb.write("})();");
+    codecRegistry = sb.toString();
     StringBuffer rbuf = StringBuffer();
     if (artifacts.any(
       (c) =>
@@ -308,6 +313,22 @@ class ArtifactBuilder implements Builder {
 
       rbuf.writeln("};");
     }
+
+    /// int _v = _register();
+    //
+    // int _register() {
+    //   ArtifactAccessor.register(
+    //     "something",
+    //     ArtifactAccessor(
+    //       isArtifact: $isArtifact,
+    //       artifactMirror: $artifactMirror,
+    //       constructArtifact: $constructArtifact,
+    //       artifactToMap: $artifactToMap,
+    //       artifactFromMap: $artifactFromMap,
+    //     ),
+    //   );
+    //   return 0;
+    // }
 
     await Future.wait(work);
     registerDef("List<dynamic>");

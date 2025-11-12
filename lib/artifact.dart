@@ -1,9 +1,46 @@
 library artifact;
 
 import 'package:artifact/codec.dart';
+import 'package:fast_log/fast_log.dart';
 
 export 'package:artifact/codec.dart';
+export 'package:artifact/events.dart';
 export 'package:artifact/shrink.dart';
+
+Map<String, ArtifactAccessor> _artifactRegistry = {};
+Set<String> _registering = {};
+
+class ArtifactAccessor {
+  final bool Function(dynamic) isArtifact;
+  final Map<Type, $AClass> artifactMirror;
+  final T Function<T>() constructArtifact;
+  final Map<String, dynamic> Function(Object) artifactToMap;
+  final T Function<T>(Map<String, dynamic>) artifactFromMap;
+
+  ArtifactAccessor({
+    required this.isArtifact,
+    required this.artifactMirror,
+    required this.constructArtifact,
+    required this.artifactToMap,
+    required this.artifactFromMap,
+  });
+
+  static Iterable<ArtifactAccessor> get all => _artifactRegistry.values;
+
+  static bool $i(String key) {
+    bool b = _registering.contains(key);
+
+    _registering.add(key);
+    return b;
+  }
+
+  static void $r(String key, ArtifactAccessor accessor) {
+    _artifactRegistry[key] = accessor;
+    verbose(
+      "Registered $key accessor with ${accessor.artifactMirror.length} mirrors",
+    );
+  }
+}
 
 const Artifact artifact = Artifact();
 

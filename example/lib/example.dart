@@ -1,87 +1,48 @@
 import 'package:artifact/artifact.dart';
 import 'package:example/gen/artifacts.gen.dart';
 
-class Flag {
-  final String name;
+const model = Artifact(reflection: true, compression: false);
 
-  const Flag({required this.name});
-}
-
-const Flag basicFlag = Flag(name: "Basic Flag 42");
-
-class Start {
-  const Start();
-}
-
-mixin AMixin {}
-
-abstract class AInterface {}
-
-const Artifact art = Artifact(compression: true);
-
-@art
-@Flag(name: "This is A")
-class A with AMixin implements AInterface {
-  @basicFlag
-  final int a;
-
-  A({this.a = 42});
-
-  @basicFlag
-  @Start()
-  void foo() {
-    print("A.foo called!");
+@model
+class SomeFunctionalThing {
+  @EventHandler(ignoreCancelled: false)
+  void on(DerpEvent event) {
+    print(
+      "SomeFunctionalThing ${event.message} isCancelled: ${event.cancelled}",
+    );
   }
-
-  void bar() {}
 }
 
-@art
-class B {
-  int? mutableField;
-
-  final int a;
-
-  B({this.a = 42});
-}
-
-@basicFlag
-@art
-class C {
-  final int a;
-
-  C({this.a = 42});
-}
-
-@art
-@Flag(name: "This is D")
-@basicFlag
-class D {
-  final int a;
-
-  D({this.a = 42});
-
-  @Start()
-  void ass() {
-    print("D.ass called!");
+@model
+class SomePriorityThing {
+  @EventHandler(priority: EventPriority.high)
+  void on(DerpEvent event) {
+    print("SomePriorityThing ${event.message}");
+    event.cancel();
   }
+}
 
-  @Start()
-  void bad() {
-    print("D.bad called!");
-  }
+class DerpEvent extends ArtifactEvent with CancellableEvent {
+  final String message;
+
+  DerpEvent(this.message);
 }
 
 void main() {
-  // 1. Loop over all classes with @Flag annotation
-  for ($AClass clazz in $artifactMirror.withAnnotation<Flag>().values) {
-    // Create a new instance of this class
-    Object instance = clazz.construct();
+  $SomeFunctionalThing.fromMap({});
 
-    // Find all methods in this class with the @Start annotation
-    for ($AMth method in clazz.annotatedMethods<Start>()) {
-      // Invoke the method with no parameters using the instance we just created
-      method(instance, MethodParameters());
-    }
-  }
+  // Use an event manager (there will be a centralized one eventually)
+  EventManager mgr = EventManager();
+
+  // Make the object instances
+  SomeFunctionalThing a = SomeFunctionalThing();
+  SomePriorityThing b = SomePriorityThing();
+
+  // Register the listeners for the objects
+  mgr.registerListeners(a);
+  mgr.registerListeners(b);
+
+  // Yeet an event into the abyss
+  DerpEvent event = DerpEvent("Hello, World!");
+  mgr.callEvent(event);
 }

@@ -81,7 +81,7 @@ class $ArtifactCopyWithComponent implements $ArtifactBuilderOutput {
         if (iClazz != null) {
           ConstructorElement? iCtor;
           for (ConstructorElement c in clazz.constructors) {
-            if ((c.name ?? "").isEmpty) {
+            if ((c.name ?? "new") == "new") {
               iCtor = c;
               break;
             }

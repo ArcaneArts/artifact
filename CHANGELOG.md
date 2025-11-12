@@ -1,3 +1,6 @@
+# 1.0.19
+* Event handling management
+
 # 1.0.18
 * Re add reflect flag
 

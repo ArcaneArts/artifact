@@ -49,11 +49,13 @@ class $ArtifactReflectorComponent implements $ArtifactBuilderOutput {
       buf.write("(i,v)=>i.copyWith($name:v),");
 
       buf.write("[");
-      FieldElement field = clazz.getField(name)!;
-      for (ElementAnnotation a in field.metadata.annotations) {
-        importUris.add(a.element!.library!.uri);
-        DartObject v = a.computeConstantValue()!;
-        buf.write("${dartObjectToCode(v, builder, importUris)},");
+      FieldElement? field = clazz.getField(name);
+      if (field != null) {
+        for (ElementAnnotation a in field.metadata.annotations) {
+          importUris.add(a.element!.library!.uri);
+          DartObject v = a.computeConstantValue()!;
+          buf.write("${dartObjectToCode(v, builder, importUris)},");
+        }
       }
       buf.write("],");
       buf.write("),");
@@ -143,10 +145,11 @@ String dartObjectToCode(
 
   DartType type = object.type!;
 
-  if (type.isDartCoreEnum) {
+  if (type.isDartCoreEnum || type.element is EnumElement) {
     String enumName = type.getDisplayString(withNullability: false);
     builder.registerDef(enumName);
-    String enumValue = object.toStringValue()!;
+    String enumValue =
+        object.variable?.toString().split(" ").last.trim() ?? "ERROR";
     importUris.add(type.element!.library!.uri);
     return "${builder.applyDefsF(enumName)}.$enumValue";
   }

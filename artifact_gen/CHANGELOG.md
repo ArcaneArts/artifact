@@ -1,3 +1,11 @@
+# 1.1.4
+* Fixes
+* Event code gen handling
+* Fix enum processing in annotation reflection
+
+# 1.1.3
+* Fixes
+
 # 1.1.2
 * Requires artifact 1.0.18
 
