@@ -292,6 +292,10 @@ class ArtifactBuilder implements Builder {
             registerDef(i);
           }
 
+          for (InterfaceType i in i.allSupertypes) {
+            imports.add(i.element.library.uri);
+          }
+
           registerDef("\$AClass<${i.name ?? ""}>");
           rbuf.write(applyDefsF(i.name ?? ""));
           rbuf.write(":");

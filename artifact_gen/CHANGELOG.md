@@ -1,3 +1,6 @@
+# 1.1.5
+* Fix reflective imports
+
 # 1.1.4
 * Fixes
 * Event code gen handling

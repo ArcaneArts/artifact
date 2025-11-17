@@ -5,7 +5,7 @@
 // ignore_for_file: constant_identifier_names
 // ignore_for_file: library_private_types_in_public_api
 // ignore_for_file: unused_element
-import "package:example/example.dart";import "package:artifact/artifact.dart";import "package:artifact/events.dart";
+import "package:example/example.dart";import "dart:core";import "package:artifact/artifact.dart";import "package:artifact/events.dart";
 
 const bool _T=true;const bool _F=false;int _ = ((){if(!ArtifactAccessor.$i('example')){ArtifactAccessor.$r('example',ArtifactAccessor(isArtifact: $isArtifact,artifactMirror:$artifactMirror,constructArtifact:$constructArtifact,artifactToMap:$artifactToMap,artifactFromMap:$artifactFromMap));}
 return 0;})();
