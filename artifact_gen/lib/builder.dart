@@ -370,7 +370,7 @@ class ArtifactBuilder implements Builder {
                 : "",
           )
           ..writeln(
-            "${applyDefsF("ArgumentError")} _1x(${applyDefsF("String")} c,${applyDefsF("String")} f)=>${applyDefsF("ArgumentError")}('\${${stringD("Missing required ")}}\$c.\$f');",
+            "${applyDefsF("ArgumentError")} __x(${applyDefsF("String")} c,${applyDefsF("String")} f)=>${applyDefsF("ArgumentError")}('\${${stringD("Missing required ")}}\$c.\$f');",
           )
           ..write(
             compression

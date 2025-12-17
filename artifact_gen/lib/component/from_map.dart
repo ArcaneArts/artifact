@@ -98,7 +98,7 @@ class $ArtifactFromMapComponent implements $ArtifactBuilderOutput {
       String valueExpr;
       if (isRequired) {
         valueExpr =
-            "m.\$c(${builder.stringD(rn ?? name)})?${conv.code}:throw _1x(${builder.stringD(clazz.name ?? "")},${builder.stringD(name)})";
+            "m.\$c(${builder.stringD(rn ?? name)})?${conv.code}:throw __x(${builder.stringD(clazz.name ?? "")},${builder.stringD(name)})";
       } else {
         String defaultCode =
             param.defaultValueCode == null

@@ -1,3 +1,6 @@
+# 1.2.1
+* Fix naming for exception tag
+
 # 1.2.0
 * Support for Artifact 1.0.23
 * BREAKING: Removes the toJson, toYaml, toXXX and the fromJson, fromYaml, fromXXX methods. Use .to.json, or .from.json("...") instead
