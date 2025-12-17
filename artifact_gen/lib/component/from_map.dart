@@ -15,29 +15,22 @@ class $ArtifactFromMapComponent implements $ArtifactBuilderOutput {
     ConstructorElement ctor,
     List<FormalParameterElement> params,
     BuildStep step,
+    List<String>? eFields,
   ) async {
     StringBuffer buf = StringBuffer();
     List<Uri> importUris = <Uri>[];
     LibraryElement targetLib = clazz.library;
 
+    builder.registerDef("ArtifactModelImporter<${clazz.name ?? ""}>");
     buf.writeln(
-      "  static ${builder.applyDefsF(clazz.name ?? "")} fromJson(String j)=>fromMap(${builder.applyDefsF("ArtifactCodecUtil")}.o(j));",
-    );
-    buf.writeln(
-      "  static ${builder.applyDefsF(clazz.name ?? "")} fromYaml(String j)=>fromMap(${builder.applyDefsF("ArtifactCodecUtil")}.v(j));",
-    );
-    buf.writeln(
-      "  static ${builder.applyDefsF(clazz.name ?? "")} fromToml(String j)=>fromMap(${builder.applyDefsF("ArtifactCodecUtil")}.t(j));",
-    );
-    buf.writeln(
-      "  static ${builder.applyDefsF(clazz.name ?? "")} fromProperties(String j)=>fromMap(${builder.applyDefsF("ArtifactCodecUtil")}.g(j));",
+      "  static ${builder.applyDefsF("ArtifactModelImporter<${clazz.name ?? ""}>")} get from=>${builder.applyDefsF("ArtifactModelImporter<${clazz.name ?? ""}>")}(fromMap);",
     );
 
     buf.write(
-      '  static ${builder.applyDefsF(clazz.name ?? "")} fromMap(${builder.applyDefsF("Map<String, dynamic>")} r){',
+      '  static ${builder.applyDefsF(clazz.name ?? "")} fromMap(${builder.applyDefsF("Map<String,dynamic>")} r){',
     );
     buf.write("_;");
-    buf.write("${builder.applyDefsF("Map<String, dynamic>")} m=r.\$nn;");
+    buf.write("${builder.applyDefsF("Map<String,dynamic>")} m=r.\$nn;");
     List<String>? subs = ArtifactBuilder.$artifactSubclasses[clazz.name];
     if (subs != null && subs.isNotEmpty) {
       buf.write("if(m.\$c(${builder.stringD('_subclass_${clazz.name}')})){");
@@ -49,6 +42,10 @@ class $ArtifactFromMapComponent implements $ArtifactBuilderOutput {
         buf.write('return \$$s.fromMap(m);}');
       }
       buf.write('}');
+    }
+
+    if (eFields != null) {
+      buf.write("m=${builder.applyDefsF("ArtifactCodecUtil")}.s(m);");
     }
 
     buf.write('return ${builder.applyDefsF(clazz.name ?? "")}(');
@@ -100,9 +97,8 @@ class $ArtifactFromMapComponent implements $ArtifactBuilderOutput {
 
       String valueExpr;
       if (isRequired) {
-        builder.registerDef("ArgumentError");
         valueExpr =
-            "m.\$c(${builder.stringD(rn ?? name)})?${conv.code}:(throw ${builder.applyDefsF("ArgumentError")}('\${${builder.stringD("Missing required ${clazz.name}.\"$name\" in map ")}}\$m.'))";
+            "m.\$c(${builder.stringD(rn ?? name)})?${conv.code}:throw _1x(${builder.stringD(clazz.name ?? "")},${builder.stringD(name)})";
       } else {
         String defaultCode =
             param.defaultValueCode == null
@@ -125,9 +121,7 @@ class $ArtifactFromMapComponent implements $ArtifactBuilderOutput {
     for (String a in namedArgs) {
       buf.write('$a,');
     }
-
-    buf.write(');');
-    buf.writeln('}');
+    buf.writeln(');}');
     return (importUris, buf);
   }
 

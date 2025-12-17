@@ -15,6 +15,7 @@ class $ArtifactReflectorComponent implements $ArtifactBuilderOutput {
     ConstructorElement ctor,
     List<FormalParameterElement> params,
     BuildStep step,
+    List<String>? eFields,
   ) async {
     StringBuffer buf = StringBuffer();
     List<Uri> importUris = <Uri>[];

@@ -14,10 +14,11 @@ class $ArtifactSchemaComponent implements $ArtifactBuilderOutput {
     ConstructorElement ctor,
     List<FormalParameterElement> params,
     BuildStep step,
+    List<String>? eFields,
   ) async {
     if (params.isEmpty) return (<Uri>[], StringBuffer());
     StringBuffer buf = StringBuffer();
-    buf.write("  static Map<String, dynamic> get schema=>{");
+    buf.write("  static Map<String,dynamic> get schema=>{");
     buf.write("${builder.stringD("type")}:${builder.stringD("object")},");
     buf.write("${builder.stringD("properties")}:{");
     for (FormalParameterElement i in params) {

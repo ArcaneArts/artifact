@@ -14,26 +14,17 @@ class $ArtifactToMapComponent implements $ArtifactBuilderOutput {
     ConstructorElement ctor,
     List<FormalParameterElement> params,
     BuildStep step,
+    List<String>? eFields,
   ) async {
     StringBuffer buf = StringBuffer();
     List<Uri> importUris = <Uri>[];
     LibraryElement targetLib = clazz.library;
+
     buf.writeln(
-      "  ${builder.applyDefsF("String")} toJson({bool pretty=_F})=>${builder.applyDefsF("ArtifactCodecUtil")}.j(pretty, toMap);",
+      "  ${builder.applyDefsF("ArtifactModelExporter")} get to=>${builder.applyDefsF("ArtifactModelExporter")}(toMap);",
     );
-    buf.writeln(
-      "  ${builder.applyDefsF("String")} toYaml()=>${builder.applyDefsF("ArtifactCodecUtil")}.y(toMap);",
-    );
-    buf.writeln(
-      "  ${builder.applyDefsF("String")} toToml()=>${builder.applyDefsF("ArtifactCodecUtil")}.u(toMap);",
-    );
-    buf.writeln(
-      "  ${builder.applyDefsF("String")} toXml({bool pretty=_F})=>${builder.applyDefsF("ArtifactCodecUtil")}.z(pretty,toMap);",
-    );
-    buf.writeln(
-      "  ${builder.applyDefsF("String")} toProperties()=>${builder.applyDefsF("ArtifactCodecUtil")}.h(toMap);",
-    );
-    buf.write("  ${builder.applyDefsF("Map<String, dynamic>")} toMap(){");
+
+    buf.write("  ${builder.applyDefsF("Map<String,dynamic>")} toMap(){");
     buf.write("_;");
 
     List<String>? subs = ArtifactBuilder.$artifactSubclasses[clazz.name];
@@ -45,8 +36,14 @@ class $ArtifactToMapComponent implements $ArtifactBuilderOutput {
       }
     }
 
+    buf.write("return");
+
+    if (eFields != null) {
+      buf.write(" ${builder.applyDefsF("ArtifactCodecUtil")}.q(");
+    }
+
     buf.write(
-      'return <${builder.applyDefsF("String")}, ${builder.applyDefsF("dynamic")}>{',
+      '<${builder.applyDefsF("String")},${builder.applyDefsF("dynamic")}>{',
     );
 
     InterfaceType? supType = clazz.supertype;
@@ -101,7 +98,14 @@ class $ArtifactToMapComponent implements $ArtifactBuilderOutput {
       importUris.addAll(conv.imports);
     }
 
-    buf.write('}.\$nn;');
+    buf.write('}.\$nn');
+
+    if (eFields != null) {
+      buf.write(",[${eFields.map((i) => builder.stringD(i)).join(",")}]);");
+    } else {
+      buf.write(';');
+    }
+
     buf.writeln('}');
 
     return (importUris, buf);

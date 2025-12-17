@@ -1,3 +1,16 @@
+# 1.0.23
+* Full TOON support
+* Support for new export systems
+
+# 1.0.22
+* Added better codec supports
+
+# 1.0.21
+* Encryption Json Compress API
+
+# 1.0.20
+* Support to/fromToon 
+
 # 1.0.19
 * Event handling management
 

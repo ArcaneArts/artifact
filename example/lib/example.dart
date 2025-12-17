@@ -1,48 +1,83 @@
 import 'package:artifact/artifact.dart';
 import 'package:example/gen/artifacts.gen.dart';
 
-const model = Artifact(reflection: true, compression: false);
+@artifact
+class SomeModel {
+  final int age;
+  final String name;
+  final String ssn;
+  final String address;
 
-@model
-class SomeFunctionalThing {
-  @EventHandler(ignoreCancelled: false)
-  void on(DerpEvent event) {
-    print(
-      "SomeFunctionalThing ${event.message} isCancelled: ${event.cancelled}",
-    );
-  }
+  const SomeModel({
+    required this.age,
+    required this.name,
+    required this.ssn,
+    required this.address,
+  });
 }
 
-@model
-class SomePriorityThing {
-  @EventHandler(priority: EventPriority.high)
-  void on(DerpEvent event) {
-    print("SomePriorityThing ${event.message}");
-    event.cancel();
-  }
-}
+@artifact
+class ParentThing {
+  final List<SomeModel> models;
 
-class DerpEvent extends ArtifactEvent with CancellableEvent {
-  final String message;
-
-  DerpEvent(this.message);
+  const ParentThing({this.models = const []});
 }
 
 void main() {
-  $SomeFunctionalThing.fromMap({});
+  $artifactCipher = "derp";
 
-  // Use an event manager (there will be a centralized one eventually)
-  EventManager mgr = EventManager();
+  ParentThing m = ParentThing(
+    models: [
+      SomeModel(
+        name: "Daniel",
+        address: "115 Kanter Dr",
+        age: 29,
+        ssn: "123456789",
+      ),
+      SomeModel(
+        name: "Daniel",
+        address: "115 Kanter Dr",
+        age: 29,
+        ssn: "123456789",
+      ),
+      SomeModel(
+        name: "Daniel",
+        address: "115 Kanter Dr",
+        age: 29,
+        ssn: "123456789",
+      ),
+      SomeModel(
+        name: "Daniel",
+        address: "115 Kanter Dr",
+        age: 29,
+        ssn: "123456789",
+      ),
+      SomeModel(
+        name: "Daniel",
+        address: "115 Kanter Dr",
+        age: 29,
+        ssn: "123456789",
+      ),
+      SomeModel(
+        name: "Daniel",
+        address: "115 Kanter Dr",
+        age: 29,
+        ssn: "123456789",
+      ),
+      SomeModel(
+        name: "Daniel",
+        address: "115 Kanter Dr",
+        age: 29,
+        ssn: "123456789",
+      ),
+      SomeModel(
+        name: "Daniel",
+        address: "115 Kanter Dr",
+        age: 29,
+        ssn: "123456789",
+      ),
+    ],
+  );
 
-  // Make the object instances
-  SomeFunctionalThing a = SomeFunctionalThing();
-  SomePriorityThing b = SomePriorityThing();
-
-  // Register the listeners for the objects
-  mgr.registerListeners(a);
-  mgr.registerListeners(b);
-
-  // Yeet an event into the abyss
-  DerpEvent event = DerpEvent("Hello, World!");
-  mgr.callEvent(event);
+  print(m.to.toon);
 }

@@ -1,7 +1,10 @@
 import 'dart:convert';
 
+import 'package:artifact/artifact.dart';
 import 'package:fast_log/fast_log.dart';
+import 'package:json_compress/json_compress.dart';
 import 'package:toml/toml.dart';
+import 'package:toonx/toonx.dart' as toonx;
 import 'package:xml/xml.dart';
 import 'package:yaml/yaml.dart';
 import 'package:yaml_edit/yaml_edit.dart';
@@ -37,8 +40,39 @@ class ArtifactCodecUtil {
   static Iterable<R> a<T, R>(T t, List<$At> a) =>
       a.where((i) => i.data == t).map((i) => i.value);
 
+  static Map<String, dynamic> s(Map<String, dynamic> t) {
+    if ($artifactCipher == null || $artifactCipher!.isEmpty) {
+      throw Exception("\$artifactCipher is undefined! cannot decompress json!");
+    }
+
+    return decompressDecryptJson(
+      t,
+      encryptionKey: $artifactCipher!,
+      ignoreWarnings: true,
+      keepUnknownKeys: true,
+    );
+  }
+
+  static Map<String, dynamic> q(Map<String, dynamic> t, List<String>? retain) {
+    if (retain == null) {
+      return t;
+    }
+
+    if ($artifactCipher == null || $artifactCipher!.isEmpty) {
+      throw Exception("\$artifactCipher is undefined! cannot compress json!");
+    }
+
+    return compressEncryptJson(
+      t,
+      encryptionKey: $artifactCipher!,
+      retainer: retain.isEmpty ? null : (k, v) => retain.contains(k),
+    );
+  }
+
   static String j(bool p, Map<String, dynamic> Function() map) =>
       p ? const JsonEncoder.withIndent("  ").convert(map()) : jsonEncode(map());
+
+  static String b(Map<String, dynamic> Function() map) => toonx.encode(map());
 
   static String y(Map<String, dynamic> Function() map) =>
       (YamlEditor('')..update([], map())).toString();
@@ -54,7 +88,9 @@ class ArtifactCodecUtil {
 
   static Map<String, dynamic> o(String j) => jsonDecode(j);
 
-  static Map<String, dynamic> v(String y) => loadYaml(y);
+  static Map<String, dynamic> i(String j) => toonx.decode(j);
+
+  static Map<String, dynamic> v(String y) => Map.from(loadYaml(y));
 
   static Map<String, dynamic> t(String t) => TomlDocument.parse(t).toMap();
 

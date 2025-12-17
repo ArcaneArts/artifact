@@ -1,3 +1,10 @@
+# 1.2.0
+* Support for Artifact 1.0.23
+* BREAKING: Removes the toJson, toYaml, toXXX and the fromJson, fromYaml, fromXXX methods. Use .to.json, or .from.json("...") instead
+
+# 1.1.7
+* Support for Artifact 1.0.22
+
 # 1.1.5
 * Fix reflective imports
 

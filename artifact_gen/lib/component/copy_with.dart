@@ -14,6 +14,7 @@ class $ArtifactCopyWithComponent implements $ArtifactBuilderOutput {
     ConstructorElement ctor,
     List<FormalParameterElement> params,
     BuildStep step,
+    List<String>? eFields,
   ) async {
     if (params.isEmpty) return (<Uri>[], StringBuffer());
     StringBuffer buf = StringBuffer();

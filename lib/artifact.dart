@@ -1,7 +1,11 @@
 library artifact;
 
+import 'dart:convert';
+
 import 'package:artifact/codec.dart';
+import 'package:bson/bson.dart';
 import 'package:fast_log/fast_log.dart';
+import 'package:threshold/threshold.dart';
 
 export 'package:artifact/codec.dart';
 export 'package:artifact/events.dart';
@@ -9,6 +13,7 @@ export 'package:artifact/shrink.dart';
 
 Map<String, ArtifactAccessor> _artifactRegistry = {};
 Set<String> _registering = {};
+String? $artifactCipher;
 
 class ArtifactAccessor {
   final bool Function(dynamic) isArtifact;
@@ -55,6 +60,15 @@ class Artifact {
     this.reflection = false,
   });
 }
+
+class ArtifactEncrypt {
+  final bool encrypt;
+
+  const ArtifactEncrypt({this.encrypt = true});
+}
+
+const ArtifactEncrypt encrypt = ArtifactEncrypt();
+const ArtifactEncrypt retain = ArtifactEncrypt(encrypt: false);
 
 class codec {
   final ArtifactCodec c;
@@ -191,4 +205,38 @@ extension XArtifactMirror on Map<Type, $AClass> {
   Map<Type, $AClass> withInterface<T>() => where((t, c) => c.hasInterface<T>());
 
   Map<Type, $AClass> withExtends<T>() => where((t, c) => c.classExtends == T);
+}
+
+class ArtifactModelExporter {
+  final Map<String, dynamic> Function() data;
+
+  const ArtifactModelExporter(this.data);
+
+  String get bson => base64Encode(BsonCodec.serialize(data()).byteList);
+  String get bsonCompressed => compress(bson);
+  String get json => ArtifactCodecUtil.j(false, data);
+  String get jsonPretty => ArtifactCodecUtil.j(true, data);
+  String get yaml => ArtifactCodecUtil.y(data);
+  String get toon => ArtifactCodecUtil.b(data);
+  String get toml => ArtifactCodecUtil.u(data);
+  String get xml => ArtifactCodecUtil.z(false, data);
+  String get xmlPretty => ArtifactCodecUtil.z(true, data);
+  String get props => ArtifactCodecUtil.h(data);
+}
+
+class ArtifactModelImporter<T> {
+  final T Function(Map<String, dynamic>) fromMap;
+
+  const ArtifactModelImporter(this.fromMap);
+
+  T bson(String data, {bool compressed = false}) => fromMap(
+    BsonCodec.deserialize(
+      BsonBinary.from(base64Decode(compressed ? decompress(data) : data)),
+    ),
+  );
+  T json(String data) => fromMap(ArtifactCodecUtil.o(data));
+  T yaml(String data) => fromMap(ArtifactCodecUtil.v(data));
+  T toon(String data) => fromMap(ArtifactCodecUtil.i(data));
+  T toml(String data) => fromMap(ArtifactCodecUtil.t(data));
+  T props(String data) => fromMap(ArtifactCodecUtil.g(data));
 }

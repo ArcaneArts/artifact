@@ -51,6 +51,7 @@ abstract class $ArtifactBuilderOutput {
     ConstructorElement constructor,
     List<FormalParameterElement> params,
     BuildStep step,
+    List<String>? eFields,
   );
 }
 
@@ -63,6 +64,9 @@ class ArtifactBuilder implements Builder {
   late final ArtifactTypeConverter converter;
   static Glob $dartFilesInLib = Glob('lib/**.dart');
   static final TypeChecker $artifactChecker = TypeChecker.typeNamed(Artifact);
+  static final TypeChecker $encryptChecker = TypeChecker.typeNamed(
+    ArtifactEncrypt,
+  );
   static final TypeChecker $codecChecker = TypeChecker.typeNamed(codec);
   static final TypeChecker $describeChecker = TypeChecker.typeNamed(describe);
   static final TypeChecker $renameChecker = TypeChecker.typeNamed(rename);
@@ -164,11 +168,14 @@ class ArtifactBuilder implements Builder {
   Future<void> build(BuildStep step) async {
     assert(step.inputId.path == r'$lib$');
     registerDef("ArtifactCodecUtil");
-    registerDef("Map<String, dynamic>");
+    registerDef("Map<String,dynamic>");
     registerDef("List<String>");
     registerDef("String");
     registerDef("dynamic");
     registerDef("int");
+    registerDef("ArtifactModelExporter");
+    registerDef("ArgumentError");
+    registerDef("Exception");
     List<ClassElement> artifacts = <ClassElement>[];
 
     await for (AssetId asset in step.findAssets($dartFilesInLib)) {
@@ -245,7 +252,7 @@ class ArtifactBuilder implements Builder {
       );
     }
 
-    String codecRegistry = "const ${applyDefsF("int")} _ = 0;";
+    String codecRegistry = "const ${applyDefsF("int")} _=0;";
 
     registerDef("ArtifactAccessor");
     StringBuffer sb = StringBuffer();
@@ -256,11 +263,11 @@ class ArtifactBuilder implements Builder {
       );
     }
 
-    sb.writeln(
+    sb.write(
       "if(!${applyDefsF("ArtifactAccessor")}.\$i(${stringD(step.inputId.package)})){${applyDefsF("ArtifactAccessor")}.\$r(${stringD(step.inputId.package)},${applyDefsF("ArtifactAccessor")}(isArtifact: \$isArtifact,artifactMirror:${artifacts.any((c) => $artifactChecker.firstAnnotationOf(c, throwOnUnresolved: false)?.getField("reflection")?.toBoolValue() ?? false) ? "\$artifactMirror" : "{}"},constructArtifact:\$constructArtifact,artifactToMap:\$artifactToMap,artifactFromMap:\$artifactFromMap));}",
     );
     sb.write("return 0;");
-    sb.write("})();");
+    sb.writeln("})();");
     codecRegistry = sb.toString();
     StringBuffer rbuf = StringBuffer();
     if (artifacts.any(
@@ -362,6 +369,9 @@ class ArtifactBuilder implements Builder {
                 ? defs.entries.map((i) => "typedef ${i.key}=${i.value};").join()
                 : "",
           )
+          ..writeln(
+            "${applyDefsF("ArgumentError")} _1x(${applyDefsF("String")} c,${applyDefsF("String")} f)=>${applyDefsF("ArgumentError")}('\${${stringD("Missing required ")}}\$c.\$f');",
+          )
           ..write(
             compression
                 ? "const ${applyDefsF("List<String>")} _S=[${strDD.map((i) => "'$i'").join(",")}];"
@@ -383,6 +393,7 @@ class ArtifactBuilder implements Builder {
 
     String r = mainBuf.toString();
     outBuf.writeln(r);
+
     outBuf.write(
       "bool \$isArtifact(dynamic v)=>v==null?false : v is! Type ?\$isArtifact(v.runtimeType):",
     );
@@ -405,10 +416,10 @@ class ArtifactBuilder implements Builder {
       );
     }
 
-    outBuf.writeln(": throw Exception();");
+    outBuf.writeln(": throw ${applyDefsF("Exception")}();");
 
     outBuf.write(
-      "${applyDefsF("Map<String, dynamic>")} \$artifactToMap(Object o)=>",
+      "${applyDefsF("Map<String,dynamic>")} \$artifactToMap(Object o)=>",
     );
 
     for (ClassElement i in artifacts) {
@@ -417,10 +428,10 @@ class ArtifactBuilder implements Builder {
       );
     }
 
-    outBuf.writeln(":throw Exception();");
+    outBuf.writeln(":throw ${applyDefsF("Exception")}();");
 
     outBuf.write(
-      "T \$artifactFromMap<T>(${applyDefsF("Map<String, dynamic>")} m)=>",
+      "T \$artifactFromMap<T>(${applyDefsF("Map<String,dynamic>")} m)=>",
     );
 
     for (ClassElement i in artifacts) {
@@ -429,7 +440,7 @@ class ArtifactBuilder implements Builder {
       );
     }
 
-    outBuf.writeln(": throw Exception();");
+    outBuf.writeln(":throw ${applyDefsF("Exception")}();");
     AssetId out = AssetId(step.inputId.package, 'lib/gen/artifacts.gen.dart');
     await step.writeAsString(out, outBuf.toString());
   }
@@ -464,6 +475,49 @@ class ArtifactBuilder implements Builder {
     ConstructorElement? ctor = clazz.defaultConstructor;
     if (ctor == null) return (<Uri>[], StringBuffer());
     List<FormalParameterElement> params = ctor.aParams;
+    List<String>? eAFields;
+    Set<String> eFields = {};
+    Set<String> rFields = {};
+    DartObject? eAnn = $encryptChecker.firstAnnotationOf(
+      clazz,
+      throwOnUnresolved: false,
+    );
+
+    if (eAnn != null) {
+      if (eAnn.getField("encrypt")?.toBoolValue() == true) {
+        eFields = params.map((i) => i.name).whereType<String>().toSet();
+      } else {
+        rFields = params.map((i) => i.name).whereType<String>().toSet();
+      }
+    }
+
+    for (FormalParameterElement p in params) {
+      if (p.name == null) {
+        continue;
+      }
+      FieldElement? f = clazz.getField(p.name!);
+
+      if (f == null) {
+        continue;
+      }
+
+      DartObject? pAnn = $encryptChecker.firstAnnotationOf(
+        f,
+        throwOnUnresolved: false,
+      );
+      if (pAnn != null) {
+        if (pAnn.getField("encrypt")?.toBoolValue() == true && p.name != null) {
+          eFields.add(p.name!);
+        } else if (p.name != null) {
+          rFields.add(p.name!);
+        }
+      }
+    }
+
+    if (eFields.isNotEmpty || rFields.isNotEmpty) {
+      eAFields =
+          params.map((i) => i.name).whereType<String>().diff(eFields).toList();
+    }
 
     return (
           <Uri>[],
@@ -481,6 +535,7 @@ class ArtifactBuilder implements Builder {
               ctor,
               params,
               step,
+              eAFields,
             ),
             const $ArtifactFromMapComponent().onGenerate(
               this,
@@ -488,6 +543,7 @@ class ArtifactBuilder implements Builder {
               ctor,
               params,
               step,
+              eAFields,
             ),
             const $ArtifactCopyWithComponent().onGenerate(
               this,
@@ -495,6 +551,7 @@ class ArtifactBuilder implements Builder {
               ctor,
               params,
               step,
+              eAFields,
             ),
             const $ArtifactInstanceComponent().onGenerate(
               this,
@@ -502,6 +559,7 @@ class ArtifactBuilder implements Builder {
               ctor,
               params,
               step,
+              eAFields,
             ),
             const $ArtifactAttachComponent().onGenerate(
               this,
@@ -509,6 +567,7 @@ class ArtifactBuilder implements Builder {
               ctor,
               params,
               step,
+              eAFields,
             ),
             if ($artifactChecker
                     .firstAnnotationOf(clazz, throwOnUnresolved: false)
@@ -521,6 +580,7 @@ class ArtifactBuilder implements Builder {
                 ctor,
                 params,
                 step,
+                eAFields,
               ),
             if ($artifactChecker
                     .firstAnnotationOf(clazz, throwOnUnresolved: false)
@@ -533,6 +593,7 @@ class ArtifactBuilder implements Builder {
                 ctor,
                 params,
                 step,
+                eAFields,
               ),
           ]).then((i) => i.merged),
         )
