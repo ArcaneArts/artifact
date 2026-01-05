@@ -1,3 +1,6 @@
+# 1.0.24
+* Remove XML support
+
 # 1.0.23
 * Full TOON support
 * Support for new export systems

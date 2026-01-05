@@ -219,8 +219,6 @@ class ArtifactModelExporter {
   String get yaml => ArtifactCodecUtil.y(data);
   String get toon => ArtifactCodecUtil.b(data);
   String get toml => ArtifactCodecUtil.u(data);
-  String get xml => ArtifactCodecUtil.z(false, data);
-  String get xmlPretty => ArtifactCodecUtil.z(true, data);
   String get props => ArtifactCodecUtil.h(data);
 }
 

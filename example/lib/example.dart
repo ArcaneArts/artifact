@@ -1,83 +1,20 @@
 import 'package:artifact/artifact.dart';
 import 'package:example/gen/artifacts.gen.dart';
 
-@artifact
-class SomeModel {
-  final int age;
-  final String name;
-  final String ssn;
-  final String address;
+@Artifact(compression: false, reflection: true)
+class Person {
+  final String firstName;
+  final String lastName;
+  final DateTime? dateOfBirth;
 
-  const SomeModel({
-    required this.age,
-    required this.name,
-    required this.ssn,
-    required this.address,
-  });
-}
-
-@artifact
-class ParentThing {
-  final List<SomeModel> models;
-
-  const ParentThing({this.models = const []});
+  Person({required this.firstName, required this.lastName, this.dateOfBirth});
 }
 
 void main() {
-  $artifactCipher = "derp";
+  Person p = Person(firstName: "John", lastName: "Doe");
 
-  ParentThing m = ParentThing(
-    models: [
-      SomeModel(
-        name: "Daniel",
-        address: "115 Kanter Dr",
-        age: 29,
-        ssn: "123456789",
-      ),
-      SomeModel(
-        name: "Daniel",
-        address: "115 Kanter Dr",
-        age: 29,
-        ssn: "123456789",
-      ),
-      SomeModel(
-        name: "Daniel",
-        address: "115 Kanter Dr",
-        age: 29,
-        ssn: "123456789",
-      ),
-      SomeModel(
-        name: "Daniel",
-        address: "115 Kanter Dr",
-        age: 29,
-        ssn: "123456789",
-      ),
-      SomeModel(
-        name: "Daniel",
-        address: "115 Kanter Dr",
-        age: 29,
-        ssn: "123456789",
-      ),
-      SomeModel(
-        name: "Daniel",
-        address: "115 Kanter Dr",
-        age: 29,
-        ssn: "123456789",
-      ),
-      SomeModel(
-        name: "Daniel",
-        address: "115 Kanter Dr",
-        age: 29,
-        ssn: "123456789",
-      ),
-      SomeModel(
-        name: "Daniel",
-        address: "115 Kanter Dr",
-        age: 29,
-        ssn: "123456789",
-      ),
-    ],
-  );
-
-  print(m.to.toon);
+  for (var f in $Person.$fields) {
+    print("${f.name} ${f.fieldType}");
+    print(f.getValue(p));
+  }
 }

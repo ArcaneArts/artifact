@@ -5,7 +5,6 @@ import 'package:fast_log/fast_log.dart';
 import 'package:json_compress/json_compress.dart';
 import 'package:toml/toml.dart';
 import 'package:toonx/toonx.dart' as toonx;
-import 'package:xml/xml.dart';
 import 'package:yaml/yaml.dart';
 import 'package:yaml_edit/yaml_edit.dart';
 
@@ -80,9 +79,6 @@ class ArtifactCodecUtil {
   static String u(Map<String, dynamic> Function() map) =>
       TomlDocument.fromMap(map()).toString();
 
-  static String z(bool pretty, Map<String, dynamic> Function() map) =>
-      mapToXml("xml", map()).toXmlString(pretty: pretty);
-
   static String h(Map<String, dynamic> Function() map) =>
       PropertiesConverter.toProperties(map());
 
@@ -117,43 +113,6 @@ class ArtifactCodecUtil {
     throw ArgumentError(
       "Cannot parse $l (${l.runtimeType}) to ${T.toString()}",
     );
-  }
-
-  static XmlElement mapToXml(String tag, dynamic data) {
-    final element = XmlElement(XmlName(tag));
-    if (data is! Map<String, dynamic>) {
-      element.innerText = data.toString();
-      return element;
-    }
-
-    Map<String, String> attributes = {};
-    List<XmlNode> children = [];
-
-    for (final entry in data.entries) {
-      final String key = entry.key;
-      final dynamic value = entry.value;
-      if (key.startsWith('@')) {
-        final attrName = key.substring(1);
-        attributes[attrName] = value.toString();
-      } else if (value is Map<String, dynamic>) {
-        children.add(mapToXml(key, value));
-      } else if (value is List) {
-        for (final item in value) {
-          children.add(mapToXml(key, item));
-        }
-      } else {
-        final child = XmlElement(XmlName(key));
-        child.innerText = value.toString();
-        children.add(child);
-      }
-    }
-
-    element.attributes.addAll(
-      attributes.entries.map((e) => XmlAttribute(XmlName(e.key), e.value)),
-    );
-    element.children.addAll(children);
-
-    return element;
   }
 
   static dynamic e(List<dynamic> e, dynamic i) {
