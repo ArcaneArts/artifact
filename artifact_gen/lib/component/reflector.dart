@@ -149,13 +149,6 @@ class $ArtifactReflectorComponent implements $ArtifactBuilderOutput {
           continue;
         }
 
-        if (!ArtifactBuilder.$artifactChecker.hasAnnotationOf(
-          a.element!,
-          throwOnUnresolved: false,
-        )) {
-          continue;
-        }
-
         buf.write("$src,");
       }
       buf.write("],");

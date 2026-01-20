@@ -1,3 +1,6 @@
+# 1.2.4
+* Fix field annotation missing issue 
+
 # 1.2.3
 * Support artifact 1.0.25+
 
