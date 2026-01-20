@@ -20,6 +20,9 @@ class $ArtifactReflectorComponent implements $ArtifactBuilderOutput {
     StringBuffer buf = StringBuffer();
     List<Uri> importUris = <Uri>[];
 
+    buf.writeln(
+      '  ${builder.applyDefsF("ArtifactMirror")} get \$mirror{_;return ${builder.applyDefsF("ArtifactCodecUtil")}.m(_H)!;}',
+    );
     builder.registerDef("List<Object>");
     buf.write(
       "  static ${builder.applyDefsF("List<Object>")} get \$annotations {_;return[",
@@ -35,6 +38,7 @@ class $ArtifactReflectorComponent implements $ArtifactBuilderOutput {
     buf.write(
       '  static ${builder.applyDefsF("List<\$AFld>")} get \$fields{_;return[',
     );
+
     for (FormalParameterElement param in params) {
       String name = param.name ?? "";
       String type = param.type.getDisplayString(withNullability: true);
@@ -55,7 +59,13 @@ class $ArtifactReflectorComponent implements $ArtifactBuilderOutput {
         for (ElementAnnotation a in field.metadata.annotations) {
           importUris.add(a.element!.library!.uri);
           DartObject v = a.computeConstantValue()!;
-          buf.write("${dartObjectToCode(v, builder, importUris)},");
+          String src = dartObjectToCode(v, builder, importUris);
+
+          if (src.startsWith("_") || src.startsWith("Deprecated()")) {
+            continue;
+          }
+
+          buf.write("$src,");
         }
       }
       buf.write("],");
@@ -69,7 +79,12 @@ class $ArtifactReflectorComponent implements $ArtifactBuilderOutput {
       '  static ${builder.applyDefsF("List<\$AMth>")} get \$methods {_;return[',
     );
     for (MethodElement method in clazz.methods) {
-      if (method.isOperator) {
+      if (method.isOperator ||
+          method.isStatic ||
+          method.isAbstract ||
+          method.isExternal ||
+          method.isPrivate ||
+          method.isSynthetic) {
         continue;
       }
 
@@ -128,7 +143,20 @@ class $ArtifactReflectorComponent implements $ArtifactBuilderOutput {
       for (ElementAnnotation a in method.metadata.annotations) {
         importUris.add(a.element!.library!.uri);
         DartObject v = a.computeConstantValue()!;
-        buf.write("${dartObjectToCode(v, builder, importUris)},");
+        String src = dartObjectToCode(v, builder, importUris);
+
+        if (src.startsWith("_") || src.startsWith("Deprecated()")) {
+          continue;
+        }
+
+        if (!ArtifactBuilder.$artifactChecker.hasAnnotationOf(
+          a.element!,
+          throwOnUnresolved: false,
+        )) {
+          continue;
+        }
+
+        buf.write("$src,");
       }
       buf.write("],");
       buf.write("),");

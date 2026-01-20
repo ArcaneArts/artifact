@@ -168,6 +168,7 @@ class ArtifactBuilder implements Builder {
   Future<void> build(BuildStep step) async {
     assert(step.inputId.path == r'$lib$');
     registerDef("ArtifactCodecUtil");
+    registerDef("ArtifactMirror");
     registerDef("Map<String,dynamic>");
     registerDef("List<String>");
     registerDef("String");

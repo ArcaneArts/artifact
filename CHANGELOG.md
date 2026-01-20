@@ -1,3 +1,6 @@
+# 1.0.25
+* Additional reflection apis with `<instance>.$mirror`
+
 # 1.0.24
 * Remove XML support
 

@@ -1,3 +1,6 @@
+# 1.2.3
+* Support artifact 1.0.25+
+
 # 1.2.2
 * Fix reflection defs on operator methods (we skip them now)
 
