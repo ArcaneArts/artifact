@@ -1,3 +1,6 @@
+# 1.2.5
+* Even more fixes
+
 # 1.2.4
 * Fix field annotation missing issue 
 

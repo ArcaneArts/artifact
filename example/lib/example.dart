@@ -1,43 +1,38 @@
 import 'package:artifact/artifact.dart';
-import 'package:example/gen/artifacts.gen.dart';
 
-const Artifact model = Artifact(compression: false, reflection: true);
+const Artifact model = Artifact(compression: true, reflection: true);
 
-class NoRelfect {
-  const NoRelfect();
+class SomeAnnotation {
+  final bool thing;
+
+  const SomeAnnotation({this.thing = false});
 }
-
-@model
-class DoReflect {
-  const DoReflect();
-}
-
-@model
-class NoOp {}
 
 @model
 class Person {
   @deprecated
+  @SomeAnnotation()
   final String firstName;
 
-  @DoReflect()
-  @NoRelfect()
+  @SomeAnnotation()
   final String lastName;
-  @DoReflect()
+  @SomeAnnotation()
   final DateTime? dateOfBirth;
 
+  @SomeAnnotation()
   Person({required this.firstName, required this.lastName, this.dateOfBirth});
 
+  @SomeAnnotation()
   @override
   bool operator ==(Object other) {
     return super == other;
   }
 
-  @NoRelfect()
+  @SomeAnnotation()
   @override
   int get hashCode => super.hashCode;
 
-  @DoReflect()
+  @SomeAnnotation()
   @override
   String toString() {
     return "f";
@@ -46,12 +41,4 @@ class Person {
 
 void main() {
   Person p = Person(firstName: "John", lastName: "Doe");
-
-  for (ArtifactAnnotatedField<DoReflect> i
-      in p.$mirror.getAnnotatedFields<DoReflect>()) {
-    DoReflect a = i.annotation;
-    ArtifactFieldMirror f = i.field;
-    dynamic value = f.value;
-    print("${f.name} = $value");
-  }
 }

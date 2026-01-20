@@ -61,7 +61,7 @@ class $ArtifactReflectorComponent implements $ArtifactBuilderOutput {
           DartObject v = a.computeConstantValue()!;
           String src = dartObjectToCode(v, builder, importUris);
 
-          if (src.startsWith("_") || src.startsWith("Deprecated()")) {
+          if (src.startsWith("_Override()") || src.startsWith("Deprecated()")) {
             continue;
           }
 
@@ -145,7 +145,7 @@ class $ArtifactReflectorComponent implements $ArtifactBuilderOutput {
         DartObject v = a.computeConstantValue()!;
         String src = dartObjectToCode(v, builder, importUris);
 
-        if (src.startsWith("_") || src.startsWith("Deprecated()")) {
+        if (src.startsWith("_Override()") || src.startsWith("Deprecated()")) {
           continue;
         }
 
