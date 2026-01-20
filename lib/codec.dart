@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:artifact/artifact.dart';
+import 'package:artifact/reflect.dart';
 import 'package:fast_log/fast_log.dart';
 import 'package:json_compress/json_compress.dart';
 import 'package:toml/toml.dart';
@@ -66,6 +67,19 @@ class ArtifactCodecUtil {
       encryptionKey: $artifactCipher!,
       retainer: retain.isEmpty ? null : (k, v) => retain.contains(k),
     );
+  }
+
+  static ArtifactMirror? m(Object instance) {
+    $AClass? c =
+        ArtifactAccessor.all
+            .where((i) => i.artifactMirror.containsKey(instance.runtimeType))
+            .firstOrNull
+            ?.artifactMirror[instance.runtimeType];
+    if (c == null) {
+      return null;
+    }
+
+    return ArtifactMirror(c, instance);
   }
 
   static String j(bool p, Map<String, dynamic> Function() map) =>

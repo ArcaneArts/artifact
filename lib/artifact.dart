@@ -9,6 +9,7 @@ import 'package:threshold/threshold.dart';
 
 export 'package:artifact/codec.dart';
 export 'package:artifact/events.dart';
+export 'package:artifact/reflect.dart';
 export 'package:artifact/shrink.dart';
 
 Map<String, ArtifactAccessor> _artifactRegistry = {};
