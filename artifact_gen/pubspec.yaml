@@ -1,6 +1,6 @@
 name: artifact_gen
 description: Data Modeling generator for the local madman
-version: 1.2.1
+version: 1.2.2
 repository: https://github.com/ArcaneArts/artifact
 library: true
 environment:

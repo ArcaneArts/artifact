@@ -1,7 +1,9 @@
 import 'package:artifact/artifact.dart';
 import 'package:example/gen/artifacts.gen.dart';
 
-@Artifact(compression: false, reflection: true)
+const Artifact model = Artifact(compression: false, reflection: true);
+
+@model
 class Person {
   final String firstName;
   final String lastName;

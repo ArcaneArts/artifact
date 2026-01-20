@@ -1,3 +1,6 @@
+# 1.2.2
+* Fix reflection defs on operator methods (we skip them now)
+
 # 1.2.1
 * Fix naming for exception tag
 

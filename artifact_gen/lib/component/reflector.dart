@@ -69,6 +69,10 @@ class $ArtifactReflectorComponent implements $ArtifactBuilderOutput {
       '  static ${builder.applyDefsF("List<\$AMth>")} get \$methods {_;return[',
     );
     for (MethodElement method in clazz.methods) {
+      if (method.isOperator) {
+        continue;
+      }
+
       String name = method.name ?? "";
       String type = method.returnType.getDisplayString(withNullability: true);
       String baseType = method.returnType.getDisplayString(
