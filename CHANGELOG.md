@@ -1,3 +1,6 @@
+# 1.0.26
+* @internal and @external for auto exporting files
+
 # 1.0.25
 * Additional reflection apis with `<instance>.$mirror`
 

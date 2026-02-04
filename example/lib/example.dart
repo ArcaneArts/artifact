@@ -8,9 +8,9 @@ class SomeAnnotation {
   const SomeAnnotation({this.thing = false});
 }
 
+//
 @model
 class Person {
-  @deprecated
   @SomeAnnotation()
   final String firstName;
 

@@ -1,5 +1,9 @@
 import 'dart:async';
+import 'dart:io';
 
+import 'package:analyzer/dart/analysis/utilities.dart';
+import 'package:analyzer/dart/ast/ast.dart';
+import 'package:analyzer/dart/ast/syntactic_entity.dart';
 import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
@@ -14,9 +18,11 @@ import 'package:artifact_gen/component/to_map.dart';
 import 'package:artifact_gen/converter.dart';
 import 'package:artifact_gen/util.dart';
 import 'package:build/build.dart';
+import 'package:fast_log/fast_log.dart';
 import 'package:glob/glob.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:toxic/extensions/iterable.dart';
+import 'package:yaml/yaml.dart';
 
 typedef $BuildOutput = (List<Uri>, StringBuffer);
 
@@ -58,7 +64,7 @@ abstract class $ArtifactBuilderOutput {
 class ArtifactBuilder implements Builder {
   @override
   Map<String, List<String>> get buildExtensions => const <String, List<String>>{
-    r'$lib$': <String>['gen/artifacts.gen.dart'],
+    r'$lib$': <String>['gen/artifacts.gen.dart', 'gen/exports.gen.dart'],
   };
 
   late final ArtifactTypeConverter converter;
@@ -72,6 +78,7 @@ class ArtifactBuilder implements Builder {
   static final TypeChecker $renameChecker = TypeChecker.typeNamed(rename);
   static final Map<String, ClassElement> $iClassMap = {};
   static final Map<String, List<String>> $artifactSubclasses = {};
+  Map<String, dynamic> artifactConfig = {};
 
   static void $linkSubclass(ClassElement sub, ClassElement sup) {
     List<String> list = $artifactSubclasses.putIfAbsent(
@@ -166,6 +173,22 @@ class ArtifactBuilder implements Builder {
 
   @override
   Future<void> build(BuildStep step) async {
+    try {
+      Map<String, dynamic> pubspec = Map<String, dynamic>.from(
+        loadYaml(File("pubspec.yaml").readAsStringSync()),
+      );
+      artifactConfig =
+          Map<String, dynamic>.from(pubspec["artifact"] ?? {}) ?? {};
+      artifactConfig["name"] = pubspec["name"] ?? "unknown_package";
+      verbose("Loaded Config ${artifactConfig}");
+    } catch (e) {
+      error(e);
+      warn(
+        "Couldn't read ${File("pubspec.yaml").absolute.path} for configuration defaults! Using built-in defaults. Override with @Artifact(...) annotations only.",
+      );
+      artifactConfig = {"name": "couldnt_find_pubspec"};
+    }
+
     assert(step.inputId.path == r'$lib$');
     registerDef("ArtifactCodecUtil");
     registerDef("ArtifactMirror");
@@ -444,6 +467,105 @@ class ArtifactBuilder implements Builder {
     outBuf.writeln(":throw ${applyDefsF("Exception")}();");
     AssetId out = AssetId(step.inputId.package, 'lib/gen/artifacts.gen.dart');
     await step.writeAsString(out, outBuf.toString());
+
+    bool autoExport = artifactConfig["export"] ?? false;
+    Stream<AssetId> assets = step.findAssets(Glob('lib/**.dart'));
+
+    List<Future<String?>> worker = [];
+    await for (AssetId i in assets) {
+      String exportUri = i.uri.path;
+
+      if (exportUri != '${artifactConfig["name"]}/gen/exports.gen.dart' &&
+          exportUri !=
+              '${artifactConfig["name"]}/${artifactConfig["name"]}.dart') {
+        worker.add(
+          step.readAsString(i).then((v) {
+            Iterable<SyntacticEntity> ast =
+                parseString(content: v).unit.childEntities;
+
+            for (SyntacticEntity j in ast) {
+              if (j is PartOfDirective) {
+                return null;
+              }
+            }
+
+            return getExpString(ast, exportUri, autoExport);
+          }),
+        );
+      } else {
+        verbose("Skipping export analysis for: ${i.uri}");
+      }
+    }
+
+    List<String> s = (await Future.wait(worker)).whereType<String>().toList();
+    s.add("export 'artifacts.gen.dart';");
+    if (s.isNotEmpty) {
+      AssetId outExports = AssetId(
+        step.inputId.package,
+        'lib/gen/exports.gen.dart',
+      );
+      await step.writeAsString(outExports, s.join("\n"));
+    } else {
+      warn("No exports generated.");
+    }
+  }
+
+  String? getExpString(
+    Iterable<SyntacticEntity> ast,
+    String exportUri,
+    bool def,
+  ) {
+    int ignoreCount = 0;
+    int exportCount = 0;
+    List<String> ignoreList = <String>[];
+    List<String> exportList = <String>[];
+    List<String> normalList = <String>[];
+
+    ast.whereType<NamedCompilationUnitMember>().forEach((e) {
+      Iterable<String> meta = e.metadata.map((e) => e.toString());
+      if (meta.contains('@internal')) {
+        ignoreCount++;
+        ignoreList.add(e.name.toString());
+      } else if (meta.contains('@external')) {
+        exportCount++;
+        exportList.add(e.name.toString());
+      } else {
+        normalList.add(e.name.toString());
+      }
+    });
+
+    ast.whereType<TopLevelVariableDeclaration>().forEach((e) {
+      Iterable<String> meta = e.metadata.map((e) => e.toString());
+      if (meta.contains('@internal')) {
+        ignoreCount++;
+        ignoreList.add(e.variables.variables.first.name.toString());
+      } else if (meta.contains('@external')) {
+        exportCount++;
+        exportList.add(e.variables.variables.first.name.toString());
+      } else {
+        normalList.add(e.variables.variables.first.name.toString());
+      }
+    });
+
+    if (def) {
+      if (ignoreCount == 0) {
+        return "export 'package:$exportUri';";
+      }
+
+      String toExpLst = [...normalList, ...exportList].join(', ');
+      if (toExpLst.isNotEmpty) {
+        return "export 'package:$exportUri' show $toExpLst;";
+      } else {
+        return null;
+      }
+    } else {
+      if (exportCount == 0) {
+        return null;
+      }
+
+      String toExpLst = exportList.join(',');
+      return "export 'package:$exportUri' show $toExpLst;";
+    }
   }
 
   Uri $getImport(DartType type, LibraryElement targetLib) {
@@ -621,3 +743,10 @@ class ArtifactBuilder implements Builder {
 }
 
 enum $ArtifactConvertMode { toMap, fromMap }
+
+String getTypeName(DartType type) {
+  final display = type.getDisplayString(withNullability: false);
+  if (display != "InvalidType") return display;
+
+  return type.element?.name ?? type.element?.displayName ?? 'InvalidType';
+}

@@ -21,6 +21,8 @@ dev_dependencies:
   dart_mappable_builder: ^4.5.0
   lints: ^5.0.0
   test: ^1.24.0
+artifact:
+  export: false
 
 scripts:
   build: flutter pub run build_runner build --delete-conflicting-outputs

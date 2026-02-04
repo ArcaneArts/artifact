@@ -3,6 +3,7 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:artifact_gen/builder.dart';
 import 'package:build/build.dart';
+import 'package:fast_log/fast_log.dart';
 import 'package:toxic/extensions/iterable.dart';
 
 class $ArtifactReflectorComponent implements $ArtifactBuilderOutput {
@@ -28,9 +29,9 @@ class $ArtifactReflectorComponent implements $ArtifactBuilderOutput {
       "  static ${builder.applyDefsF("List<Object>")} get \$annotations {_;return[",
     );
     for (ElementAnnotation a in clazz.metadata.annotations) {
-      importUris.add(a.element!.library!.uri);
-      DartObject v = a.computeConstantValue()!;
-      buf.write("${dartObjectToCode(v, builder, importUris)},");
+      if (a.element == null) {
+        continue;
+      }
     }
     buf.writeln("];}");
 
@@ -57,6 +58,9 @@ class $ArtifactReflectorComponent implements $ArtifactBuilderOutput {
       FieldElement? field = clazz.getField(name);
       if (field != null) {
         for (ElementAnnotation a in field.metadata.annotations) {
+          if (a.element == null) {
+            continue;
+          }
           importUris.add(a.element!.library!.uri);
           DartObject v = a.computeConstantValue()!;
           String src = dartObjectToCode(v, builder, importUris);
@@ -78,6 +82,7 @@ class $ArtifactReflectorComponent implements $ArtifactBuilderOutput {
     buf.write(
       '  static ${builder.applyDefsF("List<\$AMth>")} get \$methods {_;return[',
     );
+    a:
     for (MethodElement method in clazz.methods) {
       if (method.isOperator ||
           method.isStatic ||
@@ -86,6 +91,15 @@ class $ArtifactReflectorComponent implements $ArtifactBuilderOutput {
           method.isPrivate ||
           method.isSynthetic) {
         continue;
+      }
+
+      for (FormalParameterElement i in method.formalParameters) {
+        if (getTypeName(i.type) == "InvalidType") {
+          warn(
+            "Unable to reflect on method ${clazz.name}.${method.name} because param ${i.name}'s type is unreadable.",
+          );
+          continue a;
+        }
       }
 
       String name = method.name ?? "";
@@ -105,16 +119,16 @@ class $ArtifactReflectorComponent implements $ArtifactBuilderOutput {
       for (FormalParameterElement i in method.formalParameters.where(
         (i) => !i.isNamed,
       )) {
-        buf.write(
-          "p.o<${builder.applyDefsF(i.type.getDisplayString(withNullability: false))}>(${g++}),",
-        );
+        builder.registerDef(getTypeName(i.type));
+        buf.write("p.o<${builder.applyDefsF(getTypeName(i.type))}>(${g++}),");
       }
 
       for (FormalParameterElement i in method.formalParameters.where(
         (i) => i.isNamed,
       )) {
+        builder.registerDef(getTypeName(i.type));
         buf.write(
-          "${i.name}: p.n<${builder.applyDefsF(i.type.getDisplayString(withNullability: false))}>(${builder.stringD(i.name ?? "")}),",
+          "${i.name}: p.n<${builder.applyDefsF(getTypeName(i.type))}>(${builder.stringD(i.name ?? "")}),",
         );
       }
       buf.write("),");
@@ -123,19 +137,17 @@ class $ArtifactReflectorComponent implements $ArtifactBuilderOutput {
       for (FormalParameterElement i in method.formalParameters.where(
         (i) => !i.isNamed,
       )) {
-        builder.registerDef(i.type.getDisplayString(withNullability: false));
-        buf.write(
-          "${builder.applyDefsF(i.type.getDisplayString(withNullability: false))},",
-        );
+        builder.registerDef(getTypeName(i.type));
+        buf.write("${builder.applyDefsF(getTypeName(i.type))},");
       }
       buf.write("],");
       buf.write("{");
       for (FormalParameterElement i in method.formalParameters.where(
         (i) => i.isNamed,
       )) {
-        builder.registerDef(i.type.getDisplayString(withNullability: false));
+        builder.registerDef(getTypeName(i.type));
         buf.write(
-          "${builder.stringD(i.name ?? "")}: ${builder.applyDefsF(i.type.getDisplayString(withNullability: false))},",
+          "${builder.stringD(i.name ?? "")}: ${builder.applyDefsF(getTypeName(i.type))},",
         );
       }
       buf.write("},");

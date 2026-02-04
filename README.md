@@ -17,6 +17,7 @@ The beauty of Artifact lies in its simplicity: annotate your immutable classes, 
 - **Attachments**: Annotate fields with custom metadata (e.g., UI hints) and retrieve via `getAttachment`.
 - **Options**: Compression for smaller output, reflection for runtime introspection, schema generation.
 - **Type Safety**: Explicit typing, null safety, and error handling for missing required fields.
+- **Exporting**: You can auto export files to an exports.gen.dart with controls
 
 Because artifact is generating extension methods, certain class ops are not possible such as: 
 
@@ -310,6 +311,53 @@ Output demonstrates construction, serialization, and type checks.
 The `artifact_gen` builder scans for `@Artifact` classes, analyzes fields/constructors/inheritance, and generates type-safe extensions. Supports null safety, required fields (throws on missing), defaults, and compression for concise code.
 
 No runtime reflection—pure code generation for performance.
+
+## Auto Exporting
+
+To just export everything add an `artifact` block to your `pubspec.yaml`
+
+```yaml
+name: my_package
+version: 1.0.0
+
+artifact: 
+  # Use this to auto export all generated files to exports.gen.dart
+  export: true
+```
+
+If you dont define export: true, it assumes false, however you can still fine tune exports with `@external` and `@internal` annotations.
+
+File: `lib/a.dart`
+```dart
+@internal
+String coreValue = "something";
+
+@external
+class SomeCommonClass {}
+```
+
+and `lib/b.dart`
+```dart
+@internal
+class AnotherClass {}
+
+@external
+class SomeOtherClass {}
+
+@internal
+int add(int a, int b) {
+  return a + b;
+}
+```
+
+Assuming `artifact: export: true`, the export file `lib/exports.gen.dart` will contain
+
+```dart
+export 'package:example/b.dart' show SomeOtherClass;
+export 'package:example/a.dart' show SomeCommonClass;
+```
+
+Then to complete setup just add `export 'gen/exports.gen.dart';` to your `my_package.dart` file.
 
 ## Limitations
 

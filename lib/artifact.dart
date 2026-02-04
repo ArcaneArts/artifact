@@ -50,6 +50,18 @@ class ArtifactAccessor {
 
 const Artifact artifact = Artifact();
 
+const AutoExport external = AutoExport();
+
+const IgnoreExport internal = IgnoreExport();
+
+class AutoExport {
+  const AutoExport();
+}
+
+class IgnoreExport {
+  const IgnoreExport();
+}
+
 class Artifact {
   final bool generateSchema;
   final bool compression;
