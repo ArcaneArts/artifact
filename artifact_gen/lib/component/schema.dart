@@ -2,9 +2,8 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:artifact_gen/builder.dart';
 import 'package:build/build.dart';
-import 'package:toxic/extensions/iterable.dart';
 
-class $ArtifactSchemaComponent implements $ArtifactBuilderOutput {
+class $ArtifactSchemaComponent with $ArtifactBuilderOutput {
   const $ArtifactSchemaComponent();
 
   @override
@@ -22,24 +21,13 @@ class $ArtifactSchemaComponent implements $ArtifactBuilderOutput {
     buf.write("${builder.stringD("type")}:${builder.stringD("object")},");
     buf.write("${builder.stringD("properties")}:{");
     for (FormalParameterElement i in params) {
-      String? rn;
-      FieldElement? field = clazz.fields.select((p) => i.name == p.name);
+      String rn = builder.renamedParamName(
+        clazz,
+        i,
+        includeParamAnnotation: false,
+      );
 
-      if (field != null &&
-          ArtifactBuilder.$renameChecker.hasAnnotationOf(
-            field,
-            throwOnUnresolved: false,
-          )) {
-        rn =
-            ArtifactBuilder.$renameChecker
-                .firstAnnotationOf(field, throwOnUnresolved: false)!
-                .getField("newName")!
-                .toStringValue();
-      }
-
-      rn ??= i.name;
-
-      buf.write("${builder.stringD(rn ?? "")}:{");
+      buf.write("${builder.stringD(rn)}:{");
 
       if (i.type.getDisplayString(withNullability: true) == "String") {
         buf.write("${builder.stringD("type")}:");
@@ -85,7 +73,7 @@ class $ArtifactSchemaComponent implements $ArtifactBuilderOutput {
         buf.write("...\$${i.type.name}.schema,");
       }
 
-      FieldElement? f = clazz.fields.select((j) => j.name == i.name);
+      FieldElement? f = builder.fieldForParam(clazz, i);
       String? description =
           f == null
               ? null
@@ -106,15 +94,8 @@ class $ArtifactSchemaComponent implements $ArtifactBuilderOutput {
 
     buf.write(
       "${builder.stringD("required")}:[${params.map((i) {
-        String? rn;
-        FieldElement? field = clazz.fields.select((p) => i.name == p.name);
-
-        if (field != null && ArtifactBuilder.$renameChecker.hasAnnotationOf(field, throwOnUnresolved: false)) {
-          rn = ArtifactBuilder.$renameChecker.firstAnnotationOf(field, throwOnUnresolved: false)!.getField("newName")!.toStringValue();
-        }
-
-        rn ??= i.name;
-        return builder.stringD(rn ?? "");
+        String rn = builder.renamedParamName(clazz, i, includeParamAnnotation: false);
+        return builder.stringD(rn);
       }).join(",")}],",
     );
     buf.write("${builder.stringD("additionalProperties")}:_F");

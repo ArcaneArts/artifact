@@ -4,7 +4,7 @@ import 'package:artifact_gen/builder.dart';
 import 'package:build/build.dart';
 import 'package:toxic/extensions/string.dart';
 
-class $ArtifactCopyWithComponent implements $ArtifactBuilderOutput {
+class $ArtifactCopyWithComponent with $ArtifactBuilderOutput {
   const $ArtifactCopyWithComponent();
 
   @override
@@ -23,19 +23,15 @@ class $ArtifactCopyWithComponent implements $ArtifactBuilderOutput {
     buf.write('  ${builder.applyDefsF(clazz.name ?? "")} copyWith({');
 
     for (FormalParameterElement param in params) {
-      String name = param.name ?? "";
+      String name = paramName(param);
       DartType type = param.type;
-      String baseType = type.getDisplayString(withNullability: false);
+      String baseType = baseTypeOf(type);
       builder.registerDef(baseType);
-      String fullType =
-          type.getDisplayString(withNullability: true).endsWith("?")
-              ? "${builder.applyDefsF(baseType)}?"
-              : builder.applyDefsF(baseType);
       String forceNullType = "${builder.applyDefsF(baseType)}?";
 
       buf.write('$forceNullType $name,');
       builder.registerDef("bool");
-      if (param.isOptionalNamed && fullType.endsWith("?")) {
+      if (supportsDeleteFlag(param)) {
         buf.write(
           '${builder.applyDefsF("bool")} delete${name.capitalize()}=_F,',
         );
@@ -50,7 +46,7 @@ class $ArtifactCopyWithComponent implements $ArtifactBuilderOutput {
       Uri uri = builder.$getImport(type, targetLib);
       if (uri.toString().isNotEmpty) importUris.add(uri);
 
-      if (baseType.startsWith("List<") || baseType.startsWith("Set<")) {
+      if (isCollectionType(baseType)) {
         buf.write(
           '${builder.applyDefsF(baseType)}? append${name.capitalize()},',
         );
@@ -59,94 +55,22 @@ class $ArtifactCopyWithComponent implements $ArtifactBuilderOutput {
         );
       }
 
-      if (baseType == "int") {
-        buf.write('${builder.applyDefsF("int")}? delta${name.capitalize()},');
-      }
-      if (baseType == "double") {
+      if (isNumericType(baseType)) {
         buf.write(
-          '${builder.applyDefsF("double")}? delta${name.capitalize()},',
+          '${builder.applyDefsF(baseType)}? delta${name.capitalize()},',
         );
       }
     }
     buf.write('})'); // end of parameter list, start body
 
-    List<String>? subs = ArtifactBuilder.$artifactSubclasses[clazz.name];
-    bool hasSubs = subs != null && subs.isNotEmpty;
+    List<String> subs = builder.subclassesOf(clazz);
+    bool hasSubs = subs.isNotEmpty;
     if (hasSubs) {
       buf.write("{");
       for (String sub in subs) {
         buf.write('if (_H is ${builder.applyDefsF(sub)}){');
         buf.write('return (_H as ${builder.applyDefsF(sub)}).copyWith(');
-        ClassElement? iClazz = ArtifactBuilder.$iClassMap[sub];
-
-        if (iClazz != null) {
-          ConstructorElement? iCtor;
-          for (ConstructorElement c in clazz.constructors) {
-            if ((c.name ?? "new") == "new") {
-              iCtor = c;
-              break;
-            }
-          }
-
-          if (iCtor != null) {
-            List<FormalParameterElement> iParams = <FormalParameterElement>[];
-            for (FormalParameterElement p in iCtor.formalParameters) {
-              bool matchesField = clazz.getField(p.name ?? "") != null;
-              if (p.isInitializingFormal || p.isSuperFormal || matchesField) {
-                iParams.add(p);
-              }
-            }
-
-            //////////////////////////////////////////////////////////////////////
-            for (FormalParameterElement param in iParams) {
-              String name = param.name ?? "";
-              DartType type = param.type;
-              String baseType = type.getDisplayString(withNullability: false);
-              builder.registerDef(baseType);
-              String fullType =
-                  type.getDisplayString(withNullability: true).endsWith("?")
-                      ? "${builder.applyDefsF(baseType)}?"
-                      : builder.applyDefsF(baseType);
-              String forceNullType = "${builder.applyDefsF(baseType)}?";
-
-              buf.write('$name: $name,');
-              builder.registerDef("bool");
-              if (param.isOptionalNamed && fullType.endsWith("?")) {
-                buf.write(
-                  'delete${name.capitalize()}:delete${name.capitalize()},',
-                );
-              }
-
-              if (param.hasDefaultValue) {
-                buf.write(
-                  'reset${name.capitalize()}:reset${name.capitalize()},',
-                );
-              }
-
-              if (baseType.startsWith("List<") || baseType.startsWith("Set<")) {
-                buf.write(
-                  'append${name.capitalize()}:append${name.capitalize()},',
-                );
-                buf.write(
-                  'remove${name.capitalize()}:remove${name.capitalize()},',
-                );
-              }
-
-              if (baseType == "int") {
-                buf.write(
-                  'delta${name.capitalize()}:delta${name.capitalize()},',
-                );
-              }
-              if (baseType == "double") {
-                buf.write(
-                  'delta${name.capitalize()}:delta${name.capitalize()},',
-                );
-              }
-            }
-            //////////////////////////////////////////////////////////////////////
-          }
-        }
-
+        _writeForwardedCopyWithArgs(buf, params);
         buf.write(");");
         buf.write('}');
       }
@@ -156,40 +80,31 @@ class $ArtifactCopyWithComponent implements $ArtifactBuilderOutput {
       '${!hasSubs ? "=>" : "return "}${builder.applyDefsF(clazz.name ?? "")}(',
     );
     for (FormalParameterElement param in params) {
-      String name = param.name ?? "";
-      String bsn = param.type.getDisplayString(withNullability: true);
+      String name = paramName(param);
+      bool nullable = isNullableType(param.type);
 
       String pref = "";
-      String nd = bsn.endsWith("?") ? "??0" : "";
-      String bs = param.type.getDisplayString(withNullability: false);
-      if (bs == "int") {
-        pref =
-            "delta${name.capitalize()}!=null?($name??_H.$name$nd)+delta${name.capitalize()}:";
-      }
-
-      if (bs == "double") {
+      String nd = nullable ? "??0" : "";
+      String bs = baseTypeOf(param.type);
+      if (isNumericType(bs)) {
         pref =
             "delta${name.capitalize()}!=null?($name??_H.$name$nd)+delta${name.capitalize()}:";
       }
 
       String o = "";
 
-      if (param.isOptionalNamed && bsn.endsWith("?") && param.hasDefaultValue) {
-        o = '${pref}delete${name.capitalize()}?null:reset${name.capitalize()} ? ${builder.valD(param.defaultValueCode.toString(), param.type)}:($name??_H.$name),';
-      } else if (param.isOptionalNamed && bsn.endsWith("?")) {
+      if (supportsDeleteFlag(param) && param.hasDefaultValue) {
+        o = '${pref}delete${name.capitalize()}?null:reset${name.capitalize()} ? ${builder.defaultValueForParam(param)}:($name??_H.$name),';
+      } else if (supportsDeleteFlag(param)) {
         o = '${pref}delete${name.capitalize()}?null:($name??_H.$name),';
       } else if (param.hasDefaultValue) {
-        o = '${pref}reset${name.capitalize()}?${builder.valD(param.defaultValueCode.toString(), param.type)}:($name??_H.$name),';
+        o = '${pref}reset${name.capitalize()}?${builder.defaultValueForParam(param)}:($name??_H.$name),';
       } else {
         o = '$pref$name??_H.$name,';
       }
 
-      if (bs.startsWith("List<") || bs.startsWith("Set<")) {
-        String gn = "";
-
-        if (param.type.getDisplayString(withNullability: true).endsWith("?")) {
-          gn = "?";
-        }
+      if (isCollectionType(bs)) {
+        String gn = nullable ? "?" : "";
 
         if (param.hasDefaultValue) {
           builder.registerDef(bs);
@@ -205,5 +120,34 @@ class $ArtifactCopyWithComponent implements $ArtifactBuilderOutput {
     buf.writeln(');${hasSubs ? "}" : ""}');
 
     return (importUris, buf);
+  }
+
+  void _writeForwardedCopyWithArgs(
+    StringBuffer buf,
+    List<FormalParameterElement> params,
+  ) {
+    for (FormalParameterElement param in params) {
+      String name = paramName(param);
+      String baseType = baseTypeOf(param.type);
+
+      buf.write('$name: $name,');
+
+      if (supportsDeleteFlag(param)) {
+        buf.write('delete${name.capitalize()}:delete${name.capitalize()},');
+      }
+
+      if (param.hasDefaultValue) {
+        buf.write('reset${name.capitalize()}:reset${name.capitalize()},');
+      }
+
+      if (isCollectionType(baseType)) {
+        buf.write('append${name.capitalize()}:append${name.capitalize()},');
+        buf.write('remove${name.capitalize()}:remove${name.capitalize()},');
+      }
+
+      if (isNumericType(baseType)) {
+        buf.write('delta${name.capitalize()}:delta${name.capitalize()},');
+      }
+    }
   }
 }

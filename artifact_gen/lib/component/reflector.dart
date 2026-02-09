@@ -6,7 +6,7 @@ import 'package:build/build.dart';
 import 'package:fast_log/fast_log.dart';
 import 'package:toxic/extensions/iterable.dart';
 
-class $ArtifactReflectorComponent implements $ArtifactBuilderOutput {
+class $ArtifactReflectorComponent with $ArtifactBuilderOutput {
   const $ArtifactReflectorComponent();
 
   @override

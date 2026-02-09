@@ -4,7 +4,7 @@ import 'package:analyzer/dart/element/type.dart';
 import 'package:artifact_gen/builder.dart';
 import 'package:build/build.dart';
 
-class $ArtifactInstanceComponent implements $ArtifactBuilderOutput {
+class $ArtifactInstanceComponent with $ArtifactBuilderOutput {
   const $ArtifactInstanceComponent();
 
   @override
@@ -27,10 +27,7 @@ class $ArtifactInstanceComponent implements $ArtifactBuilderOutput {
         if (i.type.nullabilitySuffix == NullabilitySuffix.question) {
           buf.write("${i.name}: null,");
         } else if (i.hasDefaultValue) {
-          String defaultCode =
-              i.defaultValueCode == null
-                  ? 'null'
-                  : builder.valD(i.defaultValueCode.toString(), i.type);
+          String defaultCode = builder.defaultValueForParam(i);
           buf.write("${i.name}: $defaultCode,");
         } else if (i.type.isDartCoreBool) {
           buf.write("${i.name}: _F,");
@@ -43,7 +40,8 @@ class $ArtifactInstanceComponent implements $ArtifactBuilderOutput {
         } else if (i.type.name == "DateTime") {
           buf.write("${i.name}: DateTime.now(),");
         } else if (i.type.isDartCoreEnum ||
-            (i.type is InterfaceType && $isEnum(i.type as InterfaceType))) {
+            (i.type is InterfaceType &&
+                builder.$isEnum(i.type as InterfaceType))) {
           buf.write(
             "${i.name}: ${builder.applyDefsF(i.type.getDisplayString(withNullability: false))}.values.first,",
           );
@@ -61,7 +59,4 @@ class $ArtifactInstanceComponent implements $ArtifactBuilderOutput {
 
     return (importUris, buf);
   }
-
-  bool $isEnum(InterfaceType type) =>
-      type.element is EnumElement || type.element.kind == ElementKind.ENUM;
 }

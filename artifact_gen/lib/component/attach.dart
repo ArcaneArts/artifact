@@ -6,11 +6,10 @@ import 'package:artifact_gen/builder.dart';
 import 'package:build/build.dart';
 import 'package:code_builder/code_builder.dart';
 import 'package:source_gen/source_gen.dart';
-import 'package:toxic/extensions/iterable.dart';
 
 final DartEmitter _emitter = DartEmitter(useNullSafetySyntax: true);
 
-class $ArtifactAttachComponent implements $ArtifactBuilderOutput {
+class $ArtifactAttachComponent with $ArtifactBuilderOutput {
   const $ArtifactAttachComponent();
   static final TypeChecker $attachChecker = TypeChecker.typeNamed(attach);
 
@@ -30,7 +29,7 @@ class $ArtifactAttachComponent implements $ArtifactBuilderOutput {
       List<DartObject> a = [
         ...$attachChecker.annotationsOf(p, throwOnUnresolved: false),
       ];
-      FieldElement? f = clazz.fields.select((i) => i.name == p.name);
+      FieldElement? f = builder.fieldForParam(clazz, p);
       if (f == null) continue;
       a.addAll($attachChecker.annotationsOf(f, throwOnUnresolved: false));
 

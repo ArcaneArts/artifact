@@ -2,9 +2,8 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:artifact_gen/builder.dart';
 import 'package:build/build.dart';
-import 'package:toxic/extensions/iterable.dart';
 
-class $ArtifactToMapComponent implements $ArtifactBuilderOutput {
+class $ArtifactToMapComponent with $ArtifactBuilderOutput {
   const $ArtifactToMapComponent();
 
   @override
@@ -27,8 +26,8 @@ class $ArtifactToMapComponent implements $ArtifactBuilderOutput {
     buf.write("  ${builder.applyDefsF("Map<String,dynamic>")} toMap(){");
     buf.write("_;");
 
-    List<String>? subs = ArtifactBuilder.$artifactSubclasses[clazz.name];
-    if (subs != null && subs.isNotEmpty) {
+    List<String> subs = builder.subclassesOf(clazz);
+    if (subs.isNotEmpty) {
       for (String sub in subs) {
         buf.write('if (_H is ${builder.applyDefsF(sub)}){');
         buf.write('return (_H as ${builder.applyDefsF(sub)}).toMap();');
@@ -61,7 +60,7 @@ class $ArtifactToMapComponent implements $ArtifactBuilderOutput {
     }
 
     for (FormalParameterElement param in params) {
-      String name = param.name ?? "";
+      String name = paramName(param);
 
       ({String code, List<Uri> imports}) conv = builder.converter.$convert(
         name,
@@ -70,31 +69,9 @@ class $ArtifactToMapComponent implements $ArtifactBuilderOutput {
         $ArtifactConvertMode.toMap,
       );
 
-      String? rn;
-      FieldElement? field = clazz.fields.select((i) => i.name == param.name);
+      String rn = builder.renamedParamName(clazz, param);
 
-      if (field != null &&
-          ArtifactBuilder.$renameChecker.hasAnnotationOf(
-            field,
-            throwOnUnresolved: false,
-          )) {
-        rn =
-            ArtifactBuilder.$renameChecker
-                .firstAnnotationOf(field, throwOnUnresolved: false)!
-                .getField("newName")!
-                .toStringValue();
-      } else if (ArtifactBuilder.$renameChecker.hasAnnotationOf(
-        param,
-        throwOnUnresolved: false,
-      )) {
-        rn =
-            ArtifactBuilder.$renameChecker
-                .firstAnnotationOf(param, throwOnUnresolved: false)!
-                .getField("newName")!
-                .toStringValue();
-      }
-
-      buf.write("${builder.stringD(rn ?? name)}:${conv.code.trim()},");
+      buf.write("${builder.stringD(rn)}:${conv.code.trim()},");
       importUris.addAll(conv.imports);
     }
 

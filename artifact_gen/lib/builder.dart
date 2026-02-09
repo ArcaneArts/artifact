@@ -50,7 +50,7 @@ extension X$BuildOutput on $BuildOutput {
   }
 }
 
-abstract class $ArtifactBuilderOutput {
+mixin $ArtifactBuilderOutput {
   Future<$BuildOutput> onGenerate(
     ArtifactBuilder builder,
     ClassElement clazz,
@@ -59,6 +59,23 @@ abstract class $ArtifactBuilderOutput {
     BuildStep step,
     List<String>? eFields,
   );
+
+  String paramName(FormalParameterElement param) => param.name ?? "";
+
+  String baseTypeOf(DartType type) =>
+      type.getDisplayString(withNullability: false);
+
+  bool isNullableType(DartType type) =>
+      type.getDisplayString(withNullability: true).endsWith("?");
+
+  bool isCollectionType(String baseType) =>
+      baseType.startsWith("List<") || baseType.startsWith("Set<");
+
+  bool isNumericType(String baseType) =>
+      baseType == "int" || baseType == "double";
+
+  bool supportsDeleteFlag(FormalParameterElement param) =>
+      param.isOptionalNamed && isNullableType(param.type);
 }
 
 class ArtifactBuilder implements Builder {
@@ -170,6 +187,72 @@ class ArtifactBuilder implements Builder {
 
     return "$at";
   }
+
+  FieldElement? fieldForParam(
+    ClassElement clazz,
+    FormalParameterElement param,
+  ) {
+    if (param.name == null) {
+      return null;
+    }
+
+    return clazz.getField(param.name!);
+  }
+
+  String renamedParamName(
+    ClassElement clazz,
+    FormalParameterElement param, {
+    bool includeParamAnnotation = true,
+  }) {
+    String fallback = param.name ?? "";
+    FieldElement? field = fieldForParam(clazz, param);
+    String? renamed;
+
+    if (field != null &&
+        $renameChecker.hasAnnotationOf(field, throwOnUnresolved: false)) {
+      renamed =
+          $renameChecker
+              .firstAnnotationOf(field, throwOnUnresolved: false)
+              ?.getField("newName")
+              ?.toStringValue();
+    }
+
+    if (renamed == null &&
+        includeParamAnnotation &&
+        $renameChecker.hasAnnotationOf(param, throwOnUnresolved: false)) {
+      renamed =
+          $renameChecker
+              .firstAnnotationOf(param, throwOnUnresolved: false)
+              ?.getField("newName")
+              ?.toStringValue();
+    }
+
+    return renamed ?? fallback;
+  }
+
+  bool isRequiredParam(FormalParameterElement param) {
+    bool nullable = param.type
+        .getDisplayString(withNullability: true)
+        .endsWith("?");
+
+    return param.isRequiredNamed ||
+        param.isRequiredPositional ||
+        (!nullable && param.defaultValueCode == null);
+  }
+
+  String defaultValueForParam(
+    FormalParameterElement param, {
+    String fallback = "null",
+  }) {
+    if (param.defaultValueCode == null) {
+      return fallback;
+    }
+
+    return valD(param.defaultValueCode.toString(), param.type);
+  }
+
+  List<String> subclassesOf(ClassElement clazz) =>
+      List<String>.from($artifactSubclasses[clazz.name] ?? const <String>[]);
 
   @override
   Future<void> build(BuildStep step) async {

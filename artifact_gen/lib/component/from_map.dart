@@ -1,11 +1,9 @@
 import 'package:analyzer/dart/element/element.dart';
-import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:artifact_gen/builder.dart';
 import 'package:build/build.dart';
-import 'package:toxic/extensions/iterable.dart';
 
-class $ArtifactFromMapComponent implements $ArtifactBuilderOutput {
+class $ArtifactFromMapComponent with $ArtifactBuilderOutput {
   const $ArtifactFromMapComponent();
 
   @override
@@ -31,8 +29,8 @@ class $ArtifactFromMapComponent implements $ArtifactBuilderOutput {
     );
     buf.write("_;");
     buf.write("${builder.applyDefsF("Map<String,dynamic>")} m=r.\$nn;");
-    List<String>? subs = ArtifactBuilder.$artifactSubclasses[clazz.name];
-    if (subs != null && subs.isNotEmpty) {
+    List<String> subs = builder.subclassesOf(clazz);
+    if (subs.isNotEmpty) {
       buf.write("if(m.\$c(${builder.stringD('_subclass_${clazz.name}')})){");
       buf.write(
         "String _I=m[${builder.stringD('_subclass_${clazz.name}')}] as ${builder.applyDefsF("String")};",
@@ -53,39 +51,12 @@ class $ArtifactFromMapComponent implements $ArtifactBuilderOutput {
     List<String> namedArgs = <String>[];
 
     for (FormalParameterElement param in params) {
-      String name = param.name ?? "";
+      String name = paramName(param);
       DartType type = param.type;
-      bool isNullable = type.nullabilitySuffix == NullabilitySuffix.question;
-      bool isRequired =
-          param.isRequiredNamed ||
-          param.isRequiredPositional ||
-          (!isNullable && param.defaultValueCode == null);
+      bool isRequired = builder.isRequiredParam(param);
+      String rn = builder.renamedParamName(clazz, param);
 
-      String? rn;
-      FieldElement? field = clazz.fields.select((i) => i.name == param.name);
-
-      if (field != null &&
-          ArtifactBuilder.$renameChecker.hasAnnotationOf(
-            field,
-            throwOnUnresolved: false,
-          )) {
-        rn =
-            ArtifactBuilder.$renameChecker
-                .firstAnnotationOf(field, throwOnUnresolved: false)!
-                .getField("newName")!
-                .toStringValue();
-      } else if (ArtifactBuilder.$renameChecker.hasAnnotationOf(
-        param,
-        throwOnUnresolved: false,
-      )) {
-        rn =
-            ArtifactBuilder.$renameChecker
-                .firstAnnotationOf(param, throwOnUnresolved: false)!
-                .getField("newName")!
-                .toStringValue();
-      }
-
-      String rawExpr = "m[${builder.stringD(rn ?? name)}]";
+      String rawExpr = "m[${builder.stringD(rn)}]";
 
       ({String code, List<Uri> imports}) conv = builder.converter.$convert(
         rawExpr,
@@ -98,14 +69,11 @@ class $ArtifactFromMapComponent implements $ArtifactBuilderOutput {
       String valueExpr;
       if (isRequired) {
         valueExpr =
-            "m.\$c(${builder.stringD(rn ?? name)})?${conv.code}:throw __x(${builder.stringD(clazz.name ?? "")},${builder.stringD(name)})";
+            "m.\$c(${builder.stringD(rn)})?${conv.code}:throw __x(${builder.stringD(clazz.name ?? "")},${builder.stringD(name)})";
       } else {
-        String defaultCode =
-            param.defaultValueCode == null
-                ? 'null'
-                : builder.valD(param.defaultValueCode.toString(), param.type);
+        String defaultCode = builder.defaultValueForParam(param);
         valueExpr =
-            "m.\$c(${builder.stringD(rn ?? name)}) ? ${conv.code} : $defaultCode";
+            "m.\$c(${builder.stringD(rn)}) ? ${conv.code} : $defaultCode";
       }
 
       if (param.isNamed) {
@@ -124,7 +92,4 @@ class $ArtifactFromMapComponent implements $ArtifactBuilderOutput {
     buf.writeln(');}');
     return (importUris, buf);
   }
-
-  bool $isEnum(InterfaceType type) =>
-      type.element is EnumElement || type.element.kind == ElementKind.ENUM;
 }
