@@ -6,6 +6,10 @@ Map Dart objects to maps, JSON, YAML, TOML, XML, or properties files effortlessl
 
 The beauty of Artifact lies in its simplicity: annotate your immutable classes, and the generator creates everything you need. Deserialization is as easy as `$YourClass.fromMap(map)`, returning an instance of `YourClass`. Supports inheritance, collections, enums, custom field renaming, and even attachments for metadata like UI components.
 
+## Project Manifest
+
+For a file-by-file architecture and feature map, see [MANIFEST.md](MANIFEST.md).
+
 ## Features
 
 - **Zero Boilerplate**: Just `@Artifact`—no part files or manual implementations.
