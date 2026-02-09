@@ -64,7 +64,7 @@ class ArtifactTypeConverter {
         String name = type.element.name ?? "?ERR?";
         return (
           code:
-              '${builder.applyDefsF("ArtifactCodecUtil")}.e(${builder.applyDefsF(name)}.values, $expr) as ${builder.applyDefsF(name)}${nullable ? '?' : ''}',
+              '${builder.applyDefsF("ArtifactDataUtil")}.e(${builder.applyDefsF(name)}.values, $expr) as ${builder.applyDefsF(name)}${nullable ? '?' : ''}',
           imports: [...imports, Uri.parse('package:artifact/artifact.dart')],
         );
       }
@@ -139,12 +139,12 @@ class ArtifactTypeConverter {
 
         if (k.getDisplayString(withNullability: false) != "String") {
           ik =
-              "${builder.applyDefsF("ArtifactCodecUtil")}.p<${builder.applyDefsF(k.getDisplayString(withNullability: false))}>($ik)";
+              "${builder.applyDefsF("ArtifactDataUtil")}.p<${builder.applyDefsF(k.getDisplayString(withNullability: false))}>($ik)";
         }
 
         return (
           code: builder.applyDefs(
-            ' ${builder.applyDefsF("ArtifactCodecUtil")}.fe(($expr as ${builder.applyDefsF("Map")}).\$e.\$m((e)=>$ft($ik,${conv.code})))${nullable ? '' : ''}',
+            ' ${builder.applyDefsF("ArtifactDataUtil")}.fe(($expr as ${builder.applyDefsF("Map")}).\$e.\$m((e)=>$ft($ik,${conv.code})))${nullable ? '' : ''}',
           ),
           imports: [...imports, ...conv.imports],
         );

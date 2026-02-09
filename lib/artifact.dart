@@ -3,6 +3,7 @@ library artifact;
 import 'dart:convert';
 
 import 'package:artifact/codec.dart';
+import 'package:artifact/runtime_util.dart';
 import 'package:bson/bson.dart';
 import 'package:fast_log/fast_log.dart';
 import 'package:threshold/threshold.dart';
@@ -11,6 +12,7 @@ import 'package:toxic/extensions/iterable.dart';
 export 'package:artifact/codec.dart';
 export 'package:artifact/events.dart';
 export 'package:artifact/reflect.dart';
+export 'package:artifact/runtime_util.dart';
 export 'package:artifact/shrink.dart';
 
 Map<String, ArtifactAccessor> _artifactRegistry = {};
@@ -411,12 +413,12 @@ class ArtifactModelExporter {
 
   String get bson => base64Encode(BsonCodec.serialize(data()).byteList);
   String get bsonCompressed => compress(bson);
-  String get json => ArtifactCodecUtil.j(false, data);
-  String get jsonPretty => ArtifactCodecUtil.j(true, data);
-  String get yaml => ArtifactCodecUtil.y(data);
-  String get toon => ArtifactCodecUtil.b(data);
-  String get toml => ArtifactCodecUtil.u(data);
-  String get props => ArtifactCodecUtil.h(data);
+  String get json => ArtifactDataUtil.j(false, data);
+  String get jsonPretty => ArtifactDataUtil.j(true, data);
+  String get yaml => ArtifactDataUtil.y(data);
+  String get toon => ArtifactDataUtil.b(data);
+  String get toml => ArtifactDataUtil.u(data);
+  String get props => ArtifactDataUtil.h(data);
 }
 
 class ArtifactModelImporter<T> {
@@ -429,9 +431,9 @@ class ArtifactModelImporter<T> {
       BsonBinary.from(base64Decode(compressed ? decompress(data) : data)),
     ),
   );
-  T json(String data) => fromMap(ArtifactCodecUtil.o(data));
-  T yaml(String data) => fromMap(ArtifactCodecUtil.v(data));
-  T toon(String data) => fromMap(ArtifactCodecUtil.i(data));
-  T toml(String data) => fromMap(ArtifactCodecUtil.t(data));
-  T props(String data) => fromMap(ArtifactCodecUtil.g(data));
+  T json(String data) => fromMap(ArtifactDataUtil.o(data));
+  T yaml(String data) => fromMap(ArtifactDataUtil.v(data));
+  T toon(String data) => fromMap(ArtifactDataUtil.i(data));
+  T toml(String data) => fromMap(ArtifactDataUtil.t(data));
+  T props(String data) => fromMap(ArtifactDataUtil.g(data));
 }

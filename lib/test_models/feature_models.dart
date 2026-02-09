@@ -27,7 +27,7 @@ class WeirdCodec extends ArtifactCodec<int, Weird> {
   int? encode(Weird? value) => value?.value;
 }
 
-@plainArtifact
+@reflectArtifact
 @attach(UiHint.classLevel)
 class Person {
   @attach(UiHint.title)
@@ -62,7 +62,7 @@ class Zoo {
 
 int receivedPingEvents = 0;
 
-class PingEvent extends ArtifactEvent {}
+class PingEvent {}
 
 @reflectArtifact
 class ListenerModel {

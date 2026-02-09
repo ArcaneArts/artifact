@@ -38,7 +38,7 @@ class $ArtifactToMapComponent with $ArtifactBuilderOutput {
     buf.write("return");
 
     if (eFields != null) {
-      buf.write(" ${builder.applyDefsF("ArtifactCodecUtil")}.q(");
+      buf.write(" ${builder.applyDefsF("ArtifactSecurityUtil")}.q(");
     }
 
     buf.write(
@@ -87,7 +87,9 @@ class $ArtifactToMapComponent with $ArtifactBuilderOutput {
     buf.write('}.\$nn');
 
     if (eFields != null) {
-      buf.write(",[${eFields.map((i) => builder.stringD(i)).join(",")}]);");
+      buf.write(
+        ",[${eFields.map((i) => builder.stringD(i)).join(",")}],\$artifactCipher);",
+      );
     } else {
       buf.write(';');
     }

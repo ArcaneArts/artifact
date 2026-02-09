@@ -44,7 +44,9 @@ class $ArtifactFromMapComponent with $ArtifactBuilderOutput {
     }
 
     if (eFields != null) {
-      buf.write("m=${builder.applyDefsF("ArtifactCodecUtil")}.s(m);");
+      buf.write(
+        "m=${builder.applyDefsF("ArtifactSecurityUtil")}.s(m,\$artifactCipher);",
+      );
     }
 
     buf.write('return ${builder.applyDefsF(clazz.name ?? "")}(');

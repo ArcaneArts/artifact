@@ -6,26 +6,26 @@
 // ignore_for_file: library_private_types_in_public_api
 // ignore_for_file: unused_element
 import "package:example/example.dart";import "dart:core";import "package:artifact/artifact.dart";
-typedef _0=ArtifactCodecUtil;typedef _1=ArtifactMirror;typedef _2=Map<String,dynamic>;typedef _3=List<String>;typedef _4=String;typedef _5=dynamic;typedef _6=int;typedef _7=ArtifactModelExporter;typedef _8=ArgumentError;typedef _9=Exception;typedef _a=Person;typedef _b=ArtifactModelImporter<Person>;typedef _c=DateTime;typedef _d=bool;typedef _e=List<Object>;typedef _f=Artifact;typedef _g=List<$AFld>;typedef _h=SomeAnnotation;typedef _i=List<$AMth>;typedef _j=MethodParameters;typedef _k=ArtifactAccessor;typedef _l=$AClass;typedef _m=Object;typedef _n=$AClass<Person>;typedef _o=List<dynamic>;
-_8 __x(_4 c,_4 f)=>_8('${_S[6]}$c.$f');
-const _3 _S=['firstName','lastName','dateOfBirth','Person','toString','example','Missing required '];const _o _V=[];const _d _T=true;const _d _F=false;_6 _ = ((){if(!_k.$i(_S[5])){_k.$r(_S[5],_k(isArtifact: $isArtifact,artifactMirror:$artifactMirror,constructArtifact:$constructArtifact,artifactToMap:$artifactToMap,artifactFromMap:$artifactFromMap));}return 0;})();
+typedef _0=ArtifactCodecUtil;typedef _1=ArtifactDataUtil;typedef _2=ArtifactSecurityUtil;typedef _3=ArtifactReflection;typedef _4=ArtifactMirror;typedef _5=Map<String,dynamic>;typedef _6=List<String>;typedef _7=String;typedef _8=dynamic;typedef _9=int;typedef _a=ArtifactModelExporter;typedef _b=ArgumentError;typedef _c=Exception;typedef _d=Person;typedef _e=ArtifactModelImporter<Person>;typedef _f=DateTime;typedef _g=bool;typedef _h=List<Object>;typedef _i=Artifact;typedef _j=List<$AFld>;typedef _k=SomeAnnotation;typedef _l=List<$AMth>;typedef _m=MethodParameters;typedef _n=ArtifactAccessor;typedef _o=$AClass;typedef _p=Object;typedef _q=$AClass<Person>;typedef _r=List<dynamic>;
+_b __x(_7 c,_7 f)=>_b('${_S[6]}$c.$f');
+const _6 _S=['firstName','lastName','dateOfBirth','Person','toString','example','Missing required '];const _r _V=[];const _g _T=true;const _g _F=false;_9 _ = ((){if(!_n.$i(_S[5])){_n.$r(_S[5],_n(isArtifact: $isArtifact,artifactMirror:$artifactMirror,constructArtifact:$constructArtifact,artifactToMap:$artifactToMap,artifactFromMap:$artifactFromMap));}return 0;})();
 
-extension $Person on _a{
-  _a get _H=>this;
-  _7 get to=>_7(toMap);
-  _2 toMap(){_;return<_4,_5>{_S[0]:_0.ea(firstName),_S[1]:_0.ea(lastName),_S[2]:_0.ea(dateOfBirth),}.$nn;}
-  static _b get from=>_b(fromMap);
-  static _a fromMap(_2 r){_;_2 m=r.$nn;return _a(firstName: m.$c(_S[0])? _0.da(m[_S[0]], _4) as _4:throw __x(_S[3],_S[0]),lastName: m.$c(_S[1])? _0.da(m[_S[1]], _4) as _4:throw __x(_S[3],_S[1]),dateOfBirth: m.$c(_S[2]) ?  _0.da(m[_S[2]], _c) as _c? : null,);}
-  _a copyWith({_4? firstName,_4? lastName,_c? dateOfBirth,_d deleteDateOfBirth=_F,})=>_a(firstName: firstName??_H.firstName,lastName: lastName??_H.lastName,dateOfBirth: deleteDateOfBirth?null:(dateOfBirth??_H.dateOfBirth),);
-  static _a get newInstance=>_a(firstName: '',lastName: '',);
-  _1 get $mirror{_;return _0.m(_H)!;}
-  static _e get $annotations {_;return[_f(generateSchema: _F,compression: _T,reflection: _T,),];}
-  static _g get $fields{_;return[$AFld<_a, _4>(_S[0],(i)=>i.firstName,(i,v)=>i.copyWith(firstName:v),[_h(thing: _F,),],),$AFld<_a, _4>(_S[1],(i)=>i.lastName,(i,v)=>i.copyWith(lastName:v),[_h(thing: _F,),],),$AFld<_a, _c?>(_S[2],(i)=>i.dateOfBirth,(i,v)=>i.copyWith(dateOfBirth:v),[_h(thing: _F,),],),];}
-  static _i get $methods {_;return[$AMth<_a, _4>(_S[4],(i, p)=>i.toString(),[],{},[_h(thing: _F,),],),];}
+extension $Person on _d{
+  _d get _H=>this;
+  _a get to=>_a(toMap);
+  _5 toMap(){_;return<_7,_8>{_S[0]:_0.ea(firstName),_S[1]:_0.ea(lastName),_S[2]:_0.ea(dateOfBirth),}.$nn;}
+  static _e get from=>_e(fromMap);
+  static _d fromMap(_5 r){_;_5 m=r.$nn;return _d(firstName: m.$c(_S[0])? _0.da(m[_S[0]], _7) as _7:throw __x(_S[3],_S[0]),lastName: m.$c(_S[1])? _0.da(m[_S[1]], _7) as _7:throw __x(_S[3],_S[1]),dateOfBirth: m.$c(_S[2]) ?  _0.da(m[_S[2]], _f) as _f? : null,);}
+  _d copyWith({_7? firstName,_7? lastName,_f? dateOfBirth,_g deleteDateOfBirth=_F,})=>_d(firstName: firstName??_H.firstName,lastName: lastName??_H.lastName,dateOfBirth: deleteDateOfBirth?null:(dateOfBirth??_H.dateOfBirth),);
+  static _d get newInstance=>_d(firstName: '',lastName: '',);
+  _4 get $mirror{_;return _3.instanceOf(_H)!;}
+  static _h get $annotations {_;return[_i(generateSchema: _F,compression: _T,reflection: _T),];}
+  static _j get $fields{_;return[$AFld<_d, _7>(_S[0],(i)=>i.firstName,(i,v)=>i.copyWith(firstName:v),[_k(thing: _F),],),$AFld<_d, _7>(_S[1],(i)=>i.lastName,(i,v)=>i.copyWith(lastName:v),[_k(thing: _F),],),$AFld<_d, _f?>(_S[2],(i)=>i.dateOfBirth,(i,v)=>i.copyWith(dateOfBirth:v),[_k(thing: _F),],),];}
+  static _l get $methods {_;return[$AMth<_d, _7>(_S[4],(i, p)=>i.toString(),[],{},[_k(thing: _F),],),];}
 }
 
-bool $isArtifact(dynamic v)=>v==null?false : v is! Type ?$isArtifact(v.runtimeType):v == _a ;
-Map<Type,_l> get $artifactMirror => {_a:$AClass<Person>($Person.$annotations,$Person.$fields,$Person.$methods,()=>$Person.newInstance,_m,[],[],),};
-T $constructArtifact<T>() => T==_a ?$Person.newInstance as T : throw _9();
-_2 $artifactToMap(Object o)=>o is _a ?o.toMap():throw _9();
-T $artifactFromMap<T>(_2 m)=>T==_a ?$Person.fromMap(m) as T:throw _9();
+bool $isArtifact(dynamic v)=>v==null?false : v is! Type ?$isArtifact(v.runtimeType):v == _d ;
+Map<Type,_o> get $artifactMirror => {_d:$AClass<Person>($Person.$annotations,$Person.$fields,$Person.$methods,()=>$Person.newInstance,_p,[],[],),};
+T $constructArtifact<T>() => T==_d ?$Person.newInstance as T : throw _c();
+_5 $artifactToMap(Object o)=>o is _d ?o.toMap():throw _c();
+T $artifactFromMap<T>(_5 m)=>T==_d ?$Person.fromMap(m) as T:throw _c();

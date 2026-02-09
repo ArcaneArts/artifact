@@ -18,9 +18,10 @@ extension $Person on Person{
   static Person fromMap(Map<String,dynamic> r){_;Map<String,dynamic> m=r.$nn;return Person(name: m.$c('name')? ArtifactCodecUtil.da(m['name'], String) as String:throw __x('Person','name'),subtitle: m.$c('subtitle') ?  ArtifactCodecUtil.da(m['subtitle'], String) as String? : null,);}
   Person copyWith({String? name,String? subtitle,bool deleteSubtitle=_F,})=>Person(name: name??_H.name,subtitle: deleteSubtitle?null:(subtitle??_H.subtitle),);
   static Person get newInstance=>Person(name: '',);
-  Iterable<R> getAttachments<T, R>(T t) => ArtifactCodecUtil.a<T,R>(t,[$At<UiHint,String>(UiHint.title,name),$At<UiHint,String?>(UiHint.subtitle,subtitle)]);
-  R? getAttachment<T,R>(T t)=>getAttachments<T,R>(t).$f;
-  static const List<dynamic> rootAttachments = [UiHint.classLevel];
+  ArtifactMirror get $mirror{_;return ArtifactReflection.instanceOf(_H)!;}
+  static List<Object> get $annotations {_;return[Artifact(generateSchema: _F,compression: _F,reflection: _T),attach<UiHint>(UiHint.classLevel),];}
+  static List<$AFld> get $fields{_;return[$AFld<Person, String>('name',(i)=>i.name,(i,v)=>i.copyWith(name:v),[attach<UiHint>(UiHint.title),],),$AFld<Person, String?>('subtitle',(i)=>i.subtitle,(i,v)=>i.copyWith(subtitle:v),[attach<UiHint>(UiHint.subtitle),],),];}
+  static List<$AMth> get $methods {_;return[];}
 }
 extension $Animal on Animal{
   Animal get _H=>this;
@@ -57,7 +58,7 @@ extension $ListenerModel on ListenerModel{
   static ListenerModel fromMap(Map<String,dynamic> r){_;Map<String,dynamic> m=r.$nn;return ListenerModel(id: m.$c('id') ?  ArtifactCodecUtil.da(m['id'], int) as int : 0,);}
   ListenerModel copyWith({int? id,bool resetId=_F,int? deltaId,})=>ListenerModel(id: deltaId!=null?(id??_H.id)+deltaId:resetId?0:(id??_H.id),);
   static ListenerModel get newInstance=>ListenerModel();
-  ArtifactMirror get $mirror{_;return ArtifactCodecUtil.m(_H)!;}
+  ArtifactMirror get $mirror{_;return ArtifactReflection.instanceOf(_H)!;}
   static List<Object> get $annotations {_;return[Artifact(generateSchema: _F,compression: _F,reflection: _T),];}
   static List<$AFld> get $fields{_;return[$AFld<ListenerModel, int>('id',(i)=>i.id,(i,v)=>i.copyWith(id:v),[],),];}
   static List<$AMth> get $methods {_;return[$AMth<ListenerModel, void>('onPing',(i, p)=>i.onPing(p.o<PingEvent>(0),),[PingEvent,],{},[EventHandler(priority: EventPriority.normal,ignoreCancelled: _T),],),];}
@@ -67,7 +68,7 @@ extension $FeatureModel on FeatureModel{
   ArtifactModelExporter get to=>ArtifactModelExporter(toMap);
   Map<String,dynamic> toMap(){_;return<String,dynamic>{'v':ArtifactCodecUtil.ea(value),'ratio':ArtifactCodecUtil.ea(ratio),'note':ArtifactCodecUtil.ea(note),'numbers':numbers.$m((e)=> ArtifactCodecUtil.ea(e)).$l,'tags':tags.$m((e)=> ArtifactCodecUtil.ea(e)).$l,'mood':mood.name,'weird':ArtifactCodecUtil.ea(weird),}.$nn;}
   static ArtifactModelImporter<FeatureModel> get from=>ArtifactModelImporter<FeatureModel>(fromMap);
-  static FeatureModel fromMap(Map<String,dynamic> r){_;Map<String,dynamic> m=r.$nn;return FeatureModel(value: m.$c('v') ?  ArtifactCodecUtil.da(m['v'], int) as int : 4,ratio: m.$c('ratio')? ArtifactCodecUtil.da(m['ratio'], double) as double:throw __x('FeatureModel','ratio'),note: m.$c('note') ?  ArtifactCodecUtil.da(m['note'], String) as String? : null,numbers: m.$c('numbers') ?  (m['numbers'] as List).$m((e)=> ArtifactCodecUtil.da(e, int) as int).$l : const <int>[],tags: m.$c('tags') ?  (m['tags'] as List).$m((e)=> ArtifactCodecUtil.da(e, String) as String).$s : const <String>{},mood: m.$c('mood') ? ArtifactCodecUtil.e(Mood.values, m['mood']) as Mood : Mood.happy,weird: m.$c('weird') ?  ArtifactCodecUtil.da(m['weird'], Weird) as Weird : const Weird(7),);}
+  static FeatureModel fromMap(Map<String,dynamic> r){_;Map<String,dynamic> m=r.$nn;return FeatureModel(value: m.$c('v') ?  ArtifactCodecUtil.da(m['v'], int) as int : 4,ratio: m.$c('ratio')? ArtifactCodecUtil.da(m['ratio'], double) as double:throw __x('FeatureModel','ratio'),note: m.$c('note') ?  ArtifactCodecUtil.da(m['note'], String) as String? : null,numbers: m.$c('numbers') ?  (m['numbers'] as List).$m((e)=> ArtifactCodecUtil.da(e, int) as int).$l : const <int>[],tags: m.$c('tags') ?  (m['tags'] as List).$m((e)=> ArtifactCodecUtil.da(e, String) as String).$s : const <String>{},mood: m.$c('mood') ? ArtifactDataUtil.e(Mood.values, m['mood']) as Mood : Mood.happy,weird: m.$c('weird') ?  ArtifactCodecUtil.da(m['weird'], Weird) as Weird : const Weird(7),);}
   FeatureModel copyWith({int? value,bool resetValue=_F,int? deltaValue,double? ratio,double? deltaRatio,String? note,bool deleteNote=_F,List<int>? numbers,bool resetNumbers=_F,List<int>? appendNumbers,List<int>? removeNumbers,Set<String>? tags,bool resetTags=_F,Set<String>? appendTags,Set<String>? removeTags,Mood? mood,bool resetMood=_F,Weird? weird,bool resetWeird=_F,})=>FeatureModel(value: deltaValue!=null?(value??_H.value)+deltaValue:resetValue?4:(value??_H.value),ratio: deltaRatio!=null?(ratio??_H.ratio)+deltaRatio:ratio??_H.ratio,note: deleteNote?null:(note??_H.note),numbers: ((resetNumbers?const <int>[]:(numbers??_H.numbers)) as List<int>).$u(appendNumbers,removeNumbers),tags: ((resetTags?const <String>{}:(tags??_H.tags)) as Set<String>).$u(appendTags,removeTags),mood: resetMood?Mood.happy:(mood??_H.mood),weird: resetWeird?const Weird(7):(weird??_H.weird),);
   static FeatureModel get newInstance=>FeatureModel(ratio: 0,);
 }
@@ -79,7 +80,7 @@ extension $ReflectModel on ReflectModel{
   static ReflectModel fromMap(Map<String,dynamic> r){_;Map<String,dynamic> m=r.$nn;return ReflectModel(value: m.$c('value') ?  ArtifactCodecUtil.da(m['value'], int) as int : 1,);}
   ReflectModel copyWith({int? value,bool resetValue=_F,int? deltaValue,})=>ReflectModel(value: deltaValue!=null?(value??_H.value)+deltaValue:resetValue?1:(value??_H.value),);
   static ReflectModel get newInstance=>ReflectModel();
-  ArtifactMirror get $mirror{_;return ArtifactCodecUtil.m(_H)!;}
+  ArtifactMirror get $mirror{_;return ArtifactReflection.instanceOf(_H)!;}
   static List<Object> get $annotations {_;return[Artifact(generateSchema: _F,compression: _F,reflection: _T),];}
   static List<$AFld> get $fields{_;return[$AFld<ReflectModel, int>('value',(i)=>i.value,(i,v)=>i.copyWith(value:v),[],),];}
   static List<$AMth> get $methods {_;return[];}
@@ -96,7 +97,7 @@ extension $SchemaModel on SchemaModel{
 }
 
 bool $isArtifact(dynamic v)=>v==null?false : v is! Type ?$isArtifact(v.runtimeType):v == Person ||v == Animal ||v == Dog ||v == Zoo ||v == ListenerModel ||v == FeatureModel ||v == ReflectModel ||v == SchemaModel ;
-Map<Type,$AClass> get $artifactMirror => {ListenerModel:$AClass<ListenerModel>($ListenerModel.$annotations,$ListenerModel.$fields,$ListenerModel.$methods,()=>$ListenerModel.newInstance,Object,[],[],),ReflectModel:$AClass<ReflectModel>($ReflectModel.$annotations,$ReflectModel.$fields,$ReflectModel.$methods,()=>$ReflectModel.newInstance,Object,[],[],),};
+Map<Type,$AClass> get $artifactMirror => {Person:$AClass<Person>($Person.$annotations,$Person.$fields,$Person.$methods,()=>$Person.newInstance,Object,[],[],),ListenerModel:$AClass<ListenerModel>($ListenerModel.$annotations,$ListenerModel.$fields,$ListenerModel.$methods,()=>$ListenerModel.newInstance,Object,[],[],),ReflectModel:$AClass<ReflectModel>($ReflectModel.$annotations,$ReflectModel.$fields,$ReflectModel.$methods,()=>$ReflectModel.newInstance,Object,[],[],),};
 T $constructArtifact<T>() => T==Person ?$Person.newInstance as T :T==Animal ?$Animal.newInstance as T :T==Dog ?$Dog.newInstance as T :T==Zoo ?$Zoo.newInstance as T :T==ListenerModel ?$ListenerModel.newInstance as T :T==FeatureModel ?$FeatureModel.newInstance as T :T==ReflectModel ?$ReflectModel.newInstance as T :T==SchemaModel ?$SchemaModel.newInstance as T : throw Exception();
 Map<String,dynamic> $artifactToMap(Object o)=>o is Person ?o.toMap():o is Animal ?o.toMap():o is Dog ?o.toMap():o is Zoo ?o.toMap():o is ListenerModel ?o.toMap():o is FeatureModel ?o.toMap():o is ReflectModel ?o.toMap():o is SchemaModel ?o.toMap():throw Exception();
 T $artifactFromMap<T>(Map<String,dynamic> m)=>T==Person ?$Person.fromMap(m) as T:T==Animal ?$Animal.fromMap(m) as T:T==Dog ?$Dog.fromMap(m) as T:T==Zoo ?$Zoo.fromMap(m) as T:T==ListenerModel ?$ListenerModel.fromMap(m) as T:T==FeatureModel ?$FeatureModel.fromMap(m) as T:T==ReflectModel ?$ReflectModel.fromMap(m) as T:T==SchemaModel ?$SchemaModel.fromMap(m) as T:throw Exception();

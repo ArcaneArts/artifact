@@ -8,7 +8,6 @@ import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:artifact/artifact.dart';
-import 'package:artifact_gen/component/attach.dart';
 import 'package:artifact_gen/component/copy_with.dart';
 import 'package:artifact_gen/component/from_map.dart';
 import 'package:artifact_gen/component/inatance.dart';
@@ -344,6 +343,9 @@ class ArtifactBuilder implements Builder {
 
     assert(step.inputId.path == r'$lib$');
     registerDef("ArtifactCodecUtil");
+    registerDef("ArtifactDataUtil");
+    registerDef("ArtifactSecurityUtil");
+    registerDef("ArtifactReflection");
     registerDef("ArtifactMirror");
     registerDef("Map<String,dynamic>");
     registerDef("List<String>");
@@ -822,7 +824,6 @@ class ArtifactBuilder implements Builder {
             _component("from_map", const $ArtifactFromMapComponent()),
             _component("copy_with", const $ArtifactCopyWithComponent()),
             _component("instance", const $ArtifactInstanceComponent()),
-            _component("attach", const $ArtifactAttachComponent()),
             if ($artifactChecker
                     .firstAnnotationOf(clazz, throwOnUnresolved: false)
                     ?.getField("reflection")

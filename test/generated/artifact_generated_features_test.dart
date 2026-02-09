@@ -5,7 +5,6 @@ import 'package:test/test.dart';
 
 void main() {
   tearDown(() {
-    $events.unregisterAll();
     receivedPingEvents = 0;
   });
 
@@ -72,12 +71,28 @@ void main() {
     expect((decoded.animals.first as Dog).goodBoy, isFalse);
   });
 
-  test('attachments, reflection, schema, and global helpers work', () {
-    final Person person = Person(name: 'Alice', subtitle: 'Engineer');
-
-    expect(person.getAttachment<UiHint, String>(UiHint.title), 'Alice');
-    expect(person.getAttachment<UiHint, String>(UiHint.subtitle), 'Engineer');
-    expect($Person.rootAttachments.contains(UiHint.classLevel), isTrue);
+  test('annotation reflection, schema, and global helpers work', () {
+    final ArtifactTypeMirror? personType = ArtifactReflection.typeOf(Person);
+    expect(personType, isNotNull);
+    expect(personType!.hasAnnotation<attach>(), isTrue);
+    expect(
+      personType.getAnnotations<attach>().map((annotation) => annotation.data),
+      contains(UiHint.classLevel),
+    );
+    expect(
+      personType
+          .field('name')
+          ?.getAnnotations<attach>()
+          .map((annotation) => annotation.data),
+      contains(UiHint.title),
+    );
+    expect(
+      personType
+          .field('subtitle')
+          ?.getAnnotations<attach>()
+          .map((annotation) => annotation.data),
+      contains(UiHint.subtitle),
+    );
 
     final ReflectModel reflected = ReflectModel(value: 9);
     expect(reflected.$mirror.hasAnnotation<Artifact>(), isTrue);
@@ -95,14 +110,6 @@ void main() {
 
     final FeatureModel constructed = $constructArtifact<FeatureModel>();
     expect(constructed, isA<FeatureModel>());
-  });
-
-  test('event handlers can be registered from reflected methods', () {
-    final ListenerModel listener = ListenerModel();
-    $events.registerListeners(listener);
-    $events.callEvent(PingEvent());
-
-    expect(receivedPingEvents, 1);
   });
 
   test('unified reflection api supports querying and invocation', () {

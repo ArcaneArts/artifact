@@ -54,7 +54,7 @@ extension $ReflectFixture on ReflectFixture{
   static ReflectFixture fromMap(Map<String,dynamic> r){_;Map<String,dynamic> m=r.$nn;return ReflectFixture(count: m.$c('count') ?  ArtifactCodecUtil.da(m['count'], int) as int : 1,);}
   ReflectFixture copyWith({int? count,bool resetCount=_F,int? deltaCount,})=>ReflectFixture(count: deltaCount!=null?(count??_H.count)+deltaCount:resetCount?1:(count??_H.count),);
   static ReflectFixture get newInstance=>ReflectFixture();
-  ArtifactMirror get $mirror{_;return ArtifactCodecUtil.m(_H)!;}
+  ArtifactMirror get $mirror{_;return ArtifactReflection.instanceOf(_H)!;}
   static List<Object> get $annotations {_;return[Artifact(generateSchema: _F,compression: _F,reflection: _T),];}
   static List<$AFld> get $fields{_;return[$AFld<ReflectFixture, int>('count',(i)=>i.count,(i,v)=>i.copyWith(count:v),[],),];}
   static List<$AMth> get $methods {_;return[];}
@@ -77,7 +77,7 @@ extension $ReflectAnnotationVisibility on ReflectAnnotationVisibility{
   static ReflectAnnotationVisibility fromMap(Map<String,dynamic> r){_;Map<String,dynamic> m=r.$nn;return ReflectAnnotationVisibility(someField: m.$c('someField') ?  ArtifactCodecUtil.da(m['someField'], String) as String : 'field',someInt: m.$c('someInt') ?  ArtifactCodecUtil.da(m['someInt'], int) as int? : null,);}
   ReflectAnnotationVisibility copyWith({String? someField,bool resetSomeField=_F,int? someInt,bool deleteSomeInt=_F,int? deltaSomeInt,})=>ReflectAnnotationVisibility(someField: resetSomeField?'field':(someField??_H.someField),someInt: deltaSomeInt!=null?(someInt??_H.someInt??0)+deltaSomeInt:deleteSomeInt?null:(someInt??_H.someInt),);
   static ReflectAnnotationVisibility get newInstance=>ReflectAnnotationVisibility();
-  ArtifactMirror get $mirror{_;return ArtifactCodecUtil.m(_H)!;}
+  ArtifactMirror get $mirror{_;return ArtifactReflection.instanceOf(_H)!;}
   static List<Object> get $annotations {_;return[EverythingAnnotation(aString: 'default',aInt: 42,aDouble: 3.14,aBools: <bool>[_T,_F],aRawMap: <String, dynamic>{'key': 'value'},aStringMapN: null,aStringListN: null,aConstThings: <AConstThing>{AConstThing(aL: <String>['a','b','c'],x: null)}),Artifact(generateSchema: _F,compression: _F,reflection: _T),];}
   static List<$AFld> get $fields{_;return[$AFld<ReflectAnnotationVisibility, String>('someField',(i)=>i.someField,(i,v)=>i.copyWith(someField:v),[EverythingAnnotation(aString: 'default',aInt: 42,aDouble: 3.14,aBools: <bool>[_T,_F],aRawMap: <String, dynamic>{'key': 'value'},aStringMapN: null,aStringListN: null,aConstThings: <AConstThing>{AConstThing(aL: <String>['a','b','c'],x: null)}),],),$AFld<ReflectAnnotationVisibility, int?>('someInt',(i)=>i.someInt,(i,v)=>i.copyWith(someInt:v),[EverythingAnnotation(aString: 'default',aInt: 42,aDouble: 3.14,aBools: <bool>[_T,_F],aRawMap: <String, dynamic>{'key': 'value'},aStringMapN: null,aStringListN: null,aConstThings: <AConstThing>{AConstThing(aL: <String>['a','b','c'],x: null)}),],),];}
   static List<$AMth> get $methods {_;return[$AMth<ReflectAnnotationVisibility, int>('doSomething',(i, p)=>i.doSomething(p.o<int>(0),p.o<int>(1),),[int,int,],{},[EverythingAnnotation(aString: 'default',aInt: 42,aDouble: 3.14,aBools: <bool>[_T,_F],aRawMap: <String, dynamic>{'key': 'value'},aStringMapN: null,aStringListN: null,aConstThings: <AConstThing>{AConstThing(aL: <String>['a','b','c'],x: null)}),],),];}

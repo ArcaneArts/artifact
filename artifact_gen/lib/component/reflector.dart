@@ -21,7 +21,7 @@ class $ArtifactReflectorComponent with $ArtifactBuilderOutput {
     List<Uri> importUris = <Uri>[];
 
     buf.writeln(
-      '  ${builder.applyDefsF("ArtifactMirror")} get \$mirror{_;return ${builder.applyDefsF("ArtifactCodecUtil")}.m(_H)!;}',
+      '  ${builder.applyDefsF("ArtifactMirror")} get \$mirror{_;return ${builder.applyDefsF("ArtifactReflection")}.instanceOf(_H)!;}',
     );
     builder.registerDef("List<Object>");
     buf.write(
