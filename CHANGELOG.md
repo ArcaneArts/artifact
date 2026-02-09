@@ -1,3 +1,18 @@
+# 1.0.29
+* Added typed reflection mapper helpers for runtime generic binding on `$AClass` and `$AFld`, plus mirror wrappers.
+* Fixed list/set copyWith remove handling through runtime collection helpers.
+* Expanded generated API test coverage and refreshed generated fixtures/docs.
+
+# 1.0.28
+* Unified reflection access around `ArtifactAccessor` and `ArtifactReflection` query APIs.
+* Added richer runtime mirrors (`ArtifactTypeMirror`, field/method info wrappers) and dynamic field/method access helpers.
+* Added nullable-type-aware reflection lookup and cross-registry mirror filtering helpers.
+
+# 1.0.27
+* Split non-codec runtime utilities into `runtime_util.dart` (`ArtifactDataUtil`, `ArtifactSecurityUtil`, `PropertiesConverter`) and exported them.
+* Removed runtime event-manager/event-bus internals; `events.dart` now provides event annotations only.
+* Removed generated attachment accessor APIs (`getAttachment`, `getAttachments`, `rootAttachments`) in favor of unified reflection annotation access.
+
 # 1.0.26
 * @internal and @external for auto exporting files
 

@@ -1,3 +1,31 @@
+# 1.2.11
+* Extracted component-oriented helper logic out of `ArtifactBuilder` into `component/component_helpers.dart`.
+* Renamed `inatance.dart` to `instance.dart` and updated builder wiring.
+
+# 1.2.10
+* Improved copyWith generation for typed empty collection defaults (`const <T>[]` / `const <T>{}`) to avoid bad casts.
+* Updated copyWith behavior/tests to cover append + remove collection operations more comprehensively.
+* Added/expanded reflection component tests around typed class/field mapper flows.
+
+# 1.2.9
+* Aligned generated/runtime reflection flows with new Artifact reflection mapper APIs.
+* Updated generator integration test runner to use resolved Dart executable with analytics suppression for stable automation.
+
+# 1.2.8
+* Removed the attachment codegen component; annotation metadata is now consumed through reflection APIs.
+* Converted component interface usage to mixin-based outputs (`with $ArtifactBuilderOutput`) and shared component helpers.
+* Added component-stage guard diagnostics so generation failures report class/parameter/stage context.
+
+# 1.2.7
+* Hardened reflector constant emission (null-safe annotation handling, better constructor argument reconstruction).
+* Switched generated `$mirror` getter to use `ArtifactReflection.instanceOf`.
+* Reworked schema generation for enums, lists/sets/maps, nested artifact schemas, required fields, and `@describe`.
+
+# 1.2.6
+* Added generator fixture/integration harness validating generated artifacts and exports end-to-end.
+* Refactored builder/component orchestration for clearer per-stage generation behavior.
+* Added support for Artifact `1.0.27+`.
+
 # 1.2.5
 * Even more fixes
 

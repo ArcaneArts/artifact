@@ -1,6 +1,6 @@
 name: artifact
 description: Data Modeling for the local madman
-version: 1.0.28
+version: 1.0.29
 repository: https://github.com/ArcaneArts/artifact
 library: true
 environment:
