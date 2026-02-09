@@ -64,30 +64,30 @@ class ArtifactMirror extends ArtifactMirrorBase {
 }
 
 class ArtifactFieldMirror extends ArtifactMirrorBase {
-  final $AFld _field;
+  final $AFld field;
   final Object instance;
 
-  const ArtifactFieldMirror(this._field, this.instance);
+  const ArtifactFieldMirror(this.field, this.instance);
 
   bool hasAnnotation<T>([Type? type]) => getAnnotations<T>(type).isNotEmpty;
 
-  Type get fieldType => _field.fieldType;
+  Type get fieldType => field.fieldType;
 
-  Type get iType => _field.iType;
+  Type get iType => field.iType;
 
-  String get name => _field.name;
+  String get name => field.name;
 
-  Iterable<T> getAnnotations<T>([Type? type]) => _field.annotations
+  Iterable<T> getAnnotations<T>([Type? type]) => field.annotations
       .whereType<T>()
       .where((a) => type == null ? true : a.runtimeType == type);
 
-  ArtifactFieldMirror modify(Object newValue) =>
-      withInstance(_field.setValue(instance, newValue));
+  ArtifactFieldMirror modify(Object? newValue) =>
+      withInstance(field.setValue(instance, newValue));
 
-  Object? get value => _field.getValue(instance);
+  Object? get value => field.getValue(instance);
 
   ArtifactFieldMirror withInstance(Object newInstance) =>
-      ArtifactFieldMirror(_field, newInstance);
+      ArtifactFieldMirror(field, newInstance);
 }
 
 class ArtifactMethodMirror extends ArtifactMirrorBase {

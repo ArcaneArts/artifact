@@ -6,6 +6,7 @@ import 'package:artifact/codec.dart';
 import 'package:bson/bson.dart';
 import 'package:fast_log/fast_log.dart';
 import 'package:threshold/threshold.dart';
+import 'package:toxic/extensions/iterable.dart';
 
 export 'package:artifact/codec.dart';
 export 'package:artifact/events.dart';
@@ -30,6 +31,28 @@ class ArtifactAccessor {
     required this.artifactToMap,
     required this.artifactFromMap,
   });
+
+  static $AClass? rawReflect(Type type) {
+    ArtifactAccessor? aa = ArtifactAccessor.all.select(
+      (i) => i.artifactMirror.containsKey(type),
+    );
+
+    if (aa == null) {
+      return null;
+    }
+
+    return aa.artifactMirror[type];
+  }
+
+  static $AClass<T>? blindReflect<T>() =>
+      ArtifactAccessor.all.select((i) {
+            try {
+              i.constructArtifact<T>();
+              return true;
+            } catch (_) {}
+            return false;
+          })?.artifactMirror[T]
+          as $AClass<T>?;
 
   static Iterable<ArtifactAccessor> get all => _artifactRegistry.values;
 
@@ -121,6 +144,13 @@ class MethodParameters {
   T n<T>(String name) => namedParameters[name] as T;
 }
 
+Type _getNullishType<T>() {
+  Type _t<T>(List<T> x) => T;
+  return _t(<T?>[]);
+}
+
+abstract class $Maker<T> {}
+
 class $AClass<T> {
   final List<Object> annotations;
   final List<$AFld> fields;
@@ -130,6 +160,7 @@ class $AClass<T> {
   final List<Type> classMixins;
   final List<Type> classInterfaces;
   Type get classType => T;
+  Type get nullableType => _getNullishType<T>();
 
   const $AClass(
     this.annotations,
@@ -140,6 +171,10 @@ class $AClass<T> {
     this.classInterfaces,
     this.classMixins,
   );
+
+  $Maker<T> maker($Maker<T> Function() f) {
+    return f() as $Maker<T>;
+  }
 
   T construct() => constructor();
 

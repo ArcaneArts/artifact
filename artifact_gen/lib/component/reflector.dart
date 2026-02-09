@@ -29,9 +29,15 @@ class $ArtifactReflectorComponent implements $ArtifactBuilderOutput {
       "  static ${builder.applyDefsF("List<Object>")} get \$annotations {_;return[",
     );
     for (ElementAnnotation a in clazz.metadata.annotations) {
-      if (a.element == null) {
+      importUris.add(a.element!.library!.uri);
+      DartObject v = a.computeConstantValue()!;
+      String src = dartObjectToCode(v, builder, importUris);
+
+      if (src.startsWith("_Override()") || src.startsWith("Deprecated()")) {
         continue;
       }
+
+      buf.write("$src,");
     }
     buf.writeln("];}");
 
