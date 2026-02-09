@@ -31,28 +31,32 @@ extension XIterable<V> on Iterable<V> {
 
 extension XList<V> on List<V> {
   List<V> $u(List<V>? a, List<V>? r) {
+    List<V> result = toList();
+
     if (a?.isNotEmpty ?? false) {
-      return followedBy(a!).toList();
+      result = result.followedBy(a!).toList();
     }
 
     if (r?.isNotEmpty ?? false) {
-      return this.where((i) => !r!.contains(i)).toList();
+      result = result.where((i) => !r!.contains(i)).toList();
     }
 
-    return this;
+    return result;
   }
 }
 
 extension XSet<V> on Set<V> {
   Set<V> $u(Set<V>? a, Set<V>? r) {
+    Set<V> result = toSet();
+
     if (a?.isNotEmpty ?? false) {
-      return followedBy(a!).toSet();
+      result = result.followedBy(a!).toSet();
     }
 
     if (r?.isNotEmpty ?? false) {
-      return this.where((i) => !r!.contains(i)).toSet();
+      result = result.where((i) => !r!.contains(i)).toSet();
     }
 
-    return this;
+    return result;
   }
 }

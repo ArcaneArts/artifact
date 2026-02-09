@@ -184,6 +184,11 @@ class ArtifactTypeMirror extends ArtifactMirrorBase {
 
   ArtifactMirror bind(Object instance) => ArtifactMirror(clazz, instance);
 
+  R mapClassType<R>(R Function<T>() mapper) => clazz.mapClassType(mapper);
+
+  R mapClassValue<R>(Object? value, R Function<T>(T value) mapper) =>
+      clazz.mapClassValue(value, mapper);
+
   Iterable<ArtifactFieldInfo> annotatedFields<T>([Type? type]) =>
       fields.where((field) => field.hasAnnotation<T>(type));
 
@@ -216,6 +221,16 @@ class ArtifactFieldInfo extends ArtifactMirrorBase {
 
   ArtifactFieldMirror bind(Object instance) =>
       ArtifactFieldMirror(field, instance);
+
+  R mapOwnerType<R>(R Function<T>() mapper) => field.mapOwnerType(mapper);
+
+  R mapFieldType<R>(R Function<T>() mapper) => field.mapFieldType(mapper);
+
+  R mapOwnerValue<R>(Object? value, R Function<T>(T value) mapper) =>
+      field.mapOwnerValue(value, mapper);
+
+  R mapFieldValue<R>(Object? value, R Function<T>(T value) mapper) =>
+      field.mapFieldValue(value, mapper);
 
   @override
   bool hasAnnotation<T>([Type? type]) => getAnnotations<T>(type).isNotEmpty;
@@ -274,6 +289,11 @@ class ArtifactMirror extends ArtifactMirrorBase {
   const ArtifactMirror(this._clazz, this.instance);
 
   ArtifactTypeMirror get type => ArtifactTypeMirror(_clazz.classType, _clazz);
+
+  R mapClassType<R>(R Function<T>() mapper) => _clazz.mapClassType(mapper);
+
+  R mapClassValue<R>(R Function<T>(T value) mapper) =>
+      _clazz.mapClassValue(instance, mapper);
 
   Iterable<ArtifactFieldMirror> get fields =>
       _clazz.fields.map((f) => ArtifactFieldMirror(f, instance));
@@ -363,6 +383,16 @@ class ArtifactFieldMirror extends ArtifactMirrorBase {
 
   ArtifactFieldMirror withInstance(Object newInstance) =>
       ArtifactFieldMirror(field, newInstance);
+
+  R mapOwnerType<R>(R Function<T>() mapper) => field.mapOwnerType(mapper);
+
+  R mapFieldType<R>(R Function<T>() mapper) => field.mapFieldType(mapper);
+
+  R mapOwnerValue<R>(R Function<T>(T value) mapper) =>
+      field.mapOwnerValue(instance, mapper);
+
+  R mapFieldValue<R>(R Function<T>(T value) mapper) =>
+      field.mapFieldValue(value, mapper);
 
   @override
   bool hasAnnotation<T>([Type? type]) => getAnnotations<T>(type).isNotEmpty;

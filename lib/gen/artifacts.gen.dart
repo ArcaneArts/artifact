@@ -47,7 +47,7 @@ extension $Zoo on Zoo{
   Map<String,dynamic> toMap(){_;return<String,dynamic>{'animals':animals.$m((e)=> e.toMap()).$l,}.$nn;}
   static ArtifactModelImporter<Zoo> get from=>ArtifactModelImporter<Zoo>(fromMap);
   static Zoo fromMap(Map<String,dynamic> r){_;Map<String,dynamic> m=r.$nn;return Zoo(animals: m.$c('animals') ?  (m['animals'] as List).$m((e)=>$Animal.fromMap((e) as Map<String, dynamic>)).$l : const [],);}
-  Zoo copyWith({List<Animal>? animals,bool resetAnimals=_F,List<Animal>? appendAnimals,List<Animal>? removeAnimals,})=>Zoo(animals: ((resetAnimals?const []:(animals??_H.animals)) as List<Animal>).$u(appendAnimals,removeAnimals),);
+  Zoo copyWith({List<Animal>? animals,bool resetAnimals=_F,List<Animal>? appendAnimals,List<Animal>? removeAnimals,})=>Zoo(animals: ((resetAnimals?const <Animal>[]:(animals??_H.animals)) as List<Animal>).$u(appendAnimals,removeAnimals),);
   static Zoo get newInstance=>Zoo();
 }
 extension $ListenerModel on ListenerModel{

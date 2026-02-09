@@ -291,6 +291,14 @@ class $AClass<T> {
     return f() as $Maker<T>;
   }
 
+  R mapClassType<R>(R Function<X>() mapper) {
+    return mapper<T>();
+  }
+
+  R mapClassValue<R>(Object? value, R Function<X>(X value) mapper) {
+    return mapClassType<R>(<X>() => mapper<X>(value as X));
+  }
+
   T construct() => constructor();
 
   bool hasAnnotation<T>() => annotations.any((a) => a is T);
@@ -350,6 +358,22 @@ class $AFld<I, T> {
   T getValue(I instance) => getter(instance);
 
   I setValue(I instance, T value) => setter(instance, value);
+
+  R mapOwnerType<R>(R Function<X>() mapper) {
+    return mapper<I>();
+  }
+
+  R mapFieldType<R>(R Function<X>() mapper) {
+    return mapper<T>();
+  }
+
+  R mapOwnerValue<R>(Object? value, R Function<X>(X value) mapper) {
+    return mapOwnerType<R>(<X>() => mapper<X>(value as X));
+  }
+
+  R mapFieldValue<R>(Object? value, R Function<X>(X value) mapper) {
+    return mapFieldType<R>(<X>() => mapper<X>(value as X));
+  }
 
   T? annotationOf<T>() => annotations.whereType<T>().firstOrNull;
 

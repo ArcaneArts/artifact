@@ -16,14 +16,16 @@ void main() {
       deltaRatio: 0.5,
       deleteNote: true,
       appendNumbers: const <int>[3],
+      removeNumbers: const <int>[1],
       appendTags: const <String>{'c'},
+      removeTags: const <String>{'a'},
     );
 
     expect(updated.value, 7);
     expect(updated.ratio, 2.5);
     expect(updated.note, isNull);
-    expect(updated.numbers, <int>[1, 2, 3]);
-    expect(updated.tags, <String>{'a', 'b', 'c'});
+    expect(updated.numbers, <int>[2, 3]);
+    expect(updated.tags, <String>{'b', 'c'});
 
     FeatureModel reset = updated.copyWith(
       resetValue: true,
@@ -65,7 +67,7 @@ void main() {
     expect((updatedPoly as Dog).hp, 17);
   });
 
-  test('copy_with appends and replaces list fields on zoo', () {
+  test('copy_with appends resets and replaces list fields on zoo', () {
     Zoo zoo = Zoo(animals: const <Animal>[Dog(hp: 10, goodBoy: true)]);
 
     Zoo appended = zoo.copyWith(
@@ -75,10 +77,12 @@ void main() {
     expect(appended.animals.length, 2);
     expect((appended.animals.first as Dog).hp, 10);
 
+    Zoo reset = appended.copyWith(resetAnimals: true);
     Zoo replaced = appended.copyWith(
       animals: const <Animal>[Dog(hp: 33, goodBoy: false)],
     );
 
+    expect(reset.animals, <Animal>[]);
     expect(replaced.animals.length, 1);
     expect((replaced.animals.first as Dog).hp, 33);
     expect((replaced.animals.first as Dog).goodBoy, isFalse);

@@ -3,16 +3,18 @@ import 'dart:io';
 import 'package:test/test.dart';
 
 Future<void> _runChecked(String workingDirectory, List<String> args) async {
-  final ProcessResult result = await Process.run(
-    'dart',
-    args,
+  String executable = Platform.resolvedExecutable;
+  List<String> commandArgs = <String>['--suppress-analytics', ...args];
+  ProcessResult result = await Process.run(
+    executable,
+    commandArgs,
     workingDirectory: workingDirectory,
   );
 
   if (result.exitCode != 0) {
     fail(
       'Command failed in $workingDirectory:\n'
-      'dart ${args.join(' ')}\n'
+      '$executable ${commandArgs.join(' ')}\n'
       'exit=${result.exitCode}\n'
       'stdout:\n${result.stdout}\n'
       'stderr:\n${result.stderr}',
@@ -21,11 +23,10 @@ Future<void> _runChecked(String workingDirectory, List<String> args) async {
 }
 
 void main() {
-  final String fixtureDir =
-      Directory('test/fixtures/basic_fixture').absolute.path;
+  String fixtureDir = Directory('test/fixtures/basic_fixture').absolute.path;
 
-  final String artifactsPath = '$fixtureDir/lib/gen/artifacts.gen.dart';
-  final String exportsPath = '$fixtureDir/lib/gen/exports.gen.dart';
+  String artifactsPath = '$fixtureDir/lib/gen/artifacts.gen.dart';
+  String exportsPath = '$fixtureDir/lib/gen/exports.gen.dart';
 
   setUpAll(() async {
     await _runChecked(fixtureDir, <String>['pub', 'get']);
@@ -43,7 +44,7 @@ void main() {
   });
 
   test('generated artifacts file contains core model APIs', () {
-    final String generated = File(artifactsPath).readAsStringSync();
+    String generated = File(artifactsPath).readAsStringSync();
 
     expect(generated, contains('extension \$FixtureModel'));
     expect(generated, contains('Map<String,dynamic> toMap()'));
@@ -56,7 +57,7 @@ void main() {
   });
 
   test('generated exports file references generated artifact exports', () {
-    final String exports = File(exportsPath).readAsStringSync();
+    String exports = File(exportsPath).readAsStringSync();
     expect(exports, contains("export 'artifacts.gen.dart';"));
   });
 }

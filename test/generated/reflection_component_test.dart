@@ -4,6 +4,8 @@ import 'package:artifact/test_models/feature_models.dart';
 import 'package:test/test.dart';
 
 Type typeOf<T>() => T;
+String typeNameOf<T>() => T.toString();
+String runtimeTypeNameOf<T>(T value) => '$T:${value.runtimeType}';
 
 void main() {
   setUp(() {
@@ -104,5 +106,44 @@ void main() {
     expect(ArtifactAccessor.reflectType(Person), isNotNull);
     expect(ArtifactAccessor.reflectType(typeOf<Person?>()), isNotNull);
     expect(ArtifactAccessor.reflectObject(Person(name: 'a')), isNotNull);
+  });
+
+  test('reflection mapper apis bind class and field generic types', () {
+    ArtifactTypeMirror personType = ArtifactReflection.typeOf(Person)!;
+    Person person = Person(name: 'typed', subtitle: 'sub');
+    ArtifactMirror mirror = personType.bind(person);
+
+    String classTypeName = personType.mapClassType<String>(typeNameOf);
+    String classValueName = personType.mapClassValue<String>(
+      person,
+      runtimeTypeNameOf,
+    );
+    String boundClassTypeName = mirror.mapClassType<String>(typeNameOf);
+    String boundClassValueName = mirror.mapClassValue<String>(
+      runtimeTypeNameOf,
+    );
+
+    expect(classTypeName, 'Person');
+    expect(classValueName, 'Person:Person');
+    expect(boundClassTypeName, 'Person');
+    expect(boundClassValueName, 'Person:Person');
+
+    ArtifactFieldMirror nameField = mirror.field('name')!;
+    ArtifactFieldMirror subtitleField = mirror.field('subtitle')!;
+
+    String ownerType = nameField.mapOwnerType<String>(typeNameOf);
+    String nameFieldType = nameField.mapFieldType<String>(typeNameOf);
+    String nameValueType = nameField.mapFieldValue<String>(runtimeTypeNameOf);
+
+    String subtitleFieldType = subtitleField.mapFieldType<String>(typeNameOf);
+    String subtitleValueType = subtitleField.mapFieldValue<String>(
+      runtimeTypeNameOf,
+    );
+
+    expect(ownerType, 'Person');
+    expect(nameFieldType, 'String');
+    expect(nameValueType, 'String:String');
+    expect(subtitleFieldType, 'String?');
+    expect(subtitleValueType, 'String?:String');
   });
 }

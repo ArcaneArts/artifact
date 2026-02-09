@@ -82,10 +82,14 @@ class $ArtifactCopyWithComponent with $ArtifactBuilderOutput {
     for (FormalParameterElement param in params) {
       String name = paramName(param);
       bool nullable = isNullableType(param.type);
+      String bs = baseTypeOf(param.type);
+      String resetDefault = builder.defaultValueForParam(param);
+      if (isCollectionType(bs)) {
+        resetDefault = _typedCollectionDefault(resetDefault, bs, builder);
+      }
 
       String pref = "";
       String nd = nullable ? "??0" : "";
-      String bs = baseTypeOf(param.type);
       if (isNumericType(bs)) {
         pref =
             "delta${name.capitalize()}!=null?($name??_H.$name$nd)+delta${name.capitalize()}:";
@@ -94,11 +98,11 @@ class $ArtifactCopyWithComponent with $ArtifactBuilderOutput {
       String o = "";
 
       if (supportsDeleteFlag(param) && param.hasDefaultValue) {
-        o = '${pref}delete${name.capitalize()}?null:reset${name.capitalize()} ? ${builder.defaultValueForParam(param)}:($name??_H.$name),';
+        o = '${pref}delete${name.capitalize()}?null:reset${name.capitalize()} ? $resetDefault:($name??_H.$name),';
       } else if (supportsDeleteFlag(param)) {
         o = '${pref}delete${name.capitalize()}?null:($name??_H.$name),';
       } else if (param.hasDefaultValue) {
-        o = '${pref}reset${name.capitalize()}?${builder.defaultValueForParam(param)}:($name??_H.$name),';
+        o = '${pref}reset${name.capitalize()}?$resetDefault:($name??_H.$name),';
       } else {
         o = '$pref$name??_H.$name,';
       }
@@ -150,4 +154,29 @@ class $ArtifactCopyWithComponent with $ArtifactBuilderOutput {
       }
     }
   }
+
+  String _typedCollectionDefault(
+    String defaultValue,
+    String baseType,
+    ArtifactBuilder builder,
+  ) {
+    String trimmed = defaultValue.trim();
+    if (baseType.startsWith("List<") && _isUntypedEmptyListLiteral(trimmed)) {
+      String innerType = baseType.substring(5, baseType.length - 1).trim();
+      return "const <${builder.applyDefsF(innerType)}>[]";
+    }
+
+    if (baseType.startsWith("Set<") && _isUntypedEmptySetLiteral(trimmed)) {
+      String innerType = baseType.substring(4, baseType.length - 1).trim();
+      return "const <${builder.applyDefsF(innerType)}>{}";
+    }
+
+    return defaultValue;
+  }
+
+  bool _isUntypedEmptyListLiteral(String value) =>
+      value == "[]" || value == "const []";
+
+  bool _isUntypedEmptySetLiteral(String value) =>
+      value == "{}" || value == "const {}";
 }
