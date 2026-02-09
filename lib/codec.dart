@@ -70,16 +70,12 @@ class ArtifactCodecUtil {
   }
 
   static ArtifactMirror? m(Object instance) {
-    $AClass? c =
-        ArtifactAccessor.all
-            .where((i) => i.artifactMirror.containsKey(instance.runtimeType))
-            .firstOrNull
-            ?.artifactMirror[instance.runtimeType];
-    if (c == null) {
+    $AClass? clazz = ArtifactAccessor.reflectObject(instance);
+    if (clazz == null) {
       return null;
     }
 
-    return ArtifactMirror(c, instance);
+    return ArtifactMirror(clazz, instance);
   }
 
   static String j(bool p, Map<String, dynamic> Function() map) =>

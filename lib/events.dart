@@ -33,12 +33,7 @@ class EventManager {
   void unregisterAllListeningOn(Type eventType) => listeners.remove(eventType);
 
   void registerListeners(Object instance) {
-    $AClass? clazz =
-        ArtifactAccessor.all
-            .expand((i) => i.artifactMirror.entries)
-            .where((i) => i.key == instance.runtimeType)
-            .firstOrNull
-            ?.value;
+    $AClass? clazz = ArtifactAccessor.reflectObject(instance);
 
     if (clazz != null) {
       for ($AMth i in clazz.annotatedMethods<EventHandler>()) {

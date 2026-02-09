@@ -104,4 +104,47 @@ void main() {
 
     expect(receivedPingEvents, 1);
   });
+
+  test('unified reflection api supports querying and invocation', () {
+    final ArtifactTypeMirror? reflectedType = ArtifactReflection.typeOf(
+      ReflectModel,
+    );
+    expect(reflectedType, isNotNull);
+    expect(reflectedType!.classType, ReflectModel);
+    expect(reflectedType.field('value')?.fieldType, int);
+
+    final ReflectModel value = ReflectModel(value: 9);
+    final ArtifactMirror? mirror = ArtifactReflection.instanceOf(value);
+    expect(mirror, isNotNull);
+    expect(mirror!.getFieldValue('value'), 9);
+    expect(
+      (mirror.setFieldValue('value', 12).instance as ReflectModel).value,
+      12,
+    );
+
+    final ArtifactMethodInfo? onPing = ArtifactReflection.typeOf(
+      ListenerModel,
+    )?.method('onPing');
+    expect(onPing, isNotNull);
+    expect(onPing!.orderedParameterTypes, isNotEmpty);
+    expect(onPing.orderedParameterTypes.first, PingEvent);
+    expect(onPing.getAnnotations<EventHandler>().length, 1);
+
+    final ListenerModel listener = ListenerModel();
+    final ArtifactMirror listenerMirror =
+        ArtifactReflection.instanceOf(listener)!;
+    listenerMirror.callMethod('onPing', orderedParameters: [PingEvent()]);
+    expect(receivedPingEvents, 1);
+
+    final Set<Type> methodAnnotatedTypes =
+        ArtifactReflection.withMethodAnnotation<EventHandler>()
+            .map((t) => t.classType)
+            .toSet();
+    expect(methodAnnotatedTypes.contains(ListenerModel), isTrue);
+
+    final Set<Type> annotationTypes =
+        ArtifactAccessor.withAnnotationType(Artifact).map((e) => e.key).toSet();
+    expect(annotationTypes.contains(ReflectModel), isTrue);
+    expect(ArtifactAccessor.reflectObject(listener), isNotNull);
+  });
 }

@@ -32,17 +32,109 @@ class ArtifactAccessor {
     required this.artifactFromMap,
   });
 
-  static $AClass? rawReflect(Type type) {
-    ArtifactAccessor? aa = ArtifactAccessor.all.select(
-      (i) => i.artifactMirror.containsKey(type),
-    );
+  static Iterable<MapEntry<Type, $AClass>> get mirrorEntries sync* {
+    for (ArtifactAccessor accessor in all) {
+      yield* accessor.artifactMirror.entries;
+    }
+  }
 
-    if (aa == null) {
+  static Map<Type, $AClass> get mirror =>
+      Map<Type, $AClass>.fromEntries(mirrorEntries);
+
+  static $AClass? reflectType(Type type) {
+    for (MapEntry<Type, $AClass> entry in mirrorEntries) {
+      if (entry.key == type ||
+          entry.value.classType == type ||
+          entry.value.nullableType == type) {
+        return entry.value;
+      }
+    }
+
+    return null;
+  }
+
+  static $AClass? reflectObject(Object? instance) {
+    if (instance == null) {
       return null;
     }
 
-    return aa.artifactMirror[type];
+    return reflectType(instance.runtimeType);
   }
+
+  static Iterable<MapEntry<Type, $AClass>> whereMirrors(
+    bool Function(Type type, $AClass clazz) test,
+  ) sync* {
+    for (MapEntry<Type, $AClass> entry in mirrorEntries) {
+      if (test(entry.key, entry.value)) {
+        yield entry;
+      }
+    }
+  }
+
+  static Iterable<MapEntry<Type, $AClass>> withAnnotation<T>([
+    Type? exactType,
+  ]) => whereMirrors(
+    (_, clazz) => _hasAnnotation<T>(clazz.annotations, exactType),
+  );
+
+  static Iterable<MapEntry<Type, $AClass>> withAnnotationType(
+    Type annotationType,
+  ) => whereMirrors(
+    (_, clazz) => _hasAnnotationType(clazz.annotations, annotationType),
+  );
+
+  static Iterable<MapEntry<Type, $AClass>> withFieldAnnotation<T>([
+    Type? exactType,
+  ]) => whereMirrors(
+    (_, clazz) => clazz.fields.any(
+      (field) => _hasAnnotation<T>(field.annotations, exactType),
+    ),
+  );
+
+  static Iterable<MapEntry<Type, $AClass>> withFieldAnnotationType(
+    Type annotationType,
+  ) => whereMirrors(
+    (_, clazz) => clazz.fields.any(
+      (field) => _hasAnnotationType(field.annotations, annotationType),
+    ),
+  );
+
+  static Iterable<MapEntry<Type, $AClass>> withMethodAnnotation<T>([
+    Type? exactType,
+  ]) => whereMirrors(
+    (_, clazz) => clazz.methods.any(
+      (method) => _hasAnnotation<T>(method.annotations, exactType),
+    ),
+  );
+
+  static Iterable<MapEntry<Type, $AClass>> withMethodAnnotationType(
+    Type annotationType,
+  ) => whereMirrors(
+    (_, clazz) => clazz.methods.any(
+      (method) => _hasAnnotationType(method.annotations, annotationType),
+    ),
+  );
+
+  static Iterable<MapEntry<Type, $AClass>> withMixin<T>() => withMixinType(T);
+
+  static Iterable<MapEntry<Type, $AClass>> withMixinType(Type mixinType) =>
+      whereMirrors((_, clazz) => clazz.classMixins.contains(mixinType));
+
+  static Iterable<MapEntry<Type, $AClass>> withInterface<T>() =>
+      withInterfaceType(T);
+
+  static Iterable<MapEntry<Type, $AClass>> withInterfaceType(
+    Type interfaceType,
+  ) =>
+      whereMirrors((_, clazz) => clazz.classInterfaces.contains(interfaceType));
+
+  static Iterable<MapEntry<Type, $AClass>> withExtends<T>() =>
+      withExtendsType(T);
+
+  static Iterable<MapEntry<Type, $AClass>> withExtendsType(Type extendsType) =>
+      whereMirrors((_, clazz) => clazz.classExtends == extendsType);
+
+  static $AClass? rawReflect(Type type) => reflectType(type);
 
   static $AClass<T>? blindReflect<T>() =>
       ArtifactAccessor.all.select((i) {
@@ -69,6 +161,27 @@ class ArtifactAccessor {
       "Registered $key accessor with ${accessor.artifactMirror.length} mirrors",
     );
   }
+}
+
+bool _hasAnnotation<T>(Iterable<Object> annotations, [Type? exactType]) {
+  for (Object annotation in annotations) {
+    if (annotation is T &&
+        (exactType == null || annotation.runtimeType == exactType)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool _hasAnnotationType(Iterable<Object> annotations, Type annotationType) {
+  for (Object annotation in annotations) {
+    if (annotation.runtimeType == annotationType) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 const Artifact artifact = Artifact();
@@ -245,14 +358,50 @@ extension XArtifactMirror on Map<Type, $AClass> {
   Map<Type, $AClass> where(bool Function(Type, $AClass) t) =>
       Map.fromEntries(entries.where((e) => t(e.key, e.value)));
 
-  Map<Type, $AClass> withAnnotation<T>() =>
-      where((t, c) => c.hasAnnotation<T>());
+  Map<Type, $AClass> withAnnotation<T>([Type? exactType]) =>
+      where((_, c) => _hasAnnotation<T>(c.annotations, exactType));
 
-  Map<Type, $AClass> withMixin<T>() => where((t, c) => c.hasMixin<T>());
+  Map<Type, $AClass> withAnnotationType(Type annotationType) =>
+      where((_, c) => _hasAnnotationType(c.annotations, annotationType));
 
-  Map<Type, $AClass> withInterface<T>() => where((t, c) => c.hasInterface<T>());
+  Map<Type, $AClass> withFieldAnnotation<T>([Type? exactType]) => where(
+    (_, c) => c.fields.any(
+      (field) => _hasAnnotation<T>(field.annotations, exactType),
+    ),
+  );
 
-  Map<Type, $AClass> withExtends<T>() => where((t, c) => c.classExtends == T);
+  Map<Type, $AClass> withFieldAnnotationType(Type annotationType) => where(
+    (_, c) => c.fields.any(
+      (field) => _hasAnnotationType(field.annotations, annotationType),
+    ),
+  );
+
+  Map<Type, $AClass> withMethodAnnotation<T>([Type? exactType]) => where(
+    (_, c) => c.methods.any(
+      (method) => _hasAnnotation<T>(method.annotations, exactType),
+    ),
+  );
+
+  Map<Type, $AClass> withMethodAnnotationType(Type annotationType) => where(
+    (_, c) => c.methods.any(
+      (method) => _hasAnnotationType(method.annotations, annotationType),
+    ),
+  );
+
+  Map<Type, $AClass> withMixin<T>() => withMixinType(T);
+
+  Map<Type, $AClass> withMixinType(Type mixinType) =>
+      where((_, c) => c.classMixins.contains(mixinType));
+
+  Map<Type, $AClass> withInterface<T>() => withInterfaceType(T);
+
+  Map<Type, $AClass> withInterfaceType(Type interfaceType) =>
+      where((_, c) => c.classInterfaces.contains(interfaceType));
+
+  Map<Type, $AClass> withExtends<T>() => withExtendsType(T);
+
+  Map<Type, $AClass> withExtendsType(Type extendsType) =>
+      where((_, c) => c.classExtends == extendsType);
 }
 
 class ArtifactModelExporter {
