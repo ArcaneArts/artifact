@@ -53,16 +53,32 @@ class $ArtifactFromMapComponent with $ArtifactBuilderOutput {
     for (FormalParameterElement param in params) {
       String name = paramName(param);
       DartType type = param.type;
-      bool isRequired = builder.isRequiredParam(param);
-      String rn = builder.renamedParamName(clazz, param);
+      bool isRequired = builder.guardGeneration(
+        clazz: clazz,
+        stage: "from_map.required_check",
+        param: param,
+        run: () => builder.isRequiredParam(param),
+      );
+      String rn = builder.guardGeneration(
+        clazz: clazz,
+        stage: "from_map.rename",
+        param: param,
+        run: () => builder.renamedParamName(clazz, param),
+      );
 
       String rawExpr = "m[${builder.stringD(rn)}]";
 
-      ({String code, List<Uri> imports}) conv = builder.converter.$convert(
-        rawExpr,
-        type,
-        targetLib,
-        $ArtifactConvertMode.fromMap,
+      ({String code, List<Uri> imports}) conv = builder.guardGeneration(
+        clazz: clazz,
+        stage: "from_map.convert",
+        param: param,
+        run:
+            () => builder.converter.$convert(
+              rawExpr,
+              type,
+              targetLib,
+              $ArtifactConvertMode.fromMap,
+            ),
       );
       importUris.addAll(conv.imports);
 
@@ -71,7 +87,12 @@ class $ArtifactFromMapComponent with $ArtifactBuilderOutput {
         valueExpr =
             "m.\$c(${builder.stringD(rn)})?${conv.code}:throw __x(${builder.stringD(clazz.name ?? "")},${builder.stringD(name)})";
       } else {
-        String defaultCode = builder.defaultValueForParam(param);
+        String defaultCode = builder.guardGeneration(
+          clazz: clazz,
+          stage: "from_map.default_value",
+          param: param,
+          run: () => builder.defaultValueForParam(param),
+        );
         valueExpr =
             "m.\$c(${builder.stringD(rn)}) ? ${conv.code} : $defaultCode";
       }

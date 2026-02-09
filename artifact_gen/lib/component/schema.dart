@@ -21,10 +21,16 @@ class $ArtifactSchemaComponent with $ArtifactBuilderOutput {
     buf.write("${builder.stringD("type")}:${builder.stringD("object")},");
     buf.write("${builder.stringD("properties")}:{");
     for (FormalParameterElement i in params) {
-      String rn = builder.renamedParamName(
-        clazz,
-        i,
-        includeParamAnnotation: false,
+      String rn = builder.guardGeneration(
+        clazz: clazz,
+        stage: "schema.rename",
+        param: i,
+        run:
+            () => builder.renamedParamName(
+              clazz,
+              i,
+              includeParamAnnotation: false,
+            ),
       );
 
       buf.write("${builder.stringD(rn)}:{");
@@ -94,7 +100,7 @@ class $ArtifactSchemaComponent with $ArtifactBuilderOutput {
 
     buf.write(
       "${builder.stringD("required")}:[${params.map((i) {
-        String rn = builder.renamedParamName(clazz, i, includeParamAnnotation: false);
+        String rn = builder.guardGeneration(clazz: clazz, stage: "schema.required.rename", param: i, run: () => builder.renamedParamName(clazz, i, includeParamAnnotation: false));
         return builder.stringD(rn);
       }).join(",")}],",
     );

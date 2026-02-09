@@ -254,6 +254,74 @@ class ArtifactBuilder implements Builder {
   List<String> subclassesOf(ClassElement clazz) =>
       List<String>.from($artifactSubclasses[clazz.name] ?? const <String>[]);
 
+  Never throwGenerationFailure({
+    required ClassElement clazz,
+    required String stage,
+    FormalParameterElement? param,
+    required Object error,
+    StackTrace? stackTrace,
+  }) {
+    String className = clazz.name ?? "<unnamed>";
+    String location = "Artifact generation failed at $stage for $className";
+    if (param?.name != null) {
+      location = "$location.${param!.name}";
+    }
+
+    String details = "$location: $error";
+    if (stackTrace != null) {
+      details = "$details\n$stackTrace";
+    }
+
+    throw InvalidGenerationSourceError(
+      details,
+      element: param ?? clazz,
+      todo:
+          "Inspect the failing component/stage in artifact_gen and the referenced class/parameter.",
+    );
+  }
+
+  T guardGeneration<T>({
+    required ClassElement clazz,
+    required String stage,
+    FormalParameterElement? param,
+    required T Function() run,
+  }) {
+    try {
+      return run();
+    } on InvalidGenerationSourceError {
+      rethrow;
+    } catch (e, st) {
+      throwGenerationFailure(
+        clazz: clazz,
+        stage: stage,
+        param: param,
+        error: e,
+        stackTrace: st,
+      );
+    }
+  }
+
+  Future<T> guardGenerationAsync<T>({
+    required ClassElement clazz,
+    required String stage,
+    FormalParameterElement? param,
+    required Future<T> Function() run,
+  }) async {
+    try {
+      return await run();
+    } on InvalidGenerationSourceError {
+      rethrow;
+    } catch (e, st) {
+      throwGenerationFailure(
+        clazz: clazz,
+        stage: stage,
+        param: param,
+        error: e,
+        stackTrace: st,
+      );
+    }
+  }
+
   @override
   Future<void> build(BuildStep step) async {
     try {
@@ -725,6 +793,19 @@ class ArtifactBuilder implements Builder {
           params.map((i) => i.name).whereType<String>().diff(eFields).toList();
     }
 
+    Future<$BuildOutput> _component(
+      String name,
+      $ArtifactBuilderOutput component,
+    ) {
+      return guardGenerationAsync(
+        clazz: clazz,
+        stage: "component:$name",
+        run:
+            () =>
+                component.onGenerate(this, clazz, ctor, params, step, eAFields),
+      );
+    }
+
     return (
           <Uri>[],
           StringBuffer()
@@ -735,72 +816,23 @@ class ArtifactBuilder implements Builder {
         )
         .mergeWith(
           await Future.wait([
-            const $ArtifactToMapComponent().onGenerate(
-              this,
-              clazz,
-              ctor,
-              params,
-              step,
-              eAFields,
-            ),
-            const $ArtifactFromMapComponent().onGenerate(
-              this,
-              clazz,
-              ctor,
-              params,
-              step,
-              eAFields,
-            ),
-            const $ArtifactCopyWithComponent().onGenerate(
-              this,
-              clazz,
-              ctor,
-              params,
-              step,
-              eAFields,
-            ),
-            const $ArtifactInstanceComponent().onGenerate(
-              this,
-              clazz,
-              ctor,
-              params,
-              step,
-              eAFields,
-            ),
-            const $ArtifactAttachComponent().onGenerate(
-              this,
-              clazz,
-              ctor,
-              params,
-              step,
-              eAFields,
-            ),
+            _component("to_map", const $ArtifactToMapComponent()),
+            _component("from_map", const $ArtifactFromMapComponent()),
+            _component("copy_with", const $ArtifactCopyWithComponent()),
+            _component("instance", const $ArtifactInstanceComponent()),
+            _component("attach", const $ArtifactAttachComponent()),
             if ($artifactChecker
                     .firstAnnotationOf(clazz, throwOnUnresolved: false)
                     ?.getField("reflection")
                     ?.toBoolValue() ??
                 false)
-              const $ArtifactReflectorComponent().onGenerate(
-                this,
-                clazz,
-                ctor,
-                params,
-                step,
-                eAFields,
-              ),
+              _component("reflector", const $ArtifactReflectorComponent()),
             if ($artifactChecker
                     .firstAnnotationOf(clazz, throwOnUnresolved: false)
                     ?.getField("generateSchema")
                     ?.toBoolValue() ??
                 false)
-              const $ArtifactSchemaComponent().onGenerate(
-                this,
-                clazz,
-                ctor,
-                params,
-                step,
-                eAFields,
-              ),
+              _component("schema", const $ArtifactSchemaComponent()),
           ]).then((i) => i.merged),
         )
         .mergeWith((<Uri>[], StringBuffer()..write("}")));

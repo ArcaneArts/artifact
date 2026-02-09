@@ -1,0 +1,102 @@
+// GENERATED – do not modify by hand
+
+// ignore_for_file: camel_case_types
+// ignore_for_file: non_constant_identifier_names
+// ignore_for_file: constant_identifier_names
+// ignore_for_file: library_private_types_in_public_api
+// ignore_for_file: unused_element
+import "package:artifact/test_models/feature_models.dart";import "dart:core";import "package:artifact/artifact.dart";import "package:artifact/events.dart";
+
+ArgumentError __x(String c,String f)=>ArgumentError('${'Missing required '}$c.$f');
+const bool _T=true;const bool _F=false;int _ = ((){ArtifactCodecUtil.r(const [WeirdCodec()]);if(!ArtifactAccessor.$i('artifact')){ArtifactAccessor.$r('artifact',ArtifactAccessor(isArtifact: $isArtifact,artifactMirror:$artifactMirror,constructArtifact:$constructArtifact,artifactToMap:$artifactToMap,artifactFromMap:$artifactFromMap));}return 0;})();
+
+extension $Person on Person{
+  Person get _H=>this;
+  ArtifactModelExporter get to=>ArtifactModelExporter(toMap);
+  Map<String,dynamic> toMap(){_;return<String,dynamic>{'name':ArtifactCodecUtil.ea(name),'subtitle':ArtifactCodecUtil.ea(subtitle),}.$nn;}
+  static ArtifactModelImporter<Person> get from=>ArtifactModelImporter<Person>(fromMap);
+  static Person fromMap(Map<String,dynamic> r){_;Map<String,dynamic> m=r.$nn;return Person(name: m.$c('name')? ArtifactCodecUtil.da(m['name'], String) as String:throw __x('Person','name'),subtitle: m.$c('subtitle') ?  ArtifactCodecUtil.da(m['subtitle'], String) as String? : null,);}
+  Person copyWith({String? name,String? subtitle,bool deleteSubtitle=_F,})=>Person(name: name??_H.name,subtitle: deleteSubtitle?null:(subtitle??_H.subtitle),);
+  static Person get newInstance=>Person(name: '',);
+  Iterable<R> getAttachments<T, R>(T t) => ArtifactCodecUtil.a<T,R>(t,[$At<UiHint,String>(UiHint.title,name),$At<UiHint,String?>(UiHint.subtitle,subtitle)]);
+  R? getAttachment<T,R>(T t)=>getAttachments<T,R>(t).$f;
+  static const List<dynamic> rootAttachments = [UiHint.classLevel];
+}
+extension $Animal on Animal{
+  Animal get _H=>this;
+  ArtifactModelExporter get to=>ArtifactModelExporter(toMap);
+  Map<String,dynamic> toMap(){_;if (_H is Dog){return (_H as Dog).toMap();}return<String,dynamic>{'hp':ArtifactCodecUtil.ea(hp),}.$nn;}
+  static ArtifactModelImporter<Animal> get from=>ArtifactModelImporter<Animal>(fromMap);
+  static Animal fromMap(Map<String,dynamic> r){_;Map<String,dynamic> m=r.$nn;if(m.$c('_subclass_Animal')){String _I=m['_subclass_Animal'] as String;if(_I=='Dog'){return $Dog.fromMap(m);}}return Animal(hp: m.$c('hp') ?  ArtifactCodecUtil.da(m['hp'], int) as int : 10,);}
+  Animal copyWith({int? hp,bool resetHp=_F,int? deltaHp,}){if (_H is Dog){return (_H as Dog).copyWith(hp: hp,resetHp:resetHp,deltaHp:deltaHp,);}return Animal(hp: deltaHp!=null?(hp??_H.hp)+deltaHp:resetHp?10:(hp??_H.hp),);}
+  static Animal get newInstance=>Animal();
+}
+extension $Dog on Dog{
+  Dog get _H=>this;
+  ArtifactModelExporter get to=>ArtifactModelExporter(toMap);
+  Map<String,dynamic> toMap(){_;return<String,dynamic>{'_subclass_Animal': 'Dog','hp':ArtifactCodecUtil.ea(hp),'goodBoy':ArtifactCodecUtil.ea(goodBoy),}.$nn;}
+  static ArtifactModelImporter<Dog> get from=>ArtifactModelImporter<Dog>(fromMap);
+  static Dog fromMap(Map<String,dynamic> r){_;Map<String,dynamic> m=r.$nn;return Dog(hp: m.$c('hp') ?  ArtifactCodecUtil.da(m['hp'], int) as int : 20,goodBoy: m.$c('goodBoy') ?  ArtifactCodecUtil.da(m['goodBoy'], bool) as bool : true,);}
+  Dog copyWith({int? hp,bool resetHp=_F,int? deltaHp,bool? goodBoy,bool resetGoodBoy=_F,})=>Dog(hp: deltaHp!=null?(hp??_H.hp)+deltaHp:resetHp?20:(hp??_H.hp),goodBoy: resetGoodBoy?true:(goodBoy??_H.goodBoy),);
+  static Dog get newInstance=>Dog();
+}
+extension $Zoo on Zoo{
+  Zoo get _H=>this;
+  ArtifactModelExporter get to=>ArtifactModelExporter(toMap);
+  Map<String,dynamic> toMap(){_;return<String,dynamic>{'animals':animals.$m((e)=> e.toMap()).$l,}.$nn;}
+  static ArtifactModelImporter<Zoo> get from=>ArtifactModelImporter<Zoo>(fromMap);
+  static Zoo fromMap(Map<String,dynamic> r){_;Map<String,dynamic> m=r.$nn;return Zoo(animals: m.$c('animals') ?  (m['animals'] as List).$m((e)=>$Animal.fromMap((e) as Map<String, dynamic>)).$l : const [],);}
+  Zoo copyWith({List<Animal>? animals,bool resetAnimals=_F,List<Animal>? appendAnimals,List<Animal>? removeAnimals,})=>Zoo(animals: ((resetAnimals?const []:(animals??_H.animals)) as List<Animal>).$u(appendAnimals,removeAnimals),);
+  static Zoo get newInstance=>Zoo();
+}
+extension $ListenerModel on ListenerModel{
+  ListenerModel get _H=>this;
+  ArtifactModelExporter get to=>ArtifactModelExporter(toMap);
+  Map<String,dynamic> toMap(){_;return<String,dynamic>{'id':ArtifactCodecUtil.ea(id),}.$nn;}
+  static ArtifactModelImporter<ListenerModel> get from=>ArtifactModelImporter<ListenerModel>(fromMap);
+  static ListenerModel fromMap(Map<String,dynamic> r){_;Map<String,dynamic> m=r.$nn;return ListenerModel(id: m.$c('id') ?  ArtifactCodecUtil.da(m['id'], int) as int : 0,);}
+  ListenerModel copyWith({int? id,bool resetId=_F,int? deltaId,})=>ListenerModel(id: deltaId!=null?(id??_H.id)+deltaId:resetId?0:(id??_H.id),);
+  static ListenerModel get newInstance=>ListenerModel();
+  ArtifactMirror get $mirror{_;return ArtifactCodecUtil.m(_H)!;}
+  static List<Object> get $annotations {_;return[Artifact(generateSchema: _F,compression: _F,reflection: _T,),];}
+  static List<$AFld> get $fields{_;return[$AFld<ListenerModel, int>('id',(i)=>i.id,(i,v)=>i.copyWith(id:v),[],),];}
+  static List<$AMth> get $methods {_;return[$AMth<ListenerModel, void>('onPing',(i, p)=>i.onPing(p.o<PingEvent>(0),),[PingEvent,],{},[EventHandler(ignoreCancelled: _T,priority: EventPriority.normal,),],),];}
+}
+extension $FeatureModel on FeatureModel{
+  FeatureModel get _H=>this;
+  ArtifactModelExporter get to=>ArtifactModelExporter(toMap);
+  Map<String,dynamic> toMap(){_;return<String,dynamic>{'v':ArtifactCodecUtil.ea(value),'ratio':ArtifactCodecUtil.ea(ratio),'note':ArtifactCodecUtil.ea(note),'numbers':numbers.$m((e)=> ArtifactCodecUtil.ea(e)).$l,'tags':tags.$m((e)=> ArtifactCodecUtil.ea(e)).$l,'mood':mood.name,'weird':ArtifactCodecUtil.ea(weird),}.$nn;}
+  static ArtifactModelImporter<FeatureModel> get from=>ArtifactModelImporter<FeatureModel>(fromMap);
+  static FeatureModel fromMap(Map<String,dynamic> r){_;Map<String,dynamic> m=r.$nn;return FeatureModel(value: m.$c('v') ?  ArtifactCodecUtil.da(m['v'], int) as int : 4,ratio: m.$c('ratio')? ArtifactCodecUtil.da(m['ratio'], double) as double:throw __x('FeatureModel','ratio'),note: m.$c('note') ?  ArtifactCodecUtil.da(m['note'], String) as String? : null,numbers: m.$c('numbers') ?  (m['numbers'] as List).$m((e)=> ArtifactCodecUtil.da(e, int) as int).$l : const <int>[],tags: m.$c('tags') ?  (m['tags'] as List).$m((e)=> ArtifactCodecUtil.da(e, String) as String).$s : const <String>{},mood: m.$c('mood') ? ArtifactCodecUtil.e(Mood.values, m['mood']) as Mood : Mood.happy,weird: m.$c('weird') ?  ArtifactCodecUtil.da(m['weird'], Weird) as Weird : const Weird(7),);}
+  FeatureModel copyWith({int? value,bool resetValue=_F,int? deltaValue,double? ratio,double? deltaRatio,String? note,bool deleteNote=_F,List<int>? numbers,bool resetNumbers=_F,List<int>? appendNumbers,List<int>? removeNumbers,Set<String>? tags,bool resetTags=_F,Set<String>? appendTags,Set<String>? removeTags,Mood? mood,bool resetMood=_F,Weird? weird,bool resetWeird=_F,})=>FeatureModel(value: deltaValue!=null?(value??_H.value)+deltaValue:resetValue?4:(value??_H.value),ratio: deltaRatio!=null?(ratio??_H.ratio)+deltaRatio:ratio??_H.ratio,note: deleteNote?null:(note??_H.note),numbers: ((resetNumbers?const <int>[]:(numbers??_H.numbers)) as List<int>).$u(appendNumbers,removeNumbers),tags: ((resetTags?const <String>{}:(tags??_H.tags)) as Set<String>).$u(appendTags,removeTags),mood: resetMood?Mood.happy:(mood??_H.mood),weird: resetWeird?const Weird(7):(weird??_H.weird),);
+  static FeatureModel get newInstance=>FeatureModel(ratio: 0,);
+}
+extension $ReflectModel on ReflectModel{
+  ReflectModel get _H=>this;
+  ArtifactModelExporter get to=>ArtifactModelExporter(toMap);
+  Map<String,dynamic> toMap(){_;return<String,dynamic>{'value':ArtifactCodecUtil.ea(value),}.$nn;}
+  static ArtifactModelImporter<ReflectModel> get from=>ArtifactModelImporter<ReflectModel>(fromMap);
+  static ReflectModel fromMap(Map<String,dynamic> r){_;Map<String,dynamic> m=r.$nn;return ReflectModel(value: m.$c('value') ?  ArtifactCodecUtil.da(m['value'], int) as int : 1,);}
+  ReflectModel copyWith({int? value,bool resetValue=_F,int? deltaValue,})=>ReflectModel(value: deltaValue!=null?(value??_H.value)+deltaValue:resetValue?1:(value??_H.value),);
+  static ReflectModel get newInstance=>ReflectModel();
+  ArtifactMirror get $mirror{_;return ArtifactCodecUtil.m(_H)!;}
+  static List<Object> get $annotations {_;return[Artifact(generateSchema: _F,compression: _F,reflection: _T,),];}
+  static List<$AFld> get $fields{_;return[$AFld<ReflectModel, int>('value',(i)=>i.value,(i,v)=>i.copyWith(value:v),[],),];}
+  static List<$AMth> get $methods {_;return[];}
+}
+extension $SchemaModel on SchemaModel{
+  SchemaModel get _H=>this;
+  ArtifactModelExporter get to=>ArtifactModelExporter(toMap);
+  Map<String,dynamic> toMap(){_;return<String,dynamic>{'identifier':ArtifactCodecUtil.ea(id),'enabled':ArtifactCodecUtil.ea(enabled),'samples':samples.$m((e)=> ArtifactCodecUtil.ea(e)).$l,}.$nn;}
+  static ArtifactModelImporter<SchemaModel> get from=>ArtifactModelImporter<SchemaModel>(fromMap);
+  static SchemaModel fromMap(Map<String,dynamic> r){_;Map<String,dynamic> m=r.$nn;return SchemaModel(id: m.$c('identifier') ?  ArtifactCodecUtil.da(m['identifier'], int) as int : 1,enabled: m.$c('enabled') ?  ArtifactCodecUtil.da(m['enabled'], bool) as bool : true,samples: m.$c('samples') ?  (m['samples'] as List).$m((e)=> ArtifactCodecUtil.da(e, int) as int).$l : const <int>[1, 2],);}
+  SchemaModel copyWith({int? id,bool resetId=_F,int? deltaId,bool? enabled,bool resetEnabled=_F,List<int>? samples,bool resetSamples=_F,List<int>? appendSamples,List<int>? removeSamples,})=>SchemaModel(id: deltaId!=null?(id??_H.id)+deltaId:resetId?1:(id??_H.id),enabled: resetEnabled?true:(enabled??_H.enabled),samples: ((resetSamples?const <int>[1, 2]:(samples??_H.samples)) as List<int>).$u(appendSamples,removeSamples),);
+  static SchemaModel get newInstance=>SchemaModel();
+  static Map<String,dynamic> get schema=>{'type':'object','properties':{'identifier':{'type':'integer',},'enabled':{'type':'boolean','description':'Enabled flag',},'samples':{'type':'array','items':{'type':'integer',},},},'required':['identifier','enabled','samples'],'additionalProperties':_F};
+}
+
+bool $isArtifact(dynamic v)=>v==null?false : v is! Type ?$isArtifact(v.runtimeType):v == Person ||v == Animal ||v == Dog ||v == Zoo ||v == ListenerModel ||v == FeatureModel ||v == ReflectModel ||v == SchemaModel ;
+Map<Type,$AClass> get $artifactMirror => {ListenerModel:$AClass<ListenerModel>($ListenerModel.$annotations,$ListenerModel.$fields,$ListenerModel.$methods,()=>$ListenerModel.newInstance,Object,[],[],),ReflectModel:$AClass<ReflectModel>($ReflectModel.$annotations,$ReflectModel.$fields,$ReflectModel.$methods,()=>$ReflectModel.newInstance,Object,[],[],),};
+T $constructArtifact<T>() => T==Person ?$Person.newInstance as T :T==Animal ?$Animal.newInstance as T :T==Dog ?$Dog.newInstance as T :T==Zoo ?$Zoo.newInstance as T :T==ListenerModel ?$ListenerModel.newInstance as T :T==FeatureModel ?$FeatureModel.newInstance as T :T==ReflectModel ?$ReflectModel.newInstance as T :T==SchemaModel ?$SchemaModel.newInstance as T : throw Exception();
+Map<String,dynamic> $artifactToMap(Object o)=>o is Person ?o.toMap():o is Animal ?o.toMap():o is Dog ?o.toMap():o is Zoo ?o.toMap():o is ListenerModel ?o.toMap():o is FeatureModel ?o.toMap():o is ReflectModel ?o.toMap():o is SchemaModel ?o.toMap():throw Exception();
+T $artifactFromMap<T>(Map<String,dynamic> m)=>T==Person ?$Person.fromMap(m) as T:T==Animal ?$Animal.fromMap(m) as T:T==Dog ?$Dog.fromMap(m) as T:T==Zoo ?$Zoo.fromMap(m) as T:T==ListenerModel ?$ListenerModel.fromMap(m) as T:T==FeatureModel ?$FeatureModel.fromMap(m) as T:T==ReflectModel ?$ReflectModel.fromMap(m) as T:T==SchemaModel ?$SchemaModel.fromMap(m) as T:throw Exception();

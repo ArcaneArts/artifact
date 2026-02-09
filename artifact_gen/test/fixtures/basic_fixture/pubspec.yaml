@@ -1,0 +1,19 @@
+name: artifact_gen_fixture_basic
+version: 0.0.1
+publish_to: none
+
+environment:
+  sdk: ^3.7.0
+
+dependencies:
+  artifact:
+    path: ../../../../
+
+dev_dependencies:
+  artifact_gen:
+    path: ../../../
+  build_runner: ^2.10.0
+
+dependency_overrides:
+  artifact:
+    path: ../../../../

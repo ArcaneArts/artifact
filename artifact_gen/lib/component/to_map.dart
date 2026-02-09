@@ -62,14 +62,25 @@ class $ArtifactToMapComponent with $ArtifactBuilderOutput {
     for (FormalParameterElement param in params) {
       String name = paramName(param);
 
-      ({String code, List<Uri> imports}) conv = builder.converter.$convert(
-        name,
-        param.type,
-        targetLib,
-        $ArtifactConvertMode.toMap,
+      ({String code, List<Uri> imports}) conv = builder.guardGeneration(
+        clazz: clazz,
+        stage: "to_map.convert",
+        param: param,
+        run:
+            () => builder.converter.$convert(
+              name,
+              param.type,
+              targetLib,
+              $ArtifactConvertMode.toMap,
+            ),
       );
 
-      String rn = builder.renamedParamName(clazz, param);
+      String rn = builder.guardGeneration(
+        clazz: clazz,
+        stage: "to_map.rename",
+        param: param,
+        run: () => builder.renamedParamName(clazz, param),
+      );
 
       buf.write("${builder.stringD(rn)}:${conv.code.trim()},");
       importUris.addAll(conv.imports);

@@ -58,6 +58,22 @@ For watch mode during development:
 dart run build_runner watch
 ```
 
+## Testing
+
+Run generated API tests:
+
+```bash
+dart run build_runner build --delete-conflicting-outputs
+dart test test/generated
+```
+
+Run generator integration tests:
+
+```bash
+cd artifact_gen
+dart test
+```
+
 ## Basic Usage
 
 Annotate your immutable class with `@Artifact`. Fields must be `final` and use a `const` constructor with named parameters.
