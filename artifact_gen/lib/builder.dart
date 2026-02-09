@@ -10,7 +10,7 @@ import 'package:analyzer/dart/element/type.dart';
 import 'package:artifact/artifact.dart';
 import 'package:artifact_gen/component/copy_with.dart';
 import 'package:artifact_gen/component/from_map.dart';
-import 'package:artifact_gen/component/inatance.dart';
+import 'package:artifact_gen/component/instance.dart';
 import 'package:artifact_gen/component/reflector.dart';
 import 'package:artifact_gen/component/schema.dart';
 import 'package:artifact_gen/component/to_map.dart';
@@ -188,72 +188,6 @@ class ArtifactBuilder implements Builder {
 
     return "$at";
   }
-
-  FieldElement? fieldForParam(
-    ClassElement clazz,
-    FormalParameterElement param,
-  ) {
-    if (param.name == null) {
-      return null;
-    }
-
-    return clazz.getField(param.name!);
-  }
-
-  String renamedParamName(
-    ClassElement clazz,
-    FormalParameterElement param, {
-    bool includeParamAnnotation = true,
-  }) {
-    String fallback = param.name ?? "";
-    FieldElement? field = fieldForParam(clazz, param);
-    String? renamed;
-
-    if (field != null &&
-        $renameChecker.hasAnnotationOf(field, throwOnUnresolved: false)) {
-      renamed =
-          $renameChecker
-              .firstAnnotationOf(field, throwOnUnresolved: false)
-              ?.getField("newName")
-              ?.toStringValue();
-    }
-
-    if (renamed == null &&
-        includeParamAnnotation &&
-        $renameChecker.hasAnnotationOf(param, throwOnUnresolved: false)) {
-      renamed =
-          $renameChecker
-              .firstAnnotationOf(param, throwOnUnresolved: false)
-              ?.getField("newName")
-              ?.toStringValue();
-    }
-
-    return renamed ?? fallback;
-  }
-
-  bool isRequiredParam(FormalParameterElement param) {
-    bool nullable = param.type
-        .getDisplayString(withNullability: true)
-        .endsWith("?");
-
-    return param.isRequiredNamed ||
-        param.isRequiredPositional ||
-        (!nullable && param.defaultValueCode == null);
-  }
-
-  String defaultValueForParam(
-    FormalParameterElement param, {
-    String fallback = "null",
-  }) {
-    if (param.defaultValueCode == null) {
-      return fallback;
-    }
-
-    return valD(param.defaultValueCode.toString(), param.type);
-  }
-
-  List<String> subclassesOf(ClassElement clazz) =>
-      List<String>.from($artifactSubclasses[clazz.name] ?? const <String>[]);
 
   Never throwGenerationFailure({
     required ClassElement clazz,

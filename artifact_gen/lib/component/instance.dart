@@ -2,6 +2,7 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:artifact_gen/builder.dart';
+import 'package:artifact_gen/component/component_helpers.dart';
 import 'package:build/build.dart';
 
 class $ArtifactInstanceComponent with $ArtifactBuilderOutput {
