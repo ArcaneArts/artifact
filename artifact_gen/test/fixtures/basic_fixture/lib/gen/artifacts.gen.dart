@@ -55,7 +55,7 @@ extension $ReflectFixture on ReflectFixture{
   ReflectFixture copyWith({int? count,bool resetCount=_F,int? deltaCount,})=>ReflectFixture(count: deltaCount!=null?(count??_H.count)+deltaCount:resetCount?1:(count??_H.count),);
   static ReflectFixture get newInstance=>ReflectFixture();
   ArtifactMirror get $mirror{_;return ArtifactCodecUtil.m(_H)!;}
-  static List<Object> get $annotations {_;return[Artifact(generateSchema: _F,compression: _F,reflection: _T,),];}
+  static List<Object> get $annotations {_;return[Artifact(generateSchema: _F,compression: _F,reflection: _T),];}
   static List<$AFld> get $fields{_;return[$AFld<ReflectFixture, int>('count',(i)=>i.count,(i,v)=>i.copyWith(count:v),[],),];}
   static List<$AMth> get $methods {_;return[];}
 }
@@ -67,11 +67,24 @@ extension $SchemaFixture on SchemaFixture{
   static SchemaFixture fromMap(Map<String,dynamic> r){_;Map<String,dynamic> m=r.$nn;return SchemaFixture(id: m.$c('identifier') ?  ArtifactCodecUtil.da(m['identifier'], int) as int : 1,active: m.$c('active') ?  ArtifactCodecUtil.da(m['active'], bool) as bool : true,);}
   SchemaFixture copyWith({int? id,bool resetId=_F,int? deltaId,bool? active,bool resetActive=_F,})=>SchemaFixture(id: deltaId!=null?(id??_H.id)+deltaId:resetId?1:(id??_H.id),active: resetActive?true:(active??_H.active),);
   static SchemaFixture get newInstance=>SchemaFixture();
-  static Map<String,dynamic> get schema=>{'type':'object','properties':{'identifier':{'type':'integer',},'active':{'type':'boolean',},},'required':['identifier','active'],'additionalProperties':_F};
+  static Map<String,dynamic> get schema=>{'type':'object','properties':{'identifier':{'type':'integer',},'active':{'type':'boolean',},},'required':[],'additionalProperties':_F};
+}
+extension $ReflectAnnotationVisibility on ReflectAnnotationVisibility{
+  ReflectAnnotationVisibility get _H=>this;
+  ArtifactModelExporter get to=>ArtifactModelExporter(toMap);
+  Map<String,dynamic> toMap(){_;return<String,dynamic>{'someField':ArtifactCodecUtil.ea(someField),'someInt':ArtifactCodecUtil.ea(someInt),}.$nn;}
+  static ArtifactModelImporter<ReflectAnnotationVisibility> get from=>ArtifactModelImporter<ReflectAnnotationVisibility>(fromMap);
+  static ReflectAnnotationVisibility fromMap(Map<String,dynamic> r){_;Map<String,dynamic> m=r.$nn;return ReflectAnnotationVisibility(someField: m.$c('someField') ?  ArtifactCodecUtil.da(m['someField'], String) as String : 'field',someInt: m.$c('someInt') ?  ArtifactCodecUtil.da(m['someInt'], int) as int? : null,);}
+  ReflectAnnotationVisibility copyWith({String? someField,bool resetSomeField=_F,int? someInt,bool deleteSomeInt=_F,int? deltaSomeInt,})=>ReflectAnnotationVisibility(someField: resetSomeField?'field':(someField??_H.someField),someInt: deltaSomeInt!=null?(someInt??_H.someInt??0)+deltaSomeInt:deleteSomeInt?null:(someInt??_H.someInt),);
+  static ReflectAnnotationVisibility get newInstance=>ReflectAnnotationVisibility();
+  ArtifactMirror get $mirror{_;return ArtifactCodecUtil.m(_H)!;}
+  static List<Object> get $annotations {_;return[EverythingAnnotation(aString: 'default',aInt: 42,aDouble: 3.14,aBools: <bool>[_T,_F],aRawMap: <String, dynamic>{'key': 'value'},aStringMapN: null,aStringListN: null,aConstThings: <AConstThing>{AConstThing(aL: <String>['a','b','c'],x: null)}),Artifact(generateSchema: _F,compression: _F,reflection: _T),];}
+  static List<$AFld> get $fields{_;return[$AFld<ReflectAnnotationVisibility, String>('someField',(i)=>i.someField,(i,v)=>i.copyWith(someField:v),[EverythingAnnotation(aString: 'default',aInt: 42,aDouble: 3.14,aBools: <bool>[_T,_F],aRawMap: <String, dynamic>{'key': 'value'},aStringMapN: null,aStringListN: null,aConstThings: <AConstThing>{AConstThing(aL: <String>['a','b','c'],x: null)}),],),$AFld<ReflectAnnotationVisibility, int?>('someInt',(i)=>i.someInt,(i,v)=>i.copyWith(someInt:v),[EverythingAnnotation(aString: 'default',aInt: 42,aDouble: 3.14,aBools: <bool>[_T,_F],aRawMap: <String, dynamic>{'key': 'value'},aStringMapN: null,aStringListN: null,aConstThings: <AConstThing>{AConstThing(aL: <String>['a','b','c'],x: null)}),],),];}
+  static List<$AMth> get $methods {_;return[$AMth<ReflectAnnotationVisibility, int>('doSomething',(i, p)=>i.doSomething(p.o<int>(0),p.o<int>(1),),[int,int,],{},[EverythingAnnotation(aString: 'default',aInt: 42,aDouble: 3.14,aBools: <bool>[_T,_F],aRawMap: <String, dynamic>{'key': 'value'},aStringMapN: null,aStringListN: null,aConstThings: <AConstThing>{AConstThing(aL: <String>['a','b','c'],x: null)}),],),];}
 }
 
-bool $isArtifact(dynamic v)=>v==null?false : v is! Type ?$isArtifact(v.runtimeType):v == FixtureBase ||v == FixtureChild ||v == FixtureZoo ||v == FixtureModel ||v == ReflectFixture ||v == SchemaFixture ;
-Map<Type,$AClass> get $artifactMirror => {ReflectFixture:$AClass<ReflectFixture>($ReflectFixture.$annotations,$ReflectFixture.$fields,$ReflectFixture.$methods,()=>$ReflectFixture.newInstance,Object,[],[],),};
-T $constructArtifact<T>() => T==FixtureBase ?$FixtureBase.newInstance as T :T==FixtureChild ?$FixtureChild.newInstance as T :T==FixtureZoo ?$FixtureZoo.newInstance as T :T==FixtureModel ?$FixtureModel.newInstance as T :T==ReflectFixture ?$ReflectFixture.newInstance as T :T==SchemaFixture ?$SchemaFixture.newInstance as T : throw Exception();
-Map<String,dynamic> $artifactToMap(Object o)=>o is FixtureBase ?o.toMap():o is FixtureChild ?o.toMap():o is FixtureZoo ?o.toMap():o is FixtureModel ?o.toMap():o is ReflectFixture ?o.toMap():o is SchemaFixture ?o.toMap():throw Exception();
-T $artifactFromMap<T>(Map<String,dynamic> m)=>T==FixtureBase ?$FixtureBase.fromMap(m) as T:T==FixtureChild ?$FixtureChild.fromMap(m) as T:T==FixtureZoo ?$FixtureZoo.fromMap(m) as T:T==FixtureModel ?$FixtureModel.fromMap(m) as T:T==ReflectFixture ?$ReflectFixture.fromMap(m) as T:T==SchemaFixture ?$SchemaFixture.fromMap(m) as T:throw Exception();
+bool $isArtifact(dynamic v)=>v==null?false : v is! Type ?$isArtifact(v.runtimeType):v == FixtureBase ||v == FixtureChild ||v == FixtureZoo ||v == FixtureModel ||v == ReflectFixture ||v == SchemaFixture ||v == ReflectAnnotationVisibility ;
+Map<Type,$AClass> get $artifactMirror => {ReflectFixture:$AClass<ReflectFixture>($ReflectFixture.$annotations,$ReflectFixture.$fields,$ReflectFixture.$methods,()=>$ReflectFixture.newInstance,Object,[],[],),ReflectAnnotationVisibility:$AClass<ReflectAnnotationVisibility>($ReflectAnnotationVisibility.$annotations,$ReflectAnnotationVisibility.$fields,$ReflectAnnotationVisibility.$methods,()=>$ReflectAnnotationVisibility.newInstance,Object,[],[],),};
+T $constructArtifact<T>() => T==FixtureBase ?$FixtureBase.newInstance as T :T==FixtureChild ?$FixtureChild.newInstance as T :T==FixtureZoo ?$FixtureZoo.newInstance as T :T==FixtureModel ?$FixtureModel.newInstance as T :T==ReflectFixture ?$ReflectFixture.newInstance as T :T==SchemaFixture ?$SchemaFixture.newInstance as T :T==ReflectAnnotationVisibility ?$ReflectAnnotationVisibility.newInstance as T : throw Exception();
+Map<String,dynamic> $artifactToMap(Object o)=>o is FixtureBase ?o.toMap():o is FixtureChild ?o.toMap():o is FixtureZoo ?o.toMap():o is FixtureModel ?o.toMap():o is ReflectFixture ?o.toMap():o is SchemaFixture ?o.toMap():o is ReflectAnnotationVisibility ?o.toMap():throw Exception();
+T $artifactFromMap<T>(Map<String,dynamic> m)=>T==FixtureBase ?$FixtureBase.fromMap(m) as T:T==FixtureChild ?$FixtureChild.fromMap(m) as T:T==FixtureZoo ?$FixtureZoo.fromMap(m) as T:T==FixtureModel ?$FixtureModel.fromMap(m) as T:T==ReflectFixture ?$ReflectFixture.fromMap(m) as T:T==SchemaFixture ?$SchemaFixture.fromMap(m) as T:T==ReflectAnnotationVisibility ?$ReflectAnnotationVisibility.fromMap(m) as T:throw Exception();

@@ -4,7 +4,6 @@ import 'package:analyzer/dart/element/type.dart';
 import 'package:artifact_gen/builder.dart';
 import 'package:build/build.dart';
 import 'package:fast_log/fast_log.dart';
-import 'package:toxic/extensions/iterable.dart';
 
 class $ArtifactReflectorComponent with $ArtifactBuilderOutput {
   const $ArtifactReflectorComponent();
@@ -29,15 +28,10 @@ class $ArtifactReflectorComponent with $ArtifactBuilderOutput {
       "  static ${builder.applyDefsF("List<Object>")} get \$annotations {_;return[",
     );
     for (ElementAnnotation a in clazz.metadata.annotations) {
-      importUris.add(a.element!.library!.uri);
-      DartObject v = a.computeConstantValue()!;
-      String src = dartObjectToCode(v, builder, importUris);
-
-      if (src.startsWith("_Override()") || src.startsWith("Deprecated()")) {
-        continue;
+      String? src = _annotationCode(a, builder, importUris);
+      if (src != null) {
+        buf.write("$src,");
       }
-
-      buf.write("$src,");
     }
     buf.writeln("];}");
 
@@ -64,18 +58,10 @@ class $ArtifactReflectorComponent with $ArtifactBuilderOutput {
       FieldElement? field = clazz.getField(name);
       if (field != null) {
         for (ElementAnnotation a in field.metadata.annotations) {
-          if (a.element == null) {
-            continue;
+          String? src = _annotationCode(a, builder, importUris);
+          if (src != null) {
+            buf.write("$src,");
           }
-          importUris.add(a.element!.library!.uri);
-          DartObject v = a.computeConstantValue()!;
-          String src = dartObjectToCode(v, builder, importUris);
-
-          if (src.startsWith("_Override()") || src.startsWith("Deprecated()")) {
-            continue;
-          }
-
-          buf.write("$src,");
         }
       }
       buf.write("],");
@@ -159,15 +145,10 @@ class $ArtifactReflectorComponent with $ArtifactBuilderOutput {
       buf.write("},");
       buf.write("[");
       for (ElementAnnotation a in method.metadata.annotations) {
-        importUris.add(a.element!.library!.uri);
-        DartObject v = a.computeConstantValue()!;
-        String src = dartObjectToCode(v, builder, importUris);
-
-        if (src.startsWith("_Override()") || src.startsWith("Deprecated()")) {
-          continue;
+        String? src = _annotationCode(a, builder, importUris);
+        if (src != null) {
+          buf.write("$src,");
         }
-
-        buf.write("$src,");
       }
       buf.write("],");
       buf.write("),");
@@ -175,6 +156,34 @@ class $ArtifactReflectorComponent with $ArtifactBuilderOutput {
     buf.writeln("];}");
 
     return (importUris, buf);
+  }
+
+  String? _annotationCode(
+    ElementAnnotation annotation,
+    ArtifactBuilder builder,
+    List<Uri> importUris,
+  ) {
+    Element? element = annotation.element;
+    if (element == null) {
+      return null;
+    }
+
+    LibraryElement? library = element.library;
+    if (library != null) {
+      importUris.add(library.uri);
+    }
+
+    DartObject? value = annotation.computeConstantValue();
+    if (value == null) {
+      return null;
+    }
+
+    String src = dartObjectToCode(value, builder, importUris);
+    if (src.startsWith("_Override()") || src.startsWith("Deprecated()")) {
+      return null;
+    }
+
+    return src;
   }
 }
 
@@ -248,27 +257,38 @@ String dartObjectToCode(
     return dt != null ? dt.getDisplayString(withNullability: false) : "dynamic";
   }
 
-  StringBuffer sb = StringBuffer();
-  builder.registerDef(type.getDisplayString(withNullability: false));
-  sb.write(
-    "${builder.applyDefsF(type.getDisplayString(withNullability: false))}(",
-  );
+  String typeName = type.getDisplayString(withNullability: false);
+  builder.registerDef(typeName);
   ClassElement ce = type.element as ClassElement;
   importUris.add(ce.library.uri);
-  List<FormalParameterElement> pars =
-      ce.unnamedConstructor!.formalParameters.where((i) => i.isNamed).toList();
-  for (FieldElement i in ce.fields.where((f) => !f.isStatic && f.isFinal)) {
-    DartObject? v = object.getField(i.name ?? "");
-    if (v != null) {
-      FormalParameterElement? fpe = pars.select((p) => p.name == i.name);
 
-      if (fpe != null) {
-        sb.write("${i.name}: ${dartObjectToCode(v, builder, importUris)},");
-      }
+  ConstructorElement? ctor = ce.unnamedConstructor;
+  if (ctor == null) {
+    return "${builder.applyDefsF(typeName)}()";
+  }
+
+  List<String> positionalArgs = <String>[];
+  List<String> namedArgs = <String>[];
+
+  for (FormalParameterElement param in ctor.formalParameters) {
+    String? paramName = param.name;
+    if (paramName == null) {
+      continue;
+    }
+
+    DartObject? value = object.getField(paramName);
+    if (value == null) {
+      continue;
+    }
+
+    String code = dartObjectToCode(value, builder, importUris);
+    if (param.isNamed) {
+      namedArgs.add("$paramName: $code");
+    } else {
+      positionalArgs.add(code);
     }
   }
 
-  sb.write(")");
-
-  return sb.toString();
+  String args = [...positionalArgs, ...namedArgs].join(",");
+  return "${builder.applyDefsF(typeName)}($args)";
 }

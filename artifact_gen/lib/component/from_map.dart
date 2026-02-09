@@ -31,9 +31,10 @@ class $ArtifactFromMapComponent with $ArtifactBuilderOutput {
     buf.write("${builder.applyDefsF("Map<String,dynamic>")} m=r.\$nn;");
     List<String> subs = builder.subclassesOf(clazz);
     if (subs.isNotEmpty) {
-      buf.write("if(m.\$c(${builder.stringD('_subclass_${clazz.name}')})){");
+      String subclassTag = subclassTagFor(clazz);
+      buf.write("if(m.\$c(${builder.stringD(subclassTag)})){");
       buf.write(
-        "String _I=m[${builder.stringD('_subclass_${clazz.name}')}] as ${builder.applyDefsF("String")};",
+        "String _I=m[${builder.stringD(subclassTag)}] as ${builder.applyDefsF("String")};",
       );
       for (String s in subs) {
         buf.write("if(_I==${builder.stringD('$s')}){");

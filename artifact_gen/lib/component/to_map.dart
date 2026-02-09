@@ -52,9 +52,7 @@ class $ArtifactToMapComponent with $ArtifactBuilderOutput {
         sup,
         throwOnUnresolved: false,
       )) {
-        buf.write(
-          "${builder.stringD('_subclass_${sup.name}')}: '${clazz.name}',",
-        );
+        buf.write("${builder.stringD(subclassTagFor(sup))}: '${clazz.name}',");
       }
       supType = supType.element.supertype;
     }

@@ -76,6 +76,8 @@ mixin $ArtifactBuilderOutput {
 
   bool supportsDeleteFlag(FormalParameterElement param) =>
       param.isOptionalNamed && isNullableType(param.type);
+
+  String subclassTagFor(ClassElement clazz) => '_subclass_${clazz.name ?? ""}';
 }
 
 class ArtifactBuilder implements Builder {

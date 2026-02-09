@@ -58,9 +58,9 @@ extension $ListenerModel on ListenerModel{
   ListenerModel copyWith({int? id,bool resetId=_F,int? deltaId,})=>ListenerModel(id: deltaId!=null?(id??_H.id)+deltaId:resetId?0:(id??_H.id),);
   static ListenerModel get newInstance=>ListenerModel();
   ArtifactMirror get $mirror{_;return ArtifactCodecUtil.m(_H)!;}
-  static List<Object> get $annotations {_;return[Artifact(generateSchema: _F,compression: _F,reflection: _T,),];}
+  static List<Object> get $annotations {_;return[Artifact(generateSchema: _F,compression: _F,reflection: _T),];}
   static List<$AFld> get $fields{_;return[$AFld<ListenerModel, int>('id',(i)=>i.id,(i,v)=>i.copyWith(id:v),[],),];}
-  static List<$AMth> get $methods {_;return[$AMth<ListenerModel, void>('onPing',(i, p)=>i.onPing(p.o<PingEvent>(0),),[PingEvent,],{},[EventHandler(ignoreCancelled: _T,priority: EventPriority.normal,),],),];}
+  static List<$AMth> get $methods {_;return[$AMth<ListenerModel, void>('onPing',(i, p)=>i.onPing(p.o<PingEvent>(0),),[PingEvent,],{},[EventHandler(priority: EventPriority.normal,ignoreCancelled: _T),],),];}
 }
 extension $FeatureModel on FeatureModel{
   FeatureModel get _H=>this;
@@ -80,7 +80,7 @@ extension $ReflectModel on ReflectModel{
   ReflectModel copyWith({int? value,bool resetValue=_F,int? deltaValue,})=>ReflectModel(value: deltaValue!=null?(value??_H.value)+deltaValue:resetValue?1:(value??_H.value),);
   static ReflectModel get newInstance=>ReflectModel();
   ArtifactMirror get $mirror{_;return ArtifactCodecUtil.m(_H)!;}
-  static List<Object> get $annotations {_;return[Artifact(generateSchema: _F,compression: _F,reflection: _T,),];}
+  static List<Object> get $annotations {_;return[Artifact(generateSchema: _F,compression: _F,reflection: _T),];}
   static List<$AFld> get $fields{_;return[$AFld<ReflectModel, int>('value',(i)=>i.value,(i,v)=>i.copyWith(value:v),[],),];}
   static List<$AMth> get $methods {_;return[];}
 }
@@ -92,7 +92,7 @@ extension $SchemaModel on SchemaModel{
   static SchemaModel fromMap(Map<String,dynamic> r){_;Map<String,dynamic> m=r.$nn;return SchemaModel(id: m.$c('identifier') ?  ArtifactCodecUtil.da(m['identifier'], int) as int : 1,enabled: m.$c('enabled') ?  ArtifactCodecUtil.da(m['enabled'], bool) as bool : true,samples: m.$c('samples') ?  (m['samples'] as List).$m((e)=> ArtifactCodecUtil.da(e, int) as int).$l : const <int>[1, 2],);}
   SchemaModel copyWith({int? id,bool resetId=_F,int? deltaId,bool? enabled,bool resetEnabled=_F,List<int>? samples,bool resetSamples=_F,List<int>? appendSamples,List<int>? removeSamples,})=>SchemaModel(id: deltaId!=null?(id??_H.id)+deltaId:resetId?1:(id??_H.id),enabled: resetEnabled?true:(enabled??_H.enabled),samples: ((resetSamples?const <int>[1, 2]:(samples??_H.samples)) as List<int>).$u(appendSamples,removeSamples),);
   static SchemaModel get newInstance=>SchemaModel();
-  static Map<String,dynamic> get schema=>{'type':'object','properties':{'identifier':{'type':'integer',},'enabled':{'type':'boolean','description':'Enabled flag',},'samples':{'type':'array','items':{'type':'integer',},},},'required':['identifier','enabled','samples'],'additionalProperties':_F};
+  static Map<String,dynamic> get schema=>{'type':'object','properties':{'identifier':{'type':'integer',},'enabled':{'type':'boolean','description':'Enabled flag',},'samples':{'type':'array','items':{'type':'integer',},},},'required':[],'additionalProperties':_F};
 }
 
 bool $isArtifact(dynamic v)=>v==null?false : v is! Type ?$isArtifact(v.runtimeType):v == Person ||v == Animal ||v == Dog ||v == Zoo ||v == ListenerModel ||v == FeatureModel ||v == ReflectModel ||v == SchemaModel ;
