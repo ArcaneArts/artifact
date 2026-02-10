@@ -1,3 +1,9 @@
+# 1.0.30
+* Added full recursive type descriptors via `$AT<T>` for reflected classes, fields, and methods.
+* Exposed descriptor access in reflection APIs (`ArtifactTypeMirror`, `ArtifactFieldInfo`/`ArtifactFieldMirror`, `ArtifactMethodInfo`/`ArtifactMethodMirror`).
+* Added method descriptor metadata for return, ordered parameters, and named parameters.
+* Fixed reflected nested generic nullability coverage with regression tests for nullable list/set/map element/value types.
+
 # 1.0.29
 * Added typed reflection mapper helpers for runtime generic binding on `$AClass` and `$AFld`, plus mirror wrappers.
 * Fixed list/set copyWith remove handling through runtime collection helpers.

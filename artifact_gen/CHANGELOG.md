@@ -1,3 +1,9 @@
+# 1.3.1
+* Added full recursive type descriptors via `$AT<T>` for reflected classes, fields, and methods.
+* Exposed descriptor access in reflection APIs (`ArtifactTypeMirror`, `ArtifactFieldInfo`/`ArtifactFieldMirror`, `ArtifactMethodInfo`/`ArtifactMethodMirror`).
+* Added method descriptor metadata for return, ordered parameters, and named parameters.
+* Fixed reflected nested generic nullability coverage with regression tests for nullable list/set/map element/value types.
+
 # 1.3.0
 * Fixed generated reflection field/method type emission to preserve nested nullability (e.g. `List<String?>`, `Map<String, Model?>`).
 * Fixed copyWith generation for nested nullable generic collections/maps so parameter types and forwarded setters stay type-safe.
