@@ -1,3 +1,8 @@
+# 1.3.0
+* Fixed generated reflection field/method type emission to preserve nested nullability (e.g. `List<String?>`, `Map<String, Model?>`).
+* Fixed copyWith generation for nested nullable generic collections/maps so parameter types and forwarded setters stay type-safe.
+* Added regression coverage in generator/runtime tests for nullable generic reflection/copyWith output.
+
 # 1.2.11
 * Extracted component-oriented helper logic out of `ArtifactBuilder` into `component/component_helpers.dart`.
 * Renamed `inatance.dart` to `instance.dart` and updated builder wiring.
