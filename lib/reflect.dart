@@ -162,6 +162,8 @@ class ArtifactTypeMirror extends ArtifactMirrorBase {
 
   Type get nullableType => clazz.nullableType;
 
+  $AT get typeDescriptor => clazz.typeDescriptor;
+
   Type get classExtends => clazz.classExtends;
 
   List<Type> get classInterfaces => List<Type>.from(clazz.classInterfaces);
@@ -214,6 +216,8 @@ class ArtifactFieldInfo extends ArtifactMirrorBase {
 
   Type get ownerType => field.iType;
 
+  $AT get typeDescriptor => field.typeDescriptor;
+
   Object? getValue(Object instance) => field.getValue(instance);
 
   Object setValue(Object instance, Object? value) =>
@@ -251,11 +255,19 @@ class ArtifactMethodInfo extends ArtifactMirrorBase {
 
   Type get returnType => method.returnType;
 
+  $AT get returnTypeDescriptor => method.returnTypeDescriptor;
+
   List<Type> get orderedParameterTypes =>
       List<Type>.from(method.orderedParameterTypes);
 
+  List<$AT> get orderedParameterTypeDescriptors =>
+      List<$AT>.from(method.orderedParameterTypeDescriptors);
+
   Map<String, Type> get namedParameterTypes =>
       Map<String, Type>.from(method.mappedParameterTypes);
+
+  Map<String, $AT> get namedParameterTypeDescriptors =>
+      Map<String, $AT>.from(method.mappedParameterTypeDescriptors);
 
   Object? call(
     Object instance, {
@@ -374,6 +386,8 @@ class ArtifactFieldMirror extends ArtifactMirrorBase {
 
   Type get iType => field.iType;
 
+  $AT get typeDescriptor => field.typeDescriptor;
+
   String get name => field.name;
 
   Object? get value => field.getValue(instance);
@@ -416,11 +430,19 @@ class ArtifactMethodMirror extends ArtifactMirrorBase {
 
   Type get returnType => method.returnType;
 
+  $AT get returnTypeDescriptor => method.returnTypeDescriptor;
+
   List<Type> get orderedParameterTypes =>
       List<Type>.from(method.orderedParameterTypes);
 
+  List<$AT> get orderedParameterTypeDescriptors =>
+      List<$AT>.from(method.orderedParameterTypeDescriptors);
+
   Map<String, Type> get namedParameterTypes =>
       Map<String, Type>.from(method.mappedParameterTypes);
+
+  Map<String, $AT> get namedParameterTypeDescriptors =>
+      Map<String, $AT>.from(method.mappedParameterTypeDescriptors);
 
   Object? call({
     List<dynamic> orderedParameters = const <dynamic>[],

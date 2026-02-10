@@ -59,6 +59,22 @@ void main() {
     expect(generated, contains('Map<String, ASubObject?>'));
   });
 
+  test('generated artifacts file includes recursive type descriptors', () {
+    String generated = File(artifactsPath).readAsStringSync();
+
+    expect(generated, contains(r'$AClass<RootObject>('));
+    expect(generated, contains(r'$AT<RootObject>()'));
+    expect(generated, contains(r'$AT<List<String?>>([$AT<String?>()])'));
+    expect(
+      generated,
+      contains(
+        r'$AT<Map<String, List<ASubObject>>>([$AT<String>(),$AT<List<ASubObject>>([$AT<ASubObject>()])])',
+      ),
+    );
+    expect(generated, contains(r'$AMth<ReflectAnnotationVisibility, int>('));
+    expect(generated, contains(r'$AT<int>(),[$AT<int>(),$AT<int>(),],{},),'));
+  });
+
   test('generated exports file references generated artifact exports', () {
     String exports = File(exportsPath).readAsStringSync();
     expect(exports, contains("export 'artifacts.gen.dart';"));

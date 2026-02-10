@@ -266,6 +266,24 @@ Type _getNullishType<T>() {
 
 abstract class $Maker<T> {}
 
+class $AT<T> {
+  final List<$AT> a;
+
+  const $AT([this.a = const <$AT>[]]);
+
+  Type get type => T;
+
+  List<$AT> get typeArguments => a;
+
+  R mapType<R>(R Function<X>() mapper) {
+    return mapper<T>();
+  }
+
+  R mapValue<R>(Object? value, R Function<X>(X value) mapper) {
+    return mapType<R>(<X>() => mapper<X>(value as X));
+  }
+}
+
 class $AClass<T> {
   final List<Object> annotations;
   final List<$AFld> fields;
@@ -274,21 +292,23 @@ class $AClass<T> {
   final Type classExtends;
   final List<Type> classMixins;
   final List<Type> classInterfaces;
+  final $AT<T> typeDescriptor;
   Type get classType => T;
   Type get nullableType => _getNullishType<T>();
 
-  const $AClass(
+  $AClass(
     this.annotations,
     this.fields,
     this.methods,
     this.constructor,
     this.classExtends,
     this.classInterfaces,
-    this.classMixins,
-  );
+    this.classMixins, [
+    $AT<T>? typeDescriptor,
+  ]) : typeDescriptor = typeDescriptor ?? $AT<T>();
 
   $Maker<T> maker($Maker<T> Function() f) {
-    return f() as $Maker<T>;
+    return f();
   }
 
   R mapClassType<R>(R Function<X>() mapper) {
@@ -330,6 +350,9 @@ class $AMth<I, R> {
   final List<Type> orderedParameterTypes;
   final Map<String, Type> mappedParameterTypes;
   final List<Object> annotations;
+  final $AT<R> returnTypeDescriptor;
+  final List<$AT> orderedParameterTypeDescriptors;
+  final Map<String, $AT> mappedParameterTypeDescriptors;
 
   Type get iType => I;
   Type get returnType => R;
@@ -338,13 +361,20 @@ class $AMth<I, R> {
 
   T? annotationOf<T>() => annotations.whereType<T>().firstOrNull;
 
-  const $AMth(
+  $AMth(
     this.name,
     this.method,
     this.orderedParameterTypes,
     this.mappedParameterTypes,
-    this.annotations,
-  );
+    this.annotations, [
+    $AT<R>? returnTypeDescriptor,
+    List<$AT>? orderedParameterTypeDescriptors,
+    Map<String, $AT>? mappedParameterTypeDescriptors,
+  ]) : returnTypeDescriptor = returnTypeDescriptor ?? $AT<R>(),
+       orderedParameterTypeDescriptors =
+           orderedParameterTypeDescriptors ?? const <$AT>[],
+       mappedParameterTypeDescriptors =
+           mappedParameterTypeDescriptors ?? const <String, $AT>{};
 }
 
 class $AFld<I, T> {
@@ -352,6 +382,7 @@ class $AFld<I, T> {
   final T Function(I) getter;
   final I Function(I, T) setter;
   final List<Object> annotations;
+  final $AT<T> typeDescriptor;
   Type get iType => I;
   Type get fieldType => T;
 
@@ -377,7 +408,13 @@ class $AFld<I, T> {
 
   T? annotationOf<T>() => annotations.whereType<T>().firstOrNull;
 
-  const $AFld(this.name, this.getter, this.setter, this.annotations);
+  $AFld(
+    this.name,
+    this.getter,
+    this.setter,
+    this.annotations, [
+    $AT<T>? typeDescriptor,
+  ]) : typeDescriptor = typeDescriptor ?? $AT<T>();
 }
 
 extension XArtifactMirror on Map<Type, $AClass> {

@@ -43,6 +43,7 @@ class $ArtifactReflectorComponent with $ArtifactBuilderOutput {
     for (FormalParameterElement param in params) {
       String name = param.name ?? "";
       String fullType = getTypeName(param.type);
+      String descriptor = typeDescriptorCode(param.type, builder);
       builder.registerDef(fullType);
       buf.write("\$AFld<${builder.applyDefsF(clazz.name ?? "")}, $fullType>(");
       buf.write("${builder.stringD(name)},");
@@ -60,6 +61,7 @@ class $ArtifactReflectorComponent with $ArtifactBuilderOutput {
         }
       }
       buf.write("],");
+      buf.write("$descriptor,");
       buf.write("),");
     }
     buf.writeln("];}");
@@ -91,6 +93,10 @@ class $ArtifactReflectorComponent with $ArtifactBuilderOutput {
 
       String name = method.name ?? "";
       String fullType = getTypeName(method.returnType);
+      String returnTypeDescriptor = typeDescriptorCode(
+        method.returnType,
+        builder,
+      );
       builder.registerDef(fullType);
       buf.write("\$AMth<${builder.applyDefsF(clazz.name ?? "")}, $fullType>(");
       buf.write("${builder.stringD(name)},");
@@ -143,6 +149,23 @@ class $ArtifactReflectorComponent with $ArtifactBuilderOutput {
         }
       }
       buf.write("],");
+      buf.write("$returnTypeDescriptor,");
+      buf.write("[");
+      for (FormalParameterElement i in method.formalParameters.where(
+        (i) => !i.isNamed,
+      )) {
+        buf.write("${typeDescriptorCode(i.type, builder)},");
+      }
+      buf.write("],");
+      buf.write("{");
+      for (FormalParameterElement i in method.formalParameters.where(
+        (i) => i.isNamed,
+      )) {
+        buf.write(
+          "${builder.stringD(i.name ?? "")}: ${typeDescriptorCode(i.type, builder)},",
+        );
+      }
+      buf.write("},");
       buf.write("),");
     }
     buf.writeln("];}");

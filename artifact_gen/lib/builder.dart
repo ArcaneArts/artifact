@@ -431,6 +431,7 @@ class ArtifactBuilder implements Builder {
           rbuf.write(
             "[${i.mixins.map((i) => applyDefsF(i.element.name ?? "")).join(",")}],",
           );
+          rbuf.write("${typeDescriptorCode(i.thisType, this)},");
           rbuf.write("),");
         }
       }
@@ -801,4 +802,21 @@ String getTypeName(DartType type) {
   if (display != "InvalidType") return display;
 
   return type.element?.name ?? type.element?.displayName ?? 'InvalidType';
+}
+
+String typeDescriptorCode(DartType type, ArtifactBuilder builder) {
+  String typeName = getTypeName(type);
+  builder.registerDef("\$AT<$typeName>");
+  String ctor = "${builder.applyDefsF("\$AT<$typeName>")}";
+
+  if (type is InterfaceType && type.typeArguments.isNotEmpty) {
+    List<String> typeArguments = <String>[];
+    for (DartType arg in type.typeArguments) {
+      typeArguments.add(typeDescriptorCode(arg, builder));
+    }
+
+    return "$ctor([${typeArguments.join(",")}])";
+  }
+
+  return "$ctor()";
 }

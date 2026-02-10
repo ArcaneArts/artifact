@@ -176,4 +176,56 @@ void main() {
       'Map<String, NullableReflectSubObject?>',
     );
   });
+
+  test('reflector exposes type descriptors for classes fields and methods', () {
+    ArtifactTypeMirror collectionType =
+        ArtifactReflection.typeOf(NullableReflectCollectionsModel)!;
+    $AT classDescriptor = collectionType.typeDescriptor;
+
+    expect(classDescriptor.type.toString(), 'NullableReflectCollectionsModel');
+    expect(classDescriptor.typeArguments, isEmpty);
+    expect(
+      classDescriptor.mapType<String>(<X>() => X.toString()),
+      'NullableReflectCollectionsModel',
+    );
+
+    ArtifactFieldInfo listField =
+        collectionType.field('aListOfNullableSubObjects')!;
+    $AT listDescriptor = listField.typeDescriptor;
+    expect(listDescriptor.type.toString(), 'List<NullableReflectSubObject?>');
+    expect(listDescriptor.typeArguments.length, 1);
+    expect(
+      listDescriptor.typeArguments.first.type.toString(),
+      'NullableReflectSubObject?',
+    );
+    expect(
+      listDescriptor.mapType<String>(<X>() => X.toString()),
+      'List<NullableReflectSubObject?>',
+    );
+
+    ArtifactFieldInfo mapField =
+        collectionType.field('aMapOfStringToNullableString')!;
+    $AT mapDescriptor = mapField.typeDescriptor;
+    expect(mapDescriptor.type.toString(), 'Map<String, String?>');
+    expect(mapDescriptor.typeArguments.length, 2);
+    expect(mapDescriptor.typeArguments[0].type.toString(), 'String');
+    expect(mapDescriptor.typeArguments[1].type.toString(), 'String?');
+    expect(
+      mapDescriptor.typeArguments[1].mapValue<String>(
+        null,
+        <X>(X value) => X.toString(),
+      ),
+      'String?',
+    );
+
+    ArtifactTypeMirror listenerType = ArtifactReflection.typeOf(ListenerModel)!;
+    ArtifactMethodInfo method = listenerType.method('onPing')!;
+    expect(method.returnTypeDescriptor.type.toString(), 'void');
+    expect(method.orderedParameterTypeDescriptors.length, 1);
+    expect(
+      method.orderedParameterTypeDescriptors.first.type.toString(),
+      'PingEvent',
+    );
+    expect(method.namedParameterTypeDescriptors, isEmpty);
+  });
 }
