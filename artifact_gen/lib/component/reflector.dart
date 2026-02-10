@@ -42,13 +42,8 @@ class $ArtifactReflectorComponent with $ArtifactBuilderOutput {
 
     for (FormalParameterElement param in params) {
       String name = param.name ?? "";
-      String type = param.type.getDisplayString(withNullability: true);
-      String baseType = param.type.getDisplayString(withNullability: false);
-      builder.registerDef(baseType);
-      String fullType =
-          type.endsWith("?")
-              ? "${builder.applyDefsF(baseType)}?"
-              : builder.applyDefsF(baseType);
+      String fullType = getTypeName(param.type);
+      builder.registerDef(fullType);
       buf.write("\$AFld<${builder.applyDefsF(clazz.name ?? "")}, $fullType>(");
       buf.write("${builder.stringD(name)},");
       buf.write("(i)=>i.$name,");
@@ -95,15 +90,8 @@ class $ArtifactReflectorComponent with $ArtifactBuilderOutput {
       }
 
       String name = method.name ?? "";
-      String type = method.returnType.getDisplayString(withNullability: true);
-      String baseType = method.returnType.getDisplayString(
-        withNullability: false,
-      );
-      builder.registerDef(baseType);
-      String fullType =
-          type.endsWith("?")
-              ? "${builder.applyDefsF(baseType)}?"
-              : builder.applyDefsF(baseType);
+      String fullType = getTypeName(method.returnType);
+      builder.registerDef(fullType);
       buf.write("\$AMth<${builder.applyDefsF(clazz.name ?? "")}, $fullType>(");
       buf.write("${builder.stringD(name)},");
       buf.write("(i, p)=>i.$name(");
@@ -111,16 +99,18 @@ class $ArtifactReflectorComponent with $ArtifactBuilderOutput {
       for (FormalParameterElement i in method.formalParameters.where(
         (i) => !i.isNamed,
       )) {
-        builder.registerDef(getTypeName(i.type));
-        buf.write("p.o<${builder.applyDefsF(getTypeName(i.type))}>(${g++}),");
+        String paramType = getTypeName(i.type);
+        builder.registerDef(paramType);
+        buf.write("p.o<${builder.applyDefsF(paramType)}>(${g++}),");
       }
 
       for (FormalParameterElement i in method.formalParameters.where(
         (i) => i.isNamed,
       )) {
-        builder.registerDef(getTypeName(i.type));
+        String paramType = getTypeName(i.type);
+        builder.registerDef(paramType);
         buf.write(
-          "${i.name}: p.n<${builder.applyDefsF(getTypeName(i.type))}>(${builder.stringD(i.name ?? "")}),",
+          "${i.name}: p.n<${builder.applyDefsF(paramType)}>(${builder.stringD(i.name ?? "")}),",
         );
       }
       buf.write("),");
@@ -129,17 +119,19 @@ class $ArtifactReflectorComponent with $ArtifactBuilderOutput {
       for (FormalParameterElement i in method.formalParameters.where(
         (i) => !i.isNamed,
       )) {
-        builder.registerDef(getTypeName(i.type));
-        buf.write("${builder.applyDefsF(getTypeName(i.type))},");
+        String paramType = getTypeName(i.type);
+        builder.registerDef(paramType);
+        buf.write("${builder.applyDefsF(paramType)},");
       }
       buf.write("],");
       buf.write("{");
       for (FormalParameterElement i in method.formalParameters.where(
         (i) => i.isNamed,
       )) {
-        builder.registerDef(getTypeName(i.type));
+        String paramType = getTypeName(i.type);
+        builder.registerDef(paramType);
         buf.write(
-          "${builder.stringD(i.name ?? "")}: ${builder.applyDefsF(getTypeName(i.type))},",
+          "${builder.stringD(i.name ?? "")}: ${builder.applyDefsF(paramType)},",
         );
       }
       buf.write("},");

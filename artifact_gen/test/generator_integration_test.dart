@@ -54,6 +54,9 @@ void main() {
     expect(generated, contains('static Map<String,dynamic> get schema'));
     expect(generated, contains('static List<\$AFld> get \$fields'));
     expect(generated, contains('ArtifactCodecUtil.r(const [CompactCodec()]);'));
+    expect(generated, contains('List<String?>'));
+    expect(generated, contains('Set<ASubObject?>'));
+    expect(generated, contains('Map<String, ASubObject?>'));
   });
 
   test('generated exports file references generated artifact exports', () {

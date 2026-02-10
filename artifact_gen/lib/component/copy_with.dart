@@ -26,7 +26,7 @@ class $ArtifactCopyWithComponent with $ArtifactBuilderOutput {
     for (FormalParameterElement param in params) {
       String name = paramName(param);
       DartType type = param.type;
-      String baseType = baseTypeOf(type);
+      String baseType = _outerNonNullableType(type);
       builder.registerDef(baseType);
       String forceNullType = "${builder.applyDefsF(baseType)}?";
 
@@ -83,7 +83,7 @@ class $ArtifactCopyWithComponent with $ArtifactBuilderOutput {
     for (FormalParameterElement param in params) {
       String name = paramName(param);
       bool nullable = isNullableType(param.type);
-      String bs = baseTypeOf(param.type);
+      String bs = _outerNonNullableType(param.type);
       String resetDefault = builder.defaultValueForParam(param);
       if (isCollectionType(bs)) {
         resetDefault = _typedCollectionDefault(resetDefault, bs, builder);
@@ -133,7 +133,7 @@ class $ArtifactCopyWithComponent with $ArtifactBuilderOutput {
   ) {
     for (FormalParameterElement param in params) {
       String name = paramName(param);
-      String baseType = baseTypeOf(param.type);
+      String baseType = _outerNonNullableType(param.type);
 
       buf.write('$name: $name,');
 
@@ -180,4 +180,13 @@ class $ArtifactCopyWithComponent with $ArtifactBuilderOutput {
 
   bool _isUntypedEmptySetLiteral(String value) =>
       value == "{}" || value == "const {}";
+
+  String _outerNonNullableType(DartType type) {
+    String display = type.getDisplayString(withNullability: true);
+    if (display.endsWith("?")) {
+      return display.substring(0, display.length - 1);
+    }
+
+    return display;
+  }
 }

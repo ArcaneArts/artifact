@@ -125,3 +125,82 @@ class ReflectAnnotationVisibility {
   @EverythingAnnotation()
   int doSomething(int a, int b) => a + b;
 }
+
+enum AnEnum { option1, option2, option3 }
+
+@reflectArtifact
+class ASubObject {
+  final String value;
+  final int anotherValue;
+
+  const ASubObject({this.value = "something", this.anotherValue = 42});
+}
+
+@reflectArtifact
+class RootObject {
+  final String aString;
+  final String? aNullableString;
+  final int anInt;
+  final int? aNullableInt;
+  final double aDouble;
+  final DateTime aDateTime;
+  final DateTime? aNullableDateTime;
+  final bool aBool;
+  final bool? aNullableBool;
+  final List<String> aListOfStrings;
+  final List<String>? aNullableListOfStrings;
+  final Set<String> aSetOfStrings;
+  final Set<String>? aNullableSetOfStrings;
+  final List<String?> aListOfNullableStrings;
+  final Set<String?> aSetOfNullableStrings;
+  final AnEnum anEnum;
+  final AnEnum? aNullableEnum;
+  final List<AnEnum> aListOfEnums;
+  final Set<AnEnum> aSetOfEnums;
+  final ASubObject aSubObject;
+  final ASubObject? aNullableSubObject;
+  final List<ASubObject> aListOfSubObjects;
+  final Set<ASubObject> aSetOfSubObjects;
+  final List<ASubObject?> aListOfNullableSubObjects;
+  final Set<ASubObject?> aSetOfNullableSubObjects;
+  final Map<String, int> aMapOfStringToInt;
+  final Map<String, ASubObject> aMapOfStringToSubObject;
+  final Map<String, List<String>> aMapOfStringToListOfStrings;
+  final Map<String, List<ASubObject>> aMapOfStringToListOfSubObjects;
+  final Map<String, ASubObject?> aMapOfStringToNullableSubObject;
+  final Map<String, String?> aMapOfStringToNullableString;
+
+  RootObject({
+    required this.aString,
+    this.aNullableString,
+    required this.anInt,
+    this.aNullableInt,
+    required this.aDouble,
+    required this.aDateTime,
+    this.aNullableDateTime,
+    required this.aBool,
+    this.aNullableBool,
+    required this.aListOfStrings,
+    this.aNullableListOfStrings,
+    required this.aSetOfStrings,
+    this.aNullableSetOfStrings,
+    required this.aListOfNullableStrings,
+    required this.aSetOfNullableStrings,
+    required this.anEnum,
+    this.aNullableEnum,
+    required this.aListOfEnums,
+    required this.aSetOfEnums,
+    required this.aSubObject,
+    this.aNullableSubObject,
+    required this.aListOfSubObjects,
+    required this.aSetOfSubObjects,
+    required this.aListOfNullableSubObjects,
+    required this.aSetOfNullableSubObjects,
+    required this.aMapOfStringToInt,
+    required this.aMapOfStringToSubObject,
+    required this.aMapOfStringToListOfStrings,
+    required this.aMapOfStringToListOfSubObjects,
+    required this.aMapOfStringToNullableSubObject,
+    required this.aMapOfStringToNullableString,
+  });
+}

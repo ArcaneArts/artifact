@@ -112,6 +112,37 @@ class ReflectModel {
   const ReflectModel({this.value = 1});
 }
 
+@reflectArtifact
+class NullableReflectSubObject {
+  final String value;
+  final int anotherValue;
+
+  const NullableReflectSubObject({
+    this.value = "something",
+    this.anotherValue = 42,
+  });
+}
+
+@reflectArtifact
+class NullableReflectCollectionsModel {
+  final List<String?> aListOfNullableStrings;
+  final Set<String?> aSetOfNullableStrings;
+  final List<NullableReflectSubObject?> aListOfNullableSubObjects;
+  final Set<NullableReflectSubObject?> aSetOfNullableSubObjects;
+  final Map<String, String?> aMapOfStringToNullableString;
+  final Map<String, NullableReflectSubObject?> aMapOfStringToNullableSubObject;
+
+  const NullableReflectCollectionsModel({
+    this.aListOfNullableStrings = const <String?>[],
+    this.aSetOfNullableStrings = const <String?>{},
+    this.aListOfNullableSubObjects = const <NullableReflectSubObject?>[],
+    this.aSetOfNullableSubObjects = const <NullableReflectSubObject?>{},
+    this.aMapOfStringToNullableString = const <String, String?>{},
+    this.aMapOfStringToNullableSubObject =
+        const <String, NullableReflectSubObject?>{},
+  });
+}
+
 @schemaArtifact
 class SchemaModel {
   @rename('identifier')

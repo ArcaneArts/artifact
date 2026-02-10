@@ -146,4 +146,34 @@ void main() {
     expect(subtitleFieldType, 'String?');
     expect(subtitleValueType, 'String?:String');
   });
+
+  test('reflector preserves nested nullability in generic field types', () {
+    ArtifactTypeMirror type =
+        ArtifactReflection.typeOf(NullableReflectCollectionsModel)!;
+
+    expect(
+      type.field('aListOfNullableStrings')!.fieldType.toString(),
+      'List<String?>',
+    );
+    expect(
+      type.field('aSetOfNullableStrings')!.fieldType.toString(),
+      'Set<String?>',
+    );
+    expect(
+      type.field('aListOfNullableSubObjects')!.fieldType.toString(),
+      'List<NullableReflectSubObject?>',
+    );
+    expect(
+      type.field('aSetOfNullableSubObjects')!.fieldType.toString(),
+      'Set<NullableReflectSubObject?>',
+    );
+    expect(
+      type.field('aMapOfStringToNullableString')!.fieldType.toString(),
+      'Map<String, String?>',
+    );
+    expect(
+      type.field('aMapOfStringToNullableSubObject')!.fieldType.toString(),
+      'Map<String, NullableReflectSubObject?>',
+    );
+  });
 }

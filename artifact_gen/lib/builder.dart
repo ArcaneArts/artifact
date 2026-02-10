@@ -797,7 +797,7 @@ class ArtifactBuilder implements Builder {
 enum $ArtifactConvertMode { toMap, fromMap }
 
 String getTypeName(DartType type) {
-  final display = type.getDisplayString(withNullability: false);
+  String display = type.getDisplayString(withNullability: true);
   if (display != "InvalidType") return display;
 
   return type.element?.name ?? type.element?.displayName ?? 'InvalidType';
