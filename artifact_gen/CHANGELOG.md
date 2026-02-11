@@ -1,3 +1,7 @@
+# 1.3.5
+* Fixed no-artifact output generation so the emitted helpers always compile when zero artifact classes are discovered.
+* Added explicit empty-state fallbacks for `$isArtifact`, `$constructArtifact`, `$artifactToMap`, and `$artifactFromMap`.
+
 # 1.3.4
 * Fixed export scanning to skip unreadable assets during generation (`step.canRead`) to avoid transient `AssetNotFoundException` failures for generated files like `lib/gen/crud.gen.dart` when multiple builders run together.
 
