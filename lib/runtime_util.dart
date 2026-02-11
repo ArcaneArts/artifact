@@ -7,6 +7,10 @@ import 'package:yaml/yaml.dart';
 import 'package:yaml_edit/yaml_edit.dart';
 
 class ArtifactDataUtil {
+  static const String _tomlNullSentinel = r'$artifact_toml_null$';
+  static const String _tomlEscapedNullSentinel =
+      r'$artifact_toml_escaped_null$';
+
   static String j(bool pretty, Map<String, dynamic> Function() map) =>
       pretty
           ? const JsonEncoder.withIndent("  ").convert(map())
@@ -18,7 +22,7 @@ class ArtifactDataUtil {
       (YamlEditor('')..update([], map())).toString();
 
   static String u(Map<String, dynamic> Function() map) =>
-      TomlDocument.fromMap(map()).toString();
+      TomlDocument.fromMap(_toTomlSafeMap(map())).toString();
 
   static String h(Map<String, dynamic> Function() map) =>
       PropertiesConverter.toProperties(map());
@@ -27,10 +31,27 @@ class ArtifactDataUtil {
 
   static Map<String, dynamic> i(String data) => toonx.decode(data);
 
-  static Map<String, dynamic> v(String data) => Map.from(loadYaml(data));
+  static Map<String, dynamic> v(String data) {
+    dynamic parsed = loadYaml(data);
+    dynamic normalized = _yamlToDart(parsed);
+
+    if (normalized is Map<String, dynamic>) {
+      return normalized;
+    }
+
+    if (normalized is Map) {
+      Map<String, dynamic> out = <String, dynamic>{};
+      normalized.forEach((dynamic key, dynamic value) {
+        out[key.toString()] = value;
+      });
+      return out;
+    }
+
+    return <String, dynamic>{};
+  }
 
   static Map<String, dynamic> t(String data) =>
-      TomlDocument.parse(data).toMap();
+      _fromTomlSafeMap(TomlDocument.parse(data).toMap());
 
   static Map<String, dynamic> g(String properties) =>
       PropertiesConverter.fromProperties(properties);
@@ -90,6 +111,115 @@ class ArtifactDataUtil {
 
   static Map<K, V> fe<K, V>(Iterable<MapEntry<K, V>> entries) =>
       Map.fromEntries(entries);
+
+  static dynamic _yamlToDart(dynamic value) {
+    if (value is YamlMap) {
+      Map<String, dynamic> out = <String, dynamic>{};
+      value.forEach((dynamic key, dynamic nestedValue) {
+        out[key.toString()] = _yamlToDart(nestedValue);
+      });
+      return out;
+    }
+
+    if (value is Map) {
+      Map<String, dynamic> out = <String, dynamic>{};
+      value.forEach((dynamic key, dynamic nestedValue) {
+        out[key.toString()] = _yamlToDart(nestedValue);
+      });
+      return out;
+    }
+
+    if (value is YamlList) {
+      List<dynamic> out = <dynamic>[];
+      for (dynamic entry in value) {
+        out.add(_yamlToDart(entry));
+      }
+      return out;
+    }
+
+    if (value is List) {
+      List<dynamic> out = <dynamic>[];
+      for (dynamic entry in value) {
+        out.add(_yamlToDart(entry));
+      }
+      return out;
+    }
+
+    return value;
+  }
+
+  static Map<String, dynamic> _toTomlSafeMap(Map<String, dynamic> source) {
+    Map<String, dynamic> out = <String, dynamic>{};
+    source.forEach((String key, dynamic value) {
+      out[key] = _toTomlSafeValue(value);
+    });
+    return out;
+  }
+
+  static dynamic _toTomlSafeValue(dynamic value) {
+    if (value == null) {
+      return _tomlNullSentinel;
+    }
+
+    if (value is String) {
+      if (value == _tomlNullSentinel) {
+        return _tomlEscapedNullSentinel;
+      }
+      return value;
+    }
+
+    if (value is Map) {
+      Map<String, dynamic> out = <String, dynamic>{};
+      value.forEach((dynamic key, dynamic nestedValue) {
+        out[key.toString()] = _toTomlSafeValue(nestedValue);
+      });
+      return out;
+    }
+
+    if (value is List) {
+      return value.map(_toTomlSafeValue).toList();
+    }
+
+    if (value is Set) {
+      return value.map(_toTomlSafeValue).toList();
+    }
+
+    return value;
+  }
+
+  static Map<String, dynamic> _fromTomlSafeMap(Map<String, dynamic> source) {
+    Map<String, dynamic> out = <String, dynamic>{};
+    source.forEach((String key, dynamic value) {
+      out[key] = _fromTomlSafeValue(value);
+    });
+    return out;
+  }
+
+  static dynamic _fromTomlSafeValue(dynamic value) {
+    if (value is String) {
+      if (value == _tomlNullSentinel) {
+        return null;
+      }
+      if (value == _tomlEscapedNullSentinel) {
+        return _tomlNullSentinel;
+      }
+      return value;
+    }
+
+    if (value is Map) {
+      Map<String, dynamic> out = <String, dynamic>{};
+      value.forEach((dynamic key, dynamic nestedValue) {
+        out[key.toString()] = _fromTomlSafeValue(nestedValue);
+      });
+      return out;
+    }
+
+    if (value is List) {
+      return value.map(_fromTomlSafeValue).toList();
+    }
+
+    return value;
+  }
 }
 
 class ArtifactSecurityUtil {

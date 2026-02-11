@@ -1,3 +1,8 @@
+# 1.0.31
+* Fixed YAML import normalization to recursively convert nested `YamlMap`/`YamlList` values into plain Dart maps/lists for `fromMap` compatibility.
+* Added TOML null-safe round-tripping by encoding nulls through an internal sentinel and restoring them on decode.
+* Expanded format coverage with end-to-end tests across JSON/YAML/TOML/TOON/PROPS/BSON, including nullable TOML/YAML scenarios.
+
 # 1.0.30
 * Added full recursive type descriptors via `$AT<T>` for reflected classes, fields, and methods.
 * Exposed descriptor access in reflection APIs (`ArtifactTypeMirror`, `ArtifactFieldInfo`/`ArtifactFieldMirror`, `ArtifactMethodInfo`/`ArtifactMethodMirror`).

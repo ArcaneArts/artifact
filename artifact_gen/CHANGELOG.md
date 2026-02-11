@@ -1,3 +1,8 @@
+# 1.3.2
+* Fixed reflection annotation emission to preserve explicit constructor arguments (including inherited/super-forwarded values like validator messages).
+* Improved annotation argument extraction with AST-driven source recovery and constant-field fallback for robust codegen across analyzer shapes.
+* Added generator integration coverage for annotation argument serialization in generated reflection fields.
+
 # 1.3.1
 * Added full recursive type descriptors via `$AT<T>` for reflected classes, fields, and methods.
 * Exposed descriptor access in reflection APIs (`ArtifactTypeMirror`, `ArtifactFieldInfo`/`ArtifactFieldMirror`, `ArtifactMethodInfo`/`ArtifactMethodMirror`).
