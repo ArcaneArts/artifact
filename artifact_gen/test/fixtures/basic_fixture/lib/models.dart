@@ -229,7 +229,7 @@ class RootObject {
 
 @reflectArtifact
 class TestModel {
-  @Property(validators: [EmailValidator(message: "Bad Email")])
+  @Property(validators: [EmailValidator(message: "Bad Email2")])
   final String name;
 
   const TestModel({this.name = ""});
