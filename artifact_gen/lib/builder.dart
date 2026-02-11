@@ -568,6 +568,12 @@ class ArtifactBuilder implements Builder {
       if (exportUri != '${artifactConfig["name"]}/gen/exports.gen.dart' &&
           exportUri !=
               '${artifactConfig["name"]}/${artifactConfig["name"]}.dart') {
+        bool readable = await step.canRead(i);
+        if (!readable) {
+          verbose("Skipping unreadable export analysis for: ${i.uri}");
+          continue;
+        }
+
         worker.add(
           step.readAsString(i).then((v) {
             Iterable<SyntacticEntity> ast =
