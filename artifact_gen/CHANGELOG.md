@@ -1,3 +1,6 @@
+# 1.3.4
+* Fixed export scanning to skip unreadable assets during generation (`step.canRead`) to avoid transient `AssetNotFoundException` failures for generated files like `lib/gen/crud.gen.dart` when multiple builders run together.
+
 # 1.3.3
 * Fixed nested annotation argument serialization inside collection/map annotation parameters (for example `@Property(validators: [EmailValidator(message: "...")])`).
 * Improved annotation source parsing to recover arguments from both constructor-style and invocation-style AST nodes during reflection codegen.
