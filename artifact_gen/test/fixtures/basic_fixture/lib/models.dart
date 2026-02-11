@@ -204,3 +204,237 @@ class RootObject {
     required this.aMapOfStringToNullableString,
   });
 }
+
+@reflectArtifact
+class TestModel {
+  @EmailValidator(message: "Bad Email")
+  final String name;
+
+  const TestModel({this.name = ""});
+}
+
+class ManifoldValidationContext {
+  final ArtifactFieldMirror field;
+  final Object? value;
+
+  const ManifoldValidationContext({required this.field, required this.value});
+}
+
+abstract class ManifoldValidator {
+  const ManifoldValidator();
+
+  String? validate(ManifoldValidationContext context);
+}
+
+class RequiredValidator extends ManifoldValidator {
+  final String? message;
+
+  const RequiredValidator({this.message});
+
+  @override
+  String? validate(ManifoldValidationContext context) {
+    Object? value = context.value;
+    if (value == null) {
+      return message ?? '${context.field.name} is required.';
+    }
+
+    if (value is String && value.trim().isEmpty) {
+      return message ?? '${context.field.name} is required.';
+    }
+
+    if (value is Iterable && value.isEmpty) {
+      return message ?? '${context.field.name} is required.';
+    }
+
+    if (value is Map && value.isEmpty) {
+      return message ?? '${context.field.name} is required.';
+    }
+
+    return null;
+  }
+}
+
+class RegexValidator extends ManifoldValidator {
+  final String pattern;
+  final String? message;
+  final bool caseSensitive;
+  final bool multiLine;
+  final bool unicode;
+  final bool dotAll;
+  final bool allowEmpty;
+
+  const RegexValidator(
+    this.pattern, {
+    this.message,
+    this.caseSensitive = true,
+    this.multiLine = false,
+    this.unicode = false,
+    this.dotAll = false,
+    this.allowEmpty = true,
+  });
+
+  @override
+  String? validate(ManifoldValidationContext context) {
+    Object? value = context.value;
+    if (value == null) {
+      return null;
+    }
+
+    String text = value.toString();
+    if (text.isEmpty && allowEmpty) {
+      return null;
+    }
+
+    RegExp exp = RegExp(
+      pattern,
+      caseSensitive: caseSensitive,
+      multiLine: multiLine,
+      unicode: unicode,
+      dotAll: dotAll,
+    );
+
+    return exp.hasMatch(text)
+        ? null
+        : (message ?? '${context.field.name} is invalid.');
+  }
+}
+
+class EmailValidator extends RegexValidator {
+  const EmailValidator({String? message})
+    : super(
+        r'^[^\s@]+@[^\s@]+\.[^\s@]+$',
+        message: message ?? 'Invalid email address.',
+      );
+}
+
+class PhoneValidator extends ManifoldValidator {
+  final int minDigits;
+  final int maxDigits;
+  final String? message;
+
+  const PhoneValidator({
+    this.minDigits = 10,
+    this.maxDigits = 15,
+    this.message,
+  });
+
+  @override
+  String? validate(ManifoldValidationContext context) {
+    Object? value = context.value;
+    if (value == null) {
+      return null;
+    }
+
+    String text = value.toString().trim();
+    if (text.isEmpty) {
+      return null;
+    }
+
+    String digits = text.replaceAll(RegExp(r'[^0-9]'), '');
+    bool ok = digits.length >= minDigits && digits.length <= maxDigits;
+    return ok ? null : (message ?? 'Invalid phone number.');
+  }
+}
+
+class MinLengthValidator extends ManifoldValidator {
+  final int min;
+  final String? message;
+
+  const MinLengthValidator(this.min, {this.message});
+
+  @override
+  String? validate(ManifoldValidationContext context) {
+    Object? value = context.value;
+    if (value == null) {
+      return null;
+    }
+
+    int length = _lengthOf(value);
+    if (length < 0) {
+      return null;
+    }
+
+    return length >= min
+        ? null
+        : (message ?? '${context.field.name} must be at least $min long.');
+  }
+}
+
+class MaxLengthValidator extends ManifoldValidator {
+  final int max;
+  final String? message;
+
+  const MaxLengthValidator(this.max, {this.message});
+
+  @override
+  String? validate(ManifoldValidationContext context) {
+    Object? value = context.value;
+    if (value == null) {
+      return null;
+    }
+
+    int length = _lengthOf(value);
+    if (length < 0) {
+      return null;
+    }
+
+    return length <= max
+        ? null
+        : (message ?? '${context.field.name} must be at most $max long.');
+  }
+}
+
+class NumberRangeValidator extends ManifoldValidator {
+  final double? min;
+  final double? max;
+  final String? message;
+
+  const NumberRangeValidator({this.min, this.max, this.message});
+
+  @override
+  String? validate(ManifoldValidationContext context) {
+    Object? value = context.value;
+    if (value == null) {
+      return null;
+    }
+
+    double? n = _asDouble(value);
+    if (n == null) {
+      return message ?? '${context.field.name} must be a number.';
+    }
+
+    if (min != null && n < min!) {
+      return message ?? '${context.field.name} must be >= $min.';
+    }
+
+    if (max != null && n > max!) {
+      return message ?? '${context.field.name} must be <= $max.';
+    }
+
+    return null;
+  }
+}
+
+double? _asDouble(Object value) {
+  if (value is num) {
+    return value.toDouble();
+  }
+
+  return double.tryParse(value.toString());
+}
+
+int _lengthOf(Object value) {
+  if (value is String) {
+    return value.length;
+  }
+
+  if (value is Iterable) {
+    return value.length;
+  }
+
+  if (value is Map) {
+    return value.length;
+  }
+
+  return -1;
+}

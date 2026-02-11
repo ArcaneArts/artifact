@@ -57,6 +57,7 @@ void main() {
     expect(generated, contains('List<String?>'));
     expect(generated, contains('Set<ASubObject?>'));
     expect(generated, contains('Map<String, ASubObject?>'));
+    expect(generated, contains('EmailValidator(message: "Bad Email")'));
   });
 
   test('generated artifacts file includes recursive type descriptors', () {
