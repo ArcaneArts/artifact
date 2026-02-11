@@ -1,3 +1,7 @@
+# 1.3.3
+* Fixed nested annotation argument serialization inside collection/map annotation parameters (for example `@Property(validators: [EmailValidator(message: "...")])`).
+* Improved annotation source parsing to recover arguments from both constructor-style and invocation-style AST nodes during reflection codegen.
+
 # 1.3.2
 * Fixed reflection annotation emission to preserve explicit constructor arguments (including inherited/super-forwarded values like validator messages).
 * Improved annotation argument extraction with AST-driven source recovery and constant-field fallback for robust codegen across analyzer shapes.
