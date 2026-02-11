@@ -118,7 +118,7 @@ extension $TestModel on TestModel{
   static TestModel get newInstance=>TestModel();
   ArtifactMirror get $mirror{_;return ArtifactReflection.instanceOf(_H)!;}
   static List<Object> get $annotations {_;return[Artifact(generateSchema: _F,compression: _F,reflection: _T),];}
-  static List<$AFld> get $fields{_;return[$AFld<TestModel, String>('name',(i)=>i.name,(i,v)=>i.copyWith(name:v),[EmailValidator(message: "Bad Email"),],$AT<String>(),),];}
+  static List<$AFld> get $fields{_;return[$AFld<TestModel, String>('name',(i)=>i.name,(i,v)=>i.copyWith(name:v),[Property(max: null,min: null,hint: null,description: null,tristate: null,label: null,obscuredText: _F,validators: <ManifoldValidator>[EmailValidator(message: "Bad Email")]),],$AT<String>(),),];}
   static List<$AMth> get $methods {_;return[];}
 }
 

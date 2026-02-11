@@ -268,13 +268,14 @@ _AnnotationSourceArgs _parseAnnotationSourceArgs(ElementAnnotation annotation) {
   }
 
   Expression? initializer = list.variables.first.initializer;
-  if (initializer is! InstanceCreationExpression) {
+  ArgumentList? args = _argumentListOf(initializer);
+  if (args == null) {
     return const _AnnotationSourceArgs();
   }
 
   List<String> positional = <String>[];
   Map<String, String> named = <String, String>{};
-  for (Expression argument in initializer.argumentList.arguments) {
+  for (Expression argument in args.arguments) {
     if (argument is NamedExpression) {
       named[argument.name.label.name] = argument.expression.toSource();
     } else {
@@ -285,12 +286,159 @@ _AnnotationSourceArgs _parseAnnotationSourceArgs(ElementAnnotation annotation) {
   return _AnnotationSourceArgs(positional: positional, named: named);
 }
 
+_AnnotationSourceArgs _parseArgsFromExpression(String source) {
+  try {
+    CompilationUnit unit = parseString(content: "const __a = $source;").unit;
+    if (unit.declarations.isEmpty) {
+      return const _AnnotationSourceArgs();
+    }
+
+    AstNode firstDeclaration = unit.declarations.first;
+    TopLevelVariableDeclaration? declaration =
+        firstDeclaration is TopLevelVariableDeclaration
+            ? firstDeclaration
+            : null;
+    if (declaration == null) {
+      return const _AnnotationSourceArgs();
+    }
+
+    VariableDeclarationList list = declaration.variables;
+    if (list.variables.isEmpty) {
+      return const _AnnotationSourceArgs();
+    }
+
+    Expression? initializer = list.variables.first.initializer;
+    ArgumentList? args = _argumentListOf(initializer);
+    if (args == null) {
+      return const _AnnotationSourceArgs();
+    }
+
+    List<String> positional = <String>[];
+    Map<String, String> named = <String, String>{};
+    for (Expression argument in args.arguments) {
+      if (argument is NamedExpression) {
+        named[argument.name.label.name] = argument.expression.toSource();
+      } else {
+        positional.add(argument.toSource());
+      }
+    }
+
+    return _AnnotationSourceArgs(positional: positional, named: named);
+  } catch (_) {
+    return const _AnnotationSourceArgs();
+  }
+}
+
+ArgumentList? _argumentListOf(Expression? expression) {
+  if (expression == null) {
+    return null;
+  }
+
+  if (expression is InstanceCreationExpression) {
+    return expression.argumentList;
+  }
+
+  if (expression is MethodInvocation) {
+    return expression.argumentList;
+  }
+
+  return null;
+}
+
+List<String>? _parseCollectionElementSources(String source) {
+  try {
+    CompilationUnit unit = parseString(content: "const __a = $source;").unit;
+    if (unit.declarations.isEmpty) {
+      return null;
+    }
+
+    AstNode firstDeclaration = unit.declarations.first;
+    TopLevelVariableDeclaration? declaration =
+        firstDeclaration is TopLevelVariableDeclaration
+            ? firstDeclaration
+            : null;
+    if (declaration == null) {
+      return null;
+    }
+
+    VariableDeclarationList list = declaration.variables;
+    if (list.variables.isEmpty) {
+      return null;
+    }
+
+    Expression? initializer = list.variables.first.initializer;
+    if (initializer is ListLiteral) {
+      List<String> out = <String>[];
+      for (CollectionElement element in initializer.elements) {
+        if (element is Expression) {
+          out.add(element.toSource());
+        }
+      }
+      return out;
+    }
+
+    if (initializer is SetOrMapLiteral && initializer.isMap == false) {
+      List<String> out = <String>[];
+      for (CollectionElement element in initializer.elements) {
+        if (element is Expression) {
+          out.add(element.toSource());
+        }
+      }
+      return out;
+    }
+  } catch (_) {}
+
+  return null;
+}
+
+List<MapEntry<String, String>>? _parseMapEntrySources(String source) {
+  try {
+    CompilationUnit unit = parseString(content: "const __a = $source;").unit;
+    if (unit.declarations.isEmpty) {
+      return null;
+    }
+
+    AstNode firstDeclaration = unit.declarations.first;
+    TopLevelVariableDeclaration? declaration =
+        firstDeclaration is TopLevelVariableDeclaration
+            ? firstDeclaration
+            : null;
+    if (declaration == null) {
+      return null;
+    }
+
+    VariableDeclarationList list = declaration.variables;
+    if (list.variables.isEmpty) {
+      return null;
+    }
+
+    Expression? initializer = list.variables.first.initializer;
+    if (initializer is SetOrMapLiteral && initializer.isMap == true) {
+      List<MapEntry<String, String>> out = <MapEntry<String, String>>[];
+      for (CollectionElement element in initializer.elements) {
+        if (element is MapLiteralEntry) {
+          out.add(MapEntry(element.key.toSource(), element.value.toSource()));
+        }
+      }
+      return out;
+    }
+  } catch (_) {}
+
+  return null;
+}
+
 String dartObjectToCode(
   DartObject object,
   ArtifactBuilder builder,
   List<Uri> importUris, {
   _AnnotationSourceArgs? sourceArgs,
+  String? sourceExpression,
 }) {
+  _AnnotationSourceArgs? activeSourceArgs = sourceArgs;
+  if (activeSourceArgs == null && sourceExpression != null) {
+    activeSourceArgs = _parseArgsFromExpression(sourceExpression);
+  }
+
   if (object.isNull) {
     return "null";
   }
@@ -310,14 +458,54 @@ String dartObjectToCode(
     List<DartObject> elements = object.toSetValue()!.toList();
     String elementType = (type as InterfaceType).typeArguments[0]
         .getDisplayString(withNullability: false);
-    return "<$elementType>{${elements.map((v) => dartObjectToCode(v, builder, importUris)).join(",")}}";
+    List<String>? elementSources =
+        sourceExpression == null
+            ? null
+            : _parseCollectionElementSources(sourceExpression);
+    List<String> encoded = <String>[];
+    for (int i = 0; i < elements.length; i++) {
+      String? elementSource;
+      if (elementSources != null && i < elementSources.length) {
+        elementSource = elementSources[i];
+      }
+
+      encoded.add(
+        dartObjectToCode(
+          elements[i],
+          builder,
+          importUris,
+          sourceExpression: elementSource,
+        ),
+      );
+    }
+    return "<$elementType>{${encoded.join(",")}}";
   }
 
   if (type.isDartCoreList || type.isDartCoreIterable) {
     List<DartObject> elements = object.toListValue()!;
     String elementType = (type as InterfaceType).typeArguments[0]
         .getDisplayString(withNullability: false);
-    return "<$elementType>[${elements.map((v) => dartObjectToCode(v, builder, importUris)).join(",")}]";
+    List<String>? elementSources =
+        sourceExpression == null
+            ? null
+            : _parseCollectionElementSources(sourceExpression);
+    List<String> encoded = <String>[];
+    for (int i = 0; i < elements.length; i++) {
+      String? elementSource;
+      if (elementSources != null && i < elementSources.length) {
+        elementSource = elementSources[i];
+      }
+
+      encoded.add(
+        dartObjectToCode(
+          elements[i],
+          builder,
+          importUris,
+          sourceExpression: elementSource,
+        ),
+      );
+    }
+    return "<$elementType>[${encoded.join(",")}]";
   }
 
   if (type.isDartCoreBool) {
@@ -348,7 +536,44 @@ String dartObjectToCode(
     String valueType = type.typeArguments[1].getDisplayString(
       withNullability: false,
     );
-    return "<$keyType, $valueType>{${map.entries.where((e) => e.key != null).map((e) => "${dartObjectToCode(e.key!, builder, importUris)}: ${e.value == null ? "null" : dartObjectToCode(e.value!, builder, importUris)}").join(",")}}";
+    List<MapEntry<String, String>>? sourceEntries =
+        sourceExpression == null
+            ? null
+            : _parseMapEntrySources(sourceExpression);
+    List<String> encodedEntries = <String>[];
+    int index = 0;
+    for (MapEntry<DartObject?, DartObject?> entry in map.entries) {
+      if (entry.key == null) {
+        continue;
+      }
+
+      String? keySource;
+      String? valueSource;
+      if (sourceEntries != null && index < sourceEntries.length) {
+        keySource = sourceEntries[index].key;
+        valueSource = sourceEntries[index].value;
+      }
+
+      String keyCode = dartObjectToCode(
+        entry.key!,
+        builder,
+        importUris,
+        sourceExpression: keySource,
+      );
+      String valueCode =
+          entry.value == null
+              ? "null"
+              : dartObjectToCode(
+                entry.value!,
+                builder,
+                importUris,
+                sourceExpression: valueSource,
+              );
+      encodedEntries.add("$keyCode: $valueCode");
+      index++;
+    }
+
+    return "<$keyType, $valueType>{${encodedEntries.join(",")}}";
   }
 
   if (type.isDartCoreType) {
@@ -363,11 +588,13 @@ String dartObjectToCode(
 
   ConstructorElement? ctor = ce.unnamedConstructor;
   if (ctor == null) {
-    if ((sourceArgs?.positional.isNotEmpty ?? false) ||
-        (sourceArgs?.named.isNotEmpty ?? false)) {
+    if ((activeSourceArgs?.positional.isNotEmpty ?? false) ||
+        (activeSourceArgs?.named.isNotEmpty ?? false)) {
       List<String> fallbackArgs = <String>[
-        ...(sourceArgs?.positional ?? const <String>[]),
-        ...(sourceArgs?.named.entries.map((i) => "${i.key}: ${i.value}") ??
+        ...(activeSourceArgs?.positional ?? const <String>[]),
+        ...(activeSourceArgs?.named.entries.map(
+              (i) => "${i.key}: ${i.value}",
+            ) ??
             const <String>[]),
       ];
       return "${builder.applyDefsF(typeName)}(${fallbackArgs.join(",")})";
@@ -389,9 +616,10 @@ String dartObjectToCode(
     DartObject? value = _fieldValueOf(object, paramName);
     String? sourceArg;
     if (param.isNamed) {
-      sourceArg = sourceArgs?.named[paramName];
-    } else if ((sourceArgs?.positional.length ?? 0) > positionalParamIndex) {
-      sourceArg = sourceArgs!.positional[positionalParamIndex];
+      sourceArg = activeSourceArgs?.named[paramName];
+    } else if ((activeSourceArgs?.positional.length ?? 0) >
+        positionalParamIndex) {
+      sourceArg = activeSourceArgs!.positional[positionalParamIndex];
     }
     if (!param.isNamed) {
       positionalParamIndex++;
@@ -408,7 +636,12 @@ String dartObjectToCode(
       continue;
     }
 
-    String code = dartObjectToCode(value, builder, importUris);
+    String code = dartObjectToCode(
+      value,
+      builder,
+      importUris,
+      sourceExpression: sourceArg,
+    );
     if (param.isNamed) {
       namedArgs.add("$paramName: $code");
     } else {
@@ -418,11 +651,11 @@ String dartObjectToCode(
 
   if (positionalArgs.isEmpty &&
       namedArgs.isEmpty &&
-      ((sourceArgs?.positional.isNotEmpty ?? false) ||
-          (sourceArgs?.named.isNotEmpty ?? false))) {
-    positionalArgs.addAll(sourceArgs?.positional ?? const <String>[]);
+      ((activeSourceArgs?.positional.isNotEmpty ?? false) ||
+          (activeSourceArgs?.named.isNotEmpty ?? false))) {
+    positionalArgs.addAll(activeSourceArgs?.positional ?? const <String>[]);
     namedArgs.addAll(
-      sourceArgs?.named.entries.map((i) => "${i.key}: ${i.value}") ??
+      activeSourceArgs?.named.entries.map((i) => "${i.key}: ${i.value}") ??
           const <String>[],
     );
   }

@@ -27,6 +27,28 @@ class CompactCodec extends ArtifactCodec<int, Compact> {
   int? encode(Compact? value) => value?.raw;
 }
 
+class Property {
+  final double? max;
+  final double? min;
+  final String? hint;
+  final String? description;
+  final bool? tristate;
+  final String? label;
+  final bool obscuredText;
+  final List<ManifoldValidator> validators;
+
+  const Property({
+    this.max,
+    this.min,
+    this.hint,
+    this.description,
+    this.tristate,
+    this.label,
+    this.obscuredText = false,
+    this.validators = const <ManifoldValidator>[],
+  });
+}
+
 @plainArtifact
 class FixtureBase {
   final int id;
@@ -207,7 +229,7 @@ class RootObject {
 
 @reflectArtifact
 class TestModel {
-  @EmailValidator(message: "Bad Email")
+  @Property(validators: [EmailValidator(message: "Bad Email")])
   final String name;
 
   const TestModel({this.name = ""});
