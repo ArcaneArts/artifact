@@ -1,4 +1,4 @@
-# 1.3.6
+# 1.3.7
 * Updated enum type descriptor generation to emit enum option providers (`$AT<Enum>.e(() => Enum.values)`).
 * Raised minimum `artifact` dependency to `1.0.33`.
 
