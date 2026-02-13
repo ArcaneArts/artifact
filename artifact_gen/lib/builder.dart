@@ -835,7 +835,19 @@ String getTypeName(DartType type) {
 String typeDescriptorCode(DartType type, ArtifactBuilder builder) {
   String typeName = getTypeName(type);
   builder.registerDef("\$AT<$typeName>");
+  bool isEnumType = false;
+  String enumTypeName = "";
+  if (type is InterfaceType && type.element is EnumElement) {
+    isEnumType = true;
+    enumTypeName = type.element.name ?? "";
+  }
+
   String ctor = "${builder.applyDefsF("\$AT<$typeName>")}";
+
+  if (isEnumType) {
+    builder.registerDef(enumTypeName);
+    return "$ctor.e(()=>${builder.applyDefsF(enumTypeName)}.values)";
+  }
 
   if (type is InterfaceType && type.typeArguments.isNotEmpty) {
     List<String> typeArguments = <String>[];

@@ -1,3 +1,7 @@
+# 1.3.6
+* Updated enum type descriptor generation to emit enum option providers (`$AT<Enum>.e(() => Enum.values)`).
+* Raised minimum `artifact` dependency to `1.0.33`.
+
 # 1.3.5
 * Fixed no-artifact output generation so the emitted helpers always compile when zero artifact classes are discovered.
 * Added explicit empty-state fallbacks for `$isArtifact`, `$constructArtifact`, `$artifactToMap`, and `$artifactFromMap`.

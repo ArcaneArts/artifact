@@ -41,7 +41,7 @@
         <entry key="artifact">
           <value>
             <list>
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/artifact-1.0.29/lib" />
+              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/artifact-1.0.32/lib" />
             </list>
           </value>
         </entry>
@@ -776,7 +776,7 @@
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/ansicolor-2.0.3/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/archive-4.0.7/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/args-2.7.0/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/artifact-1.0.29/lib" />
+      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/artifact-1.0.32/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/asn1lib-1.6.5/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/async-2.13.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/boolean_selector-2.1.2/lib" />

@@ -1,5 +1,7 @@
 import 'package:artifact/artifact.dart';
 
+import 'gen/artifacts.gen.dart';
+
 const bool _compression = false;
 const Artifact plainArtifact = Artifact(compression: _compression);
 const Artifact reflectArtifact = Artifact(
@@ -10,6 +12,22 @@ const Artifact schemaArtifact = Artifact(
   compression: _compression,
   generateSchema: true,
 );
+
+@reflectArtifact
+class Entity {
+  final int id;
+
+  const Entity({this.id = 1});
+}
+
+@reflectArtifact
+class Dog extends Entity {
+  final String name;
+
+  const Dog({super.id = 2, this.name = 'Fido'});
+
+  Dog rename(String newName) => copyWith(name: newName);
+}
 
 class Compact {
   final int raw;

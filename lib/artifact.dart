@@ -268,8 +268,11 @@ abstract class $Maker<T> {}
 
 class $AT<T> {
   final List<$AT> a;
+  final List<Enum> Function()? o;
+  final bool e;
 
-  const $AT([this.a = const <$AT>[]]);
+  const $AT([this.a = const <$AT>[]]) : e = false, o = null;
+  const $AT.e(this.o) : e = true, a = const <$AT>[];
 
   Type get type => T;
 

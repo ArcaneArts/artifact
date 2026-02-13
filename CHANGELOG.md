@@ -1,3 +1,9 @@
+# 1.0.33
+* Added enum option providers to type descriptors via `$AT<T>.e(() => EnumType.values)` so enum values can be accessed directly from reflection metadata.
+
+# 1.0.32
+* Support enum type checking in type descriptor with $AT.e
+
 # 1.0.31
 * Fixed YAML import normalization to recursively convert nested `YamlMap`/`YamlList` values into plain Dart maps/lists for `fromMap` compatibility.
 * Added TOML null-safe round-tripping by encoding nulls through an internal sentinel and restoring them on decode.

@@ -57,7 +57,7 @@ void main() {
     expect(generated, contains('List<String?>'));
     expect(generated, contains('Set<ASubObject?>'));
     expect(generated, contains('Map<String, ASubObject?>'));
-    expect(generated, contains('EmailValidator(message: "Bad Email")'));
+    expect(generated, contains('EmailValidator(message: "Bad Email2")'));
   });
 
   test('generated artifacts file includes recursive type descriptors', () {
@@ -65,7 +65,13 @@ void main() {
 
     expect(generated, contains(r'$AClass<RootObject>('));
     expect(generated, contains(r'$AT<RootObject>()'));
+    expect(generated, contains(r'$AT<AnEnum>.e(()=>AnEnum.values)'));
+    expect(generated, contains(r'$AT<AnEnum?>.e(()=>AnEnum.values)'));
     expect(generated, contains(r'$AT<List<String?>>([$AT<String?>()])'));
+    expect(
+      generated,
+      contains(r'$AT<List<AnEnum>>([$AT<AnEnum>.e(()=>AnEnum.values)])'),
+    );
     expect(
       generated,
       contains(
