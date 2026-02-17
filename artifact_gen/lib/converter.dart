@@ -106,6 +106,7 @@ class ArtifactTypeConverter {
     if (elementName == 'Map' && type.typeArguments.length == 2) {
       DartType valueT = type.typeArguments[1];
       DartType k = type.typeArguments[0];
+      _addImport(k);
       _addImport(valueT);
       ({String code, List<Uri> imports}) conv = $convert(
         mode == $ArtifactConvertMode.fromMap ? 'e.value' : 'v',
@@ -157,6 +158,7 @@ class ArtifactTypeConverter {
         imports: [...imports, Uri.parse('package:artifact/artifact.dart')],
       );
     } else {
+      _addImport(type);
       builder.registerDef(type.element.name ?? "?ERR?");
       return (
         code: builder.applyDefs(

@@ -1,3 +1,8 @@
+# 1.3.8
+* Added reflective import collection for field types, method return types, and method parameter types to improve multi-file generation reliability.
+* Fixed converter import emission for fallback decode paths and map key types to avoid missing-type compile failures.
+* Added alias-annotation diagnostics in the builder to warn when classes look artifact-annotated but do not resolve to `@Artifact`.
+
 # 1.3.7
 * Updated enum type descriptor generation to emit enum option providers (`$AT<Enum>.e(() => Enum.values)`).
 * Raised minimum `artifact` dependency to `1.0.33`.

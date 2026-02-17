@@ -21,6 +21,7 @@ class $ArtifactReflectorComponent with $ArtifactBuilderOutput {
   ) async {
     StringBuffer buf = StringBuffer();
     List<Uri> importUris = <Uri>[];
+    LibraryElement targetLib = clazz.library;
 
     buf.writeln(
       '  ${builder.applyDefsF("ArtifactMirror")} get \$mirror{_;return ${builder.applyDefsF("ArtifactReflection")}.instanceOf(_H)!;}',
@@ -45,6 +46,7 @@ class $ArtifactReflectorComponent with $ArtifactBuilderOutput {
     for (FormalParameterElement param in params) {
       String name = param.name ?? "";
       String fullType = getTypeName(param.type);
+      _addTypeImports(param.type, targetLib, builder, importUris);
       String descriptor = typeDescriptorCode(param.type, builder);
       builder.registerDef(fullType);
       buf.write("\$AFld<${builder.applyDefsF(clazz.name ?? "")}, $fullType>(");
@@ -95,6 +97,7 @@ class $ArtifactReflectorComponent with $ArtifactBuilderOutput {
 
       String name = method.name ?? "";
       String fullType = getTypeName(method.returnType);
+      _addTypeImports(method.returnType, targetLib, builder, importUris);
       String returnTypeDescriptor = typeDescriptorCode(
         method.returnType,
         builder,
@@ -108,6 +111,7 @@ class $ArtifactReflectorComponent with $ArtifactBuilderOutput {
         (i) => !i.isNamed,
       )) {
         String paramType = getTypeName(i.type);
+        _addTypeImports(i.type, targetLib, builder, importUris);
         builder.registerDef(paramType);
         buf.write("p.o<${builder.applyDefsF(paramType)}>(${g++}),");
       }
@@ -116,6 +120,7 @@ class $ArtifactReflectorComponent with $ArtifactBuilderOutput {
         (i) => i.isNamed,
       )) {
         String paramType = getTypeName(i.type);
+        _addTypeImports(i.type, targetLib, builder, importUris);
         builder.registerDef(paramType);
         buf.write(
           "${i.name}: p.n<${builder.applyDefsF(paramType)}>(${builder.stringD(i.name ?? "")}),",
@@ -128,6 +133,7 @@ class $ArtifactReflectorComponent with $ArtifactBuilderOutput {
         (i) => !i.isNamed,
       )) {
         String paramType = getTypeName(i.type);
+        _addTypeImports(i.type, targetLib, builder, importUris);
         builder.registerDef(paramType);
         buf.write("${builder.applyDefsF(paramType)},");
       }
@@ -137,6 +143,7 @@ class $ArtifactReflectorComponent with $ArtifactBuilderOutput {
         (i) => i.isNamed,
       )) {
         String paramType = getTypeName(i.type);
+        _addTypeImports(i.type, targetLib, builder, importUris);
         builder.registerDef(paramType);
         buf.write(
           "${builder.stringD(i.name ?? "")}: ${builder.applyDefsF(paramType)},",
@@ -207,6 +214,26 @@ class $ArtifactReflectorComponent with $ArtifactBuilderOutput {
     }
 
     return src;
+  }
+}
+
+void _addTypeImports(
+  DartType type,
+  LibraryElement targetLib,
+  ArtifactBuilder builder,
+  List<Uri> importUris,
+) {
+  if (type is InterfaceType) {
+    Uri uri = builder.$getImport(type, targetLib);
+    if (uri.toString().isNotEmpty) {
+      importUris.add(uri);
+    }
+
+    for (DartType arg in type.typeArguments) {
+      _addTypeImports(arg, targetLib, builder, importUris);
+    }
+
+    return;
   }
 }
 

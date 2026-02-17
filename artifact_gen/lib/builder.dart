@@ -25,6 +25,52 @@ import 'package:yaml/yaml.dart';
 
 typedef $BuildOutput = (List<Uri>, StringBuffer);
 
+const Set<String> _artifactAliasNames = <String>{
+  "model",
+  "server",
+  "reflect",
+  "manifold",
+};
+
+String _annotationHeadText(ElementAnnotation annotation) {
+  String src = annotation.toSource().trim();
+  if (src.startsWith("@")) {
+    src = src.substring(1).trim();
+  }
+
+  int p = src.indexOf("(");
+  if (p != -1) {
+    src = src.substring(0, p).trim();
+  }
+
+  return src;
+}
+
+bool _looksLikeArtifactAliasHead(String head) {
+  String simple = head.split(".").last.toLowerCase();
+  if (_artifactAliasNames.contains(simple)) {
+    return true;
+  }
+
+  return simple.contains("artifact");
+}
+
+List<String> _artifactAliasHintsForClass(ClassElement clazz) {
+  List<String> hints = <String>[];
+  for (ElementAnnotation annotation in clazz.metadata.annotations) {
+    String head = _annotationHeadText(annotation);
+    if (head.isEmpty) {
+      continue;
+    }
+
+    if (_looksLikeArtifactAliasHead(head)) {
+      hints.add(head);
+    }
+  }
+
+  return hints.toSet().toList();
+}
+
 extension $BuildOutputL on Iterable<$BuildOutput> {
   $BuildOutput get merged {
     List<Uri> imports = <Uri>[];
@@ -298,7 +344,20 @@ class ArtifactBuilder implements Builder {
       for (Element e in lib.classes) {
         if (e is! ClassElement) continue;
         $iClassMap[e.name ?? ""] = e;
-        if (!$artifactChecker.hasAnnotationOf(e, throwOnUnresolved: false)) {
+        bool isArtifactClass = $artifactChecker.hasAnnotationOf(
+          e,
+          throwOnUnresolved: false,
+        );
+        if (!isArtifactClass) {
+          List<String> aliasHints = _artifactAliasHintsForClass(e);
+          if (aliasHints.isNotEmpty) {
+            warn(
+              "Skipping ${e.name}: found annotation alias candidates ${aliasHints.map((i) => '@$i').join(', ')} but no resolved @Artifact. "
+              "This is usually caused by indirect/generated barrel imports. "
+              "Import your annotation constants directly in the declaring file. "
+              "(library: ${asset.uri})",
+            );
+          }
           continue;
         }
 
