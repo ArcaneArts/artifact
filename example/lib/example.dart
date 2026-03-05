@@ -3,78 +3,42 @@ import 'package:example/gen/artifacts.gen.dart';
 
 const Artifact model = Artifact(compression: true, reflection: true);
 
-class Property {
-  const Property();
-}
-
-@Property()
 @model
-class Person {
-  @Property()
-  final String firstName;
+class Holder {
+  final Map<String, AMeta> aMetas;
+  final Map<String, BMeta> bMetas;
 
-  @Property()
-  final String? lastName;
-
-  @Property()
-  final DateTime? dateOfBirth;
-
-  Person({required this.firstName, this.lastName, this.dateOfBirth});
+  const Holder({this.aMetas = const {}, this.bMetas = const {}});
 }
 
-abstract class TypeBoundManagerBase {
-  Type get t;
+@model
+class Meta {
+  const Meta();
 }
 
-class ClassPropertyManager<T extends Object?> implements TypeBoundManagerBase {
-  const ClassPropertyManager();
+@model
+class AMeta extends Meta {
+  final int a;
 
-  @override
-  Type get t => T;
+  const AMeta({this.a = 4});
 }
 
-class FieldPropertyManager<T extends Object?> implements TypeBoundManagerBase {
-  final ArtifactFieldMirror mirror;
+@model
+class BMeta extends Meta {
+  final String b;
 
-  const FieldPropertyManager(this.mirror);
-
-  @override
-  Type get t => T;
+  const BMeta({this.b = "hello"});
 }
 
 void main() {
-  // Trigger generated registration.
-  Person(firstName: "").to.json;
+  Holder h = Holder(
+    aMetas: {"a1": AMeta(a: 5)},
+    bMetas: {"b1": BMeta(b: "world")},
+  );
 
-  ArtifactTypeMirror? personType;
-  for (ArtifactTypeMirror typeMirror
-      in ArtifactReflection.withAnnotation<Property>()) {
-    personType = typeMirror;
-    break;
-  }
+  print(h.to.json);
 
-  if (personType == null) {
-    print(
-      'No reflected classes found. Ensure generated artifacts are imported before calling reflection.',
-    );
-    return;
-  }
+  Holder h2 = $Holder.from.json(h.to.json);
 
-  Object person = personType.construct();
-  ArtifactMirror mirror = personType.bind(person);
-  TypeBoundManagerBase classManager = personType
-      .mapClassType<TypeBoundManagerBase>(<T>() => ClassPropertyManager<T>());
-
-  print('class -> ${classManager.t}');
-
-  for (ArtifactFieldMirror field in mirror.fields) {
-    if (!field.hasAnnotation<Property>()) {
-      continue;
-    }
-
-    TypeBoundManagerBase manager = field.mapFieldType<TypeBoundManagerBase>(
-      <T>() => FieldPropertyManager<T>(field),
-    );
-    print('${field.name} -> ${manager.t}');
-  }
+  print(h2.to.json);
 }
