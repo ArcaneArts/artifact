@@ -24,13 +24,26 @@ Future<void> _runChecked(String workingDirectory, List<String> args) async {
 
 void main() {
   String fixtureDir = Directory('test/fixtures/basic_fixture').absolute.path;
+  String compressedFixtureDir =
+      Directory('test/fixtures/compressed_fixture').absolute.path;
 
   String artifactsPath = '$fixtureDir/lib/gen/artifacts.gen.dart';
   String exportsPath = '$fixtureDir/lib/gen/exports.gen.dart';
+  String compressedArtifactsPath =
+      '$compressedFixtureDir/lib/gen/artifacts.gen.dart';
+  String compressedExportsPath =
+      '$compressedFixtureDir/lib/gen/exports.gen.dart';
 
   setUpAll(() async {
     await _runChecked(fixtureDir, <String>['pub', 'get']);
     await _runChecked(fixtureDir, <String>[
+      'run',
+      'build_runner',
+      'build',
+      '--delete-conflicting-outputs',
+    ]);
+    await _runChecked(compressedFixtureDir, <String>['pub', 'get']);
+    await _runChecked(compressedFixtureDir, <String>[
       'run',
       'build_runner',
       'build',
@@ -58,6 +71,11 @@ void main() {
     expect(generated, contains('Set<ASubObject?>'));
     expect(generated, contains('Map<String, ASubObject?>'));
     expect(generated, contains('EmailValidator(message: "Bad Email2")'));
+    expect(generated, contains('ArtifactDataUtil.a<ASubObject>('));
+    expect(
+      generated,
+      contains('ArtifactDataUtil.a<NullableReflectSubObject>('),
+    );
   });
 
   test('generated artifacts file includes recursive type descriptors', () {
@@ -86,4 +104,21 @@ void main() {
     String exports = File(exportsPath).readAsStringSync();
     expect(exports, contains("export 'artifacts.gen.dart';"));
   });
+
+  test('compressed fixture generates artifacts and exports files', () {
+    expect(File(compressedArtifactsPath).existsSync(), isTrue);
+    expect(File(compressedExportsPath).existsSync(), isTrue);
+  });
+
+  test(
+    'compressed fixture escapes dollar signs in compressed string tables',
+    () {
+      String generated = File(compressedArtifactsPath).readAsStringSync();
+
+      expect(generated, contains(r"'magic\$type'"));
+      expect(generated, isNot(contains(r"'magic$type'")));
+      expect(generated, contains(r'(i)=>i.magic$type'));
+      expect(generated, contains(r'schema=>{'));
+    },
+  );
 }

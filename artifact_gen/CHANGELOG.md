@@ -1,3 +1,7 @@
+# 1.3.9
+* Fixed generated Dart string literals to escape `$` correctly, including compressed `_S` string tables and direct field-name literals used by `toMap`, `fromMap`, reflection, and schema output.
+* Added regression coverage for `$`-containing field names in both direct string-literal generation and a dedicated compressed generator fixture.
+
 # 1.3.8
 * Added reflective import collection for field types, method return types, and method parameter types to improve multi-file generation reliability.
 * Fixed converter import emission for fallback decode paths and map key types to avoid missing-type compile failures.

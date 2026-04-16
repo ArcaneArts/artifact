@@ -1,4 +1,3 @@
-import 'package:artifact/artifact.dart';
 import 'package:artifact/gen/artifacts.gen.dart';
 import 'package:artifact/test_models/feature_models.dart';
 import 'package:test/test.dart';

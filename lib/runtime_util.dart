@@ -112,6 +112,31 @@ class ArtifactDataUtil {
   static Map<K, V> fe<K, V>(Iterable<MapEntry<K, V>> entries) =>
       Map.fromEntries(entries);
 
+  static T? a<T>(
+    dynamic value,
+    T Function(Map<String, dynamic> map) fromMap,
+  ) {
+    if (value == null) {
+      return null;
+    }
+
+    if (value is T) {
+      return value;
+    }
+
+    if (value is Map<String, dynamic>) {
+      return fromMap(value);
+    }
+
+    if (value is Map) {
+      return fromMap(Map<String, dynamic>.from(value));
+    }
+
+    throw ArgumentError(
+      "Cannot decode ${value.runtimeType} into ${T.toString()}",
+    );
+  }
+
   static dynamic _yamlToDart(dynamic value) {
     if (value is YamlMap) {
       Map<String, dynamic> out = <String, dynamic>{};

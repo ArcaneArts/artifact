@@ -548,7 +548,7 @@ String dartObjectToCode(
   }
 
   if (type.isDartCoreString) {
-    return "${builder.stringD(object.toStringValue()!.replaceAll("'", "\\'"))}";
+    return builder.stringD(object.toStringValue()!);
   }
 
   if (type.isDartCoreNum) {

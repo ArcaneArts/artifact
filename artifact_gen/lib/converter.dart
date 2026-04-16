@@ -46,9 +46,10 @@ class ArtifactTypeConverter {
       } else {
         String name = type.element.name ?? "?ERR?";
         return (
-          code:
-              '\$${name}.fromMap(($expr) as ${builder.applyDefsF("Map<String, dynamic>")})',
-          imports: imports,
+          code: builder.applyDefs(
+            ' ${builder.applyDefsF("ArtifactDataUtil")}.a<${builder.applyDefsF(name)}>($expr,(m)=>\$${name}.fromMap(m))${nullable ? '' : '!'}',
+          ),
+          imports: [...imports, Uri.parse('package:artifact/artifact.dart')],
         );
       }
     }

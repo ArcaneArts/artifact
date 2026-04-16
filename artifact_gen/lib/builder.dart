@@ -181,6 +181,18 @@ class ArtifactBuilder implements Builder {
     ci++;
   }
 
+  String dartStringLiteral(String value) {
+    String escaped = value
+        .replaceAll(r'\', r'\\')
+        .replaceAll("'", r"\'")
+        .replaceAll(r'$', r'\$')
+        .replaceAll('\n', r'\n')
+        .replaceAll('\r', r'\r')
+        .replaceAll('\t', r'\t');
+
+    return "'$escaped'";
+  }
+
   String stringD(String at) {
     if (compression && at.length > 3) {
       int? index = strDD.indexOf(at);
@@ -191,7 +203,7 @@ class ArtifactBuilder implements Builder {
       return "_S[$index]";
     }
 
-    return "'$at'";
+    return dartStringLiteral(at);
   }
 
   String valD(String at, DartType th) {
@@ -547,7 +559,7 @@ class ArtifactBuilder implements Builder {
           )
           ..write(
             compression
-                ? "const ${applyDefsF("List<String>")} _S=[${strDD.map((i) => "'$i'").join(",")}];"
+                ? "const ${applyDefsF("List<String>")} _S=[${strDD.map(dartStringLiteral).join(",")}];"
                 : "",
           )
           ..write(

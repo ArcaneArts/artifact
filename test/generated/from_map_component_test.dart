@@ -1,4 +1,3 @@
-import 'package:artifact/artifact.dart';
 import 'package:artifact/gen/artifacts.gen.dart';
 import 'package:artifact/test_models/feature_models.dart';
 import 'package:test/test.dart';
@@ -83,5 +82,30 @@ void main() {
     expect(fromToml.mood, Mood.sad);
     expect(fromProps.weird.value, 12);
     expect(fromToon.value, 2);
+  });
+
+  test('from_map accepts runtime artifact instances for nested artifacts', () {
+    Dog dog = const Dog(hp: 41, goodBoy: false);
+    NullableReflectSubObject child = const NullableReflectSubObject(
+      value: 'left',
+      anotherValue: 9,
+    );
+
+    Zoo zoo = $Zoo.fromMap(<String, dynamic>{
+      'animals': <dynamic>[dog],
+    });
+    NullableReflectCollectionsModel collections =
+        $NullableReflectCollectionsModel.fromMap(<String, dynamic>{
+      'aListOfNullableSubObjects': <dynamic>[child, null],
+      'aSetOfNullableSubObjects': <dynamic>[child],
+      'aMapOfStringToNullableSubObject': <String, dynamic>{
+        'left': child,
+      },
+    });
+
+    expect(zoo.animals.single, same(dog));
+    expect(collections.aListOfNullableSubObjects.first, same(child));
+    expect(collections.aSetOfNullableSubObjects.single, same(child));
+    expect(collections.aMapOfStringToNullableSubObject['left'], same(child));
   });
 }

@@ -42,3 +42,11 @@ void main() {
 
   print(h2.to.json);
 }
+
+@artifact
+class VectorValue {
+  final String magic$type;
+  final List<double> vector;
+
+  const VectorValue({this.magic$type = "vector", this.vector = const []});
+}
